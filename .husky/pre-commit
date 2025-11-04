@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "Đang chạy pre-commit: lint-staged (ESLint + Prettier) ..."
+npx lint-staged
+status=$?
+
+if [ $status -ne 0 ]; then
+  echo "pre-commit thất bại. Vui lòng sửa lỗi lint/format trước khi commit."
+  exit $status
+fi
+
+echo "pre-commit hoàn tất ✅"
