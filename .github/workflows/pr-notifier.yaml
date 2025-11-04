@@ -5,6 +5,9 @@ on:
     types: [created]
   pull_request:
     types: [closed]
+    branches:
+      - main
+      - develop
 
 jobs:
   notify:
@@ -100,7 +103,6 @@ jobs:
             echo "$out" | xargs -r
           }
 
-          # Map @github_handle -> <@slack_id> trong nội dung text
           map_mentions_in_text() {
             text="$1"
             for h in $(echo "$text" | grep -o '@[a-zA-Z0-9._-]\+' | tr -d '@' | sort -u); do
@@ -118,18 +120,15 @@ jobs:
           pr_author="${{ github.event.issue.user.login }}"
           reviewer="${{ github.event.comment.user.login }}"
           
-          # Involving = author + commentor (không parse thêm @handles từ comment)
           involving_mentions=$(build_mentions_unique "$pr_author" "$reviewer")
           reviewer_mention=$(build_mentions_unique "$reviewer")
 
           pr_num=${{ github.event.issue.number }}
 
-          # Chỉ hiển thị quote block nếu có nội dung thực sự (sau khi strip space)
           body_trimmed=$(echo "$body_content" | xargs -r || echo "")
           blocks=""
           
           if [ -n "$body_trimmed" ]; then
-            # Map mentions trong nội dung comment trước khi hiển thị
             body_mapped=$(map_mentions_in_text "$body_trimmed")
             body_escaped=$(echo "$body_mapped" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
             blocks="
@@ -181,6 +180,7 @@ jobs:
           author_mention=$(build_mentions "$pr_author")
           merger_mention=$(build_mentions "$merger")
           pr_num=${{ github.event.pull_request.number }}
+          base_branch="${{ github.event.pull_request.base.ref }}"
 
           curl -s -X POST \
             -H "Authorization: Bearer $SLACK_BOT_TOKEN" \
@@ -190,7 +190,7 @@ jobs:
               \"text\": \"✅ PR Merged Successfully! <!channel>\",
               \"blocks\": [
                 { \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"✅ PR Merged Successfully!\" } },
-                { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*PR #${pr_num}*\n*Title:* ${{ github.event.pull_request.title }}\" } },
+                { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*PR #${pr_num}*\n*Title:* ${{ github.event.pull_request.title }}\n*Merged into:* \`${base_branch}\`\" } },
                 { \"type\": \"section\", \"fields\": [
                     { \"type\": \"mrkdwn\", \"text\": \"👤 *Author:*\\n$author_mention\" },
                     { \"type\": \"mrkdwn\", \"text\": \"🔀 *Merged by:*\\n$merger_mention\" }

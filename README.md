@@ -1,7 +1,7 @@
 # 🧑‍🤝‍🧑 Buddy Up – Study Connection App
 
 > **Buddy Up** là ứng dụng giúp sinh viên và người học kết nối với bạn học phù hợp để cùng nhau học tập, trao đổi kiến thức và phát triển kỹ năng thông qua chat, nhóm học và lịch trình học tập.
-> Dự án được phát triển bằng **React Native (Expo)** và **Firebase**, hướng tới khả năng mở rộng, realtime và trải nghiệm thân thiện trên cả Android & iOS.
+> Dự án được phát triển bằng **React Native (Expo)** và **Supabase**, hướng tới khả năng mở rộng, realtime và trải nghiệm thân thiện trên cả Android & iOS.
 
 ---
 
@@ -21,13 +21,13 @@
 
 | Nhóm                        | Tính năng                                 | Mô tả                                          |
 | --------------------------- | ----------------------------------------- | ---------------------------------------------- |
-| 👤 **User & Auth**          | Đăng ký, đăng nhập, cập nhật hồ sơ        | Xác thực Firebase, lưu dữ liệu người dùng      |
+| 👤 **User & Auth**          | Đăng ký, đăng nhập, cập nhật hồ sơ        | Xác thực Supabase, lưu dữ liệu người dùng      |
 | 🔎 **Matching**             | Tìm kiếm bạn học phù hợp                  | Dựa trên thông tin học, sở thích, kỹ năng      |
-| 💬 **Chat & Group**         | Nhắn tin 1–1, chat nhóm, gửi lời mời nhóm | Sử dụng Firestore realtime & Cloud Functions   |
+| 💬 **Chat & Group**         | Nhắn tin 1–1, chat nhóm, gửi lời mời nhóm | Sử dụng Supabase Realtime (channels)           |
 | 🗓️ **Schedule & Reminder** | Quản lý lịch học, nhắc nhở tự động        | Đồng bộ thời gian & gửi notification trong app |
 | 📈 **Analytics & Progress** | Theo dõi tiến độ, thống kê hoạt động học  | Giao diện biểu đồ & thống kê tuần/tháng        |
 | ⚙️ **Settings**             | Tuỳ chỉnh cá nhân, theme, thông báo       | Lưu trữ cục bộ (AsyncStorage)                  |
-| 🔐 **Security**             | Bảo mật dữ liệu người dùng                | Firebase Security Rules + Authentication       |
+| 🔐 **Security**             | Bảo mật dữ liệu người dùng                | RLS Policies (Supabase) + Authentication       |
 
 ---
 
@@ -39,19 +39,19 @@
 Ứng dụng tuân theo mô hình **Client–Backend-as-a-Service**, nơi:
 
 * **Frontend (Mobile)**: React Native + Expo
-* **Backend**: Firebase (Auth, Firestore, Storage, Cloud Functions)
-* **Realtime Layer**: Firestore Listener
-* **Storage**: Firebase Cloud Storage
+* **Backend**: Supabase (Auth, Postgres, Storage, Realtime)
+* **Realtime Layer**: Supabase Realtime (channels)
+* **Storage**: Supabase Storage
 * **Automation & CI/CD**: GitHub Actions + Expo EAS
 
 ```
 [React Native App]
      │
      ▼
-[Firebase Auth] ←──→ [Firestore DB]
+[Supabase Auth] ←──→ [Postgres (Supabase)]
      │                     │
      │                     ▼
-     └──> [Cloud Functions] → [Notifications / Analytics]
+     └──> [Realtime Channels] → [Notifications / Analytics]
 ```
 
 **Các module chính:**
@@ -72,13 +72,14 @@
 | Hạng mục             | Công nghệ                                      | Ghi chú                             |
 | -------------------- | ---------------------------------------------- | ----------------------------------- |
 | **Frontend**         | React Native (Expo) + TypeScript               | Phát triển nhanh, đa nền tảng       |
-| **State Management** | Zustand                                        | Nhẹ, dễ bảo trì                     |
-| **Backend**          | Firebase (Auth, Firestore, Storage, Functions) | Realtime + serverless               |
-| **Database**         | Firestore (NoSQL)                              | Cấu trúc theo collection-per-module |
+| **State Management** | Redux Toolkit                                  | Quy ước mạnh, dễ mở rộng            |
+| **Backend**          | Supabase (Auth, Postgres, Storage, Realtime)   | Realtime + serverless               |
+| **Database**         | Postgres (Supabase)                            | Lợi thế SQL + RLS                   |
 | **Design**           | Figma                                          | Wireframe + Mockup đồng bộ          |
 | **Testing**          | Jest + Detox                                   | Unit + E2E test                     |
 | **CI/CD**            | GitHub Actions + Expo EAS                      | Build/test/deploy tự động           |
-| **Security**         | Firebase Rules + Env secrets                   | Bảo mật dữ liệu người dùng          |
+| **Security**         | RLS Policies + Env secrets                     | Bảo mật dữ liệu người dùng          |
+| **i18n**             | i18next + react-i18next                        | Đa ngôn ngữ trong app               |
 
 ---
 
@@ -134,11 +135,11 @@ buddy-up/
 │   │   ├── ProfileScreen.tsx
 │   │   └── EditProfileScreen.tsx
 │   └── ...
-├── services/                # Các dịch vụ tương tác với backend (Firebase, API)
-│   ├── auth.ts
-│   ├── firestore.ts
-│   ├── storage.ts
-│   ├── matching.ts          # Logic gọi Cloud Function matching
+├── services/                # Các dịch vụ tương tác với backend (Supabase, API)
+│   ├── auth.ts              # Supabase Auth
+│   ├── db.ts                # Truy vấn Postgres thông qua Supabase
+│   ├── storage.ts           # Supabase Storage
+│   ├── realtime.ts          # Kênh Realtime, presence
 │   └── index.ts
 ├── utils/                   # Các hàm tiện ích, helper functions
 │   ├── helpers.ts
@@ -179,56 +180,98 @@ cd buddy-up
 npm install
 
 # Chạy dev server
-npm start
+npx expo start
+
+# Env
+copy file .example.env thành .env và đổi real key
 ```
 
 ---
 
-## 7. Thiết lập Firebase
+## 7. Thiết lập Supabase
 
-### 1️⃣ Tạo project tại [Firebase Console](https://console.firebase.google.com)
+### 1️⃣ Tạo project tại [Supabase](https://supabase.com)
 
 Bật:
 
-* Authentication → Email/Password
-* Firestore Database → Test Mode (dev)
-* Storage → Default bucket
+* Authentication → Email/Password (hoặc Social/OAuth nếu cần)
+* Database → Tạo schema/tables cần thiết
+* Realtime → Enable Realtime cho tables cần theo dõi
+* Storage → Create bucket (nếu cần)
 
 ### 2️⃣ Tạo file `.env`
 
 ```
-FIREBASE_API_KEY=xxxx
-FIREBASE_AUTH_DOMAIN=xxxx.firebaseapp.com
-FIREBASE_PROJECT_ID=xxxx
-FIREBASE_STORAGE_BUCKET=xxxx.appspot.com
-FIREBASE_MESSAGING_SENDER_ID=xxxx
-FIREBASE_APP_ID=xxxx
+SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
-### 3️⃣ Firebase config
+### 3️⃣ Supabase config
 
-`src/config/firebase.ts`
+`src/config/supabase.ts`
 
 ```ts
-import { initializeApp } from "firebase/app";
-import { getAuth, getFirestore, getStorage } from "firebase";
-import Constants from "expo-constants";
+import 'react-native-url-polyfill/auto';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient } from '@supabase/supabase-js';
+import Constants from 'expo-constants';
 
-const firebaseConfig = {
-  apiKey: Constants.expoConfig?.extra?.FIREBASE_API_KEY,
-  authDomain: Constants.expoConfig?.extra?.FIREBASE_AUTH_DOMAIN,
-  projectId: Constants.expoConfig?.extra?.FIREBASE_PROJECT_ID,
-  storageBucket: Constants.expoConfig?.extra?.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: Constants.expoConfig?.extra?.FIREBASE_MESSAGING_SENDER_ID,
-  appId: Constants.expoConfig?.extra?.FIREBASE_APP_ID,
-};
+const SUPABASE_URL = Constants.expoConfig?.extra?.SUPABASE_URL as string;
+const SUPABASE_ANON_KEY = Constants.expoConfig?.extra?.SUPABASE_ANON_KEY as string;
 
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: false,
+  },
+});
 ```
 
+### 4️⃣ Cài đặt packages
+
+```bash
+npm i @supabase/supabase-js @react-native-async-storage/async-storage react-native-url-polyfill
+# (tuỳ chọn) RTK/RTK Query
+npm i @reduxjs/toolkit react-redux
+# i18n
+npm i i18next react-i18next
+```
+
+### 5️⃣ Thiết lập i18n
+
+`src/config/i18n.ts`
+
+```ts
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import en from '../assets/i18n/en/common.json';
+import vi from '../assets/i18n/vi/common.json';
+
+i18n.use(initReactI18next).init({
+  compatibilityJSON: 'v3',
+  lng: 'vi',
+  fallbackLng: 'en',
+  resources: {
+    en: { common: en },
+    vi: { common: vi },
+  },
+  ns: ['common'],
+  defaultNS: 'common',
+});
+
+export default i18n;
+```
+
+Sử dụng trong component:
+
+```ts
+import { useTranslation } from 'react-i18next';
+
+const { t } = useTranslation();
+// t('welcome')
+```
 ---
 
 
