@@ -4,6 +4,12 @@
   "register": "Register",
   "home": "Home",
   "chat": "Chat",
-  "profile": "Profile"
+  "profile": "Profile",
+  "buddy": "Buddy",
+  "navigation": {
+    "home": "Home",
+    "buddy": "Buddy",
+    "chat": "Messages",
+    "profile": "Profile"
+  }
 }
-
