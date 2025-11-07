@@ -54,10 +54,10 @@ jobs:
             -H 'Content-type: application/json' \
             --data "{
               \"channel\": \"${SLACK_CHANNEL_ID}\",
-              \"text\": \"🟢 PR Ready for Review\",
+              \"text\": \"PR Ready for Review\",
               \"blocks\": [
                 { \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"🟢 PR Ready for Review\" } },
-                { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*PR #${pr_num}*\n*Title:* ${{ github.event.issue.title }}\" } },
+                { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*PR #${pr_num}*\n${{ github.event.issue.title }}\" } },
                 { \"type\": \"section\", \"fields\": [
                     { \"type\": \"mrkdwn\", \"text\": \"👤 *Author:*\\n$author_mention\" },
                     { \"type\": \"mrkdwn\", \"text\": \"👥 *Reviewers:*\\n$reviewers_mentions\" }
@@ -103,34 +103,35 @@ jobs:
             echo "$out" | xargs -r
           }
 
-          map_mentions_in_text() {
-            text="$1"
-            for h in $(echo "$text" | grep -o '@[a-zA-Z0-9._-]\+' | tr -d '@' | sort -u); do
-              sid=$(jq -r --arg user "$h" '.[$user]' usermap.json)
-              if [ "$sid" != "null" ] && [ -n "$sid" ]; then
-                text=$(echo "$text" | sed -E "s/@$h/<@$sid>/g")
-              fi
-            done
-            echo "$text"
-          }
-
           body_raw="${{ github.event.comment.body }}"
           body_content=$(echo "$body_raw" | sed -E 's/^commented[[:space:]]*//')
 
           pr_author="${{ github.event.issue.user.login }}"
           reviewer="${{ github.event.comment.user.login }}"
           
-          involving_mentions=$(build_mentions_unique "$pr_author" "$reviewer")
-          reviewer_mention=$(build_mentions_unique "$reviewer")
+          # Extract các @handle trong comment body (loại bỏ @channel, @here, @everyone)
+          comment_handles=$(echo "$body_content" | grep -o '@[a-zA-Z0-9._-]\+' | tr -d '@' | grep -vE '^(channel|here|everyone)$' | xargs -r || true)
+          
+          # Involving = author + commentor + các mentions trong comment
+          involving_mentions=$(build_mentions_unique "$pr_author" "$reviewer" $comment_handles)
+          
+          # Header: GitHub username không có @
+          reviewer_display="$reviewer"
 
           pr_num=${{ github.event.issue.number }}
+          pr_title="${{ github.event.issue.title }}"
 
           body_trimmed=$(echo "$body_content" | xargs -r || echo "")
+          
+          # Loại bỏ TẤT CẢ mentions (cả @handle và <@slack_id>) khỏi quote block
+          body_text_only=$(echo "$body_trimmed" | sed -E 's/<@[A-Z0-9]+>//g' | sed -E 's/@[a-zA-Z0-9._-]+//g' | xargs -r || echo "")
+          
           blocks=""
           
-          if [ -n "$body_trimmed" ]; then
-            body_mapped=$(map_mentions_in_text "$body_trimmed")
-            body_escaped=$(echo "$body_mapped" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+          # Chỉ hiển thị quote block nếu có text thực sự (sau khi loại bỏ tất cả mentions)
+          if [ -n "$body_text_only" ]; then
+            # Chỉ escape & (không escape < và > vì đã loại bỏ mentions rồi)
+            body_escaped=$(echo "$body_text_only" | sed 's/&/\&amp;/g')
             blocks="
                 { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"> ${body_escaped}\" } },
             "
@@ -141,10 +142,10 @@ jobs:
             -H 'Content-type: application/json' \
             --data "{
               \"channel\": \"${SLACK_CHANNEL_ID}\",
-              \"text\": \"💬 Reviewer Comment by $reviewer_mention\",
+              \"text\": \"Reviewer Comment by $reviewer_display\",
               \"blocks\": [
-                { \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"💬 Reviewer Comment by $reviewer_mention\" } },
-                { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*PR #${pr_num}*\" } },${blocks}
+                { \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"💬 Reviewer Comment by $reviewer_display\" } },
+                { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*PR #${pr_num}*\n${pr_title}\" } },${blocks}
                 { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"👥 *Involving:* $involving_mentions\" } },
                 { \"type\": \"actions\", \"elements\": [
                     { \"type\": \"button\", \"text\": { \"type\": \"plain_text\", \"text\": \"View Comment\" }, \"url\": \"${{ github.event.comment.html_url }}\" }
@@ -187,10 +188,10 @@ jobs:
             -H 'Content-type: application/json' \
             --data "{
               \"channel\": \"${SLACK_CHANNEL_ID}\",
-              \"text\": \"✅ PR Merged Successfully! <!channel>\",
+              \"text\": \"PR Merged Successfully! <!channel>\",
               \"blocks\": [
                 { \"type\": \"header\", \"text\": { \"type\": \"plain_text\", \"text\": \"✅ PR Merged Successfully!\" } },
-                { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*PR #${pr_num}*\n*Title:* ${{ github.event.pull_request.title }}\n*Merged into:* \`${base_branch}\`\" } },
+                { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \"*PR #${pr_num}*\n${{ github.event.pull_request.title }}\n*Merged into:* \`${base_branch}\`\" } },
                 { \"type\": \"section\", \"fields\": [
                     { \"type\": \"mrkdwn\", \"text\": \"👤 *Author:*\\n$author_mention\" },
                     { \"type\": \"mrkdwn\", \"text\": \"🔀 *Merged by:*\\n$merger_mention\" }
