@@ -4,6 +4,12 @@
   "register": "Đăng ký",
   "home": "Trang chủ",
   "chat": "Trò chuyện",
-  "profile": "Hồ sơ"
+  "profile": "Hồ sơ",
+  "buddy": "Bạn học",
+  "navigation": {
+    "home": "Trang chủ",
+    "buddy": "Bạn học",
+    "chat": "Tin nhắn",
+    "profile": "Cá nhân"
+  }
 }
-
