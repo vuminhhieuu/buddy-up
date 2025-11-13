@@ -6,7 +6,11 @@ export async function signInWithEmail(params: { email: string; password: string 
   return data;
 }
 
-export async function signUpWithEmail(params: { email: string; password: string }) {
+export async function signUpWithEmail(params: {
+  email: string;
+  password: string;
+  displayName: string;
+}) {
   const { data, error } = await supabase.auth.signUp(params);
   if (error) throw error;
   return data;

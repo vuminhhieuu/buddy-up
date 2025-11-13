@@ -1,5 +1,6 @@
 {
   "welcome": "Chào mừng đến với Buddy Up",
+  "appName": "Buddy Up",
   "login": "Đăng nhập",
   "register": "Đăng ký",
   "home": "Trang chủ",
@@ -11,5 +12,42 @@
     "buddy": "Bạn học",
     "chat": "Tin nhắn",
     "profile": "Cá nhân"
+  },
+  "auth": {
+    "displayName": "Tên hiển thị",
+    "displayNamePlaceholder": "Tên của bạn",
+    "email": "Email",
+    "emailPlaceholder": "Email của bạn",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "Tạo mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "confirmPasswordPlaceholder": "Nhập lại mật khẩu",
+    "invalidEmail": "Email không hợp lệ",
+    "required": "Trường này là bắt buộc",
+    "nameMin": "Tên phải có ít nhất 2 ký tự",
+    "passwordMin": "Mật khẩu phải có ít nhất 6 ký tự",
+    "passwordMismatch": "Mật khẩu không khớp",
+    "strengthWeak": "Yếu",
+    "strengthMedium": "Trung bình",
+    "strengthStrong": "Mạnh",
+    "ok": "OK",
+    "registerSuccessTitle": "Đăng ký thành công",
+    "registerSuccessMessage": "Tài khoản của bạn đã được tạo thành công. Vui lòng đăng nhập để tiếp tục.",
+    "registerFailedTitle": "Đăng ký thất bại",
+    "registerFailed": "Đăng ký không thành công. Vui lòng thử lại.",
+    "haveAccount": "Đã có tài khoản?",
+    "loginNow": "Đăng nhập ngay",
+    "noAccount": "Chưa có tài khoản?",
+    "registerNow": "Đăng ký ngay",
+    "loginSubtitle": "Kết nối và học cùng bạn đồng hành",
+    "loginFailedTitle": "Đăng nhập thất bại",
+    "loginFailed": "Đăng nhập không thành công. Vui lòng thử lại.",
+    "loginMockMessage": "Màn hình đăng nhập đang được xây dựng. Vui lòng quay lại sau.",
+    "or": "hoặc",
+    "tagline": "Học tập cùng nhau, tiến bộ mỗi ngày"
+  },
+  "profileSetup": {
+    "title": "Thiết lập hồ sơ",
+    "description": "Màn hình placeholder cho bước thiết lập hồ sơ sau đăng ký."
   }
 }
