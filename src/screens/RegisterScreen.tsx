@@ -1,8 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Pressable, Alert } from 'react-native';
-import Svg, { Path } from 'react-native-svg';
 import { Eye, EyeOff, User, Mail } from 'lucide-react-native';
-import { ScreenContainer, Text, Input, Spacer, Button } from '../components/ui';
+import { ScreenContainer, Text, Input, Spacer, Button, SocialButton } from '../components/ui';
 import { useTheme } from '../styles';
 import { useTranslation } from 'react-i18next';
 import { Formik } from 'formik';
@@ -94,26 +93,102 @@ export const RegisterScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<AuthStackParamList>>();
   const dispatch = useAppDispatch();
 
+  const styles = useMemo(
+    () => ({
+      headerContainer: {
+        alignItems: 'center' as const,
+        paddingTop: theme.spacing[8],
+        marginBottom: theme.spacing[6],
+      },
+      headerIcon: {
+        width: 56,
+        height: 56,
+        borderRadius: theme.radius.lg,
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
+        backgroundColor: theme.colors.primary[400],
+      },
+      tabSwitcher: {
+        flexDirection: 'row' as const,
+        backgroundColor: theme.colors.surface,
+        borderRadius: theme.radius.base,
+        padding: theme.spacing[1],
+      },
+      tabItem: {
+        flex: 1,
+        height: theme.sizes.button.sm,
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
+        borderRadius: theme.radius.base,
+      },
+      tabItemActive: {
+        backgroundColor: theme.colors.primary[500],
+      },
+      divider: {
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+        marginVertical: theme.spacing[6],
+      },
+      dividerLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: theme.colors.border,
+      },
+      footer: {
+        alignItems: 'center' as const,
+        flexDirection: 'row' as const,
+        justifyContent: 'center' as const,
+      },
+      socialButtonsContainer: {
+        flexDirection: 'row' as const,
+        marginHorizontal: -6,
+      },
+    }),
+    [theme],
+  );
+
+  const handleNavigateToLogin = () => {
+    dispatch(setAuthStartScreen('Login'));
+    navigation.navigate('Login');
+  };
+
+  const handleTogglePassword = () => {
+    setShowPassword((s) => !s);
+  };
+
+  const handlePasswordIconPressIn = () => {
+    setPasswordIconPressed(true);
+  };
+
+  const handlePasswordIconPressOut = () => {
+    setPasswordIconPressed(false);
+  };
+
+  const handleToggleConfirm = () => {
+    setShowConfirm((s) => !s);
+  };
+
+  const handleConfirmIconPressIn = () => {
+    setConfirmIconPressed(true);
+  };
+
+  const handleConfirmIconPressOut = () => {
+    setConfirmIconPressed(false);
+  };
+
+  const handleSocialLogin = (provider: 'google' | 'facebook') => {
+    console.log(`Social login with ${provider}`);
+  };
+
+  const handleFormSubmit = (handleFormikSubmit: () => void) => {
+    handleFormikSubmit();
+  };
+
   return (
     <ScreenContainer scroll contentContainerStyle={{ paddingBottom: theme.spacing[12] }}>
       {/* Header */}
-      <View
-        style={{
-          alignItems: 'center',
-          paddingTop: theme.spacing[8],
-          marginBottom: theme.spacing[6],
-        }}
-      >
-        <View
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: theme.radius.lg,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: theme.colors.primary[400],
-          }}
-        >
+      <View style={styles.headerContainer}>
+        <View style={styles.headerIcon}>
           <Text variant="h3">🤝</Text>
         </View>
         <Spacer size={2} />
@@ -126,38 +201,14 @@ export const RegisterScreen: React.FC = () => {
         </Text>
       </View>
 
-      {/* Tab Switcher (static, Register active) */}
-      <View
-        style={{
-          flexDirection: 'row',
-          backgroundColor: theme.colors.surface,
-          borderRadius: theme.radius.base,
-          padding: theme.spacing[1],
-        }}
-      >
-        <View
-          style={{
-            flex: 1,
-            height: theme.sizes.button.sm,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: theme.radius.base,
-          }}
-        >
+      {/* Tab Switcher (Register active) */}
+      <View style={styles.tabSwitcher}>
+        <Pressable style={styles.tabItem} onPress={handleNavigateToLogin}>
           <Text variant="body" style={{ fontWeight: '600' as const }}>
             {t('login')}
           </Text>
-        </View>
-        <View
-          style={{
-            flex: 1,
-            height: theme.sizes.button.sm,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: theme.radius.base,
-            backgroundColor: theme.colors.primary[500],
-          }}
-        >
+        </Pressable>
+        <View style={[styles.tabItem, styles.tabItemActive]}>
           <Text variant="body" color="inverse" style={{ fontWeight: '600' as const }}>
             {t('register')}
           </Text>
@@ -242,9 +293,9 @@ export const RegisterScreen: React.FC = () => {
                 errorText={touched.password && errors.password ? t(errors.password) : undefined}
                 right={
                   <Pressable
-                    onPress={() => setShowPassword((s) => !s)}
-                    onPressIn={() => setPasswordIconPressed(true)}
-                    onPressOut={() => setPasswordIconPressed(false)}
+                    onPress={handleTogglePassword}
+                    onPressIn={handlePasswordIconPressIn}
+                    onPressOut={handlePasswordIconPressOut}
                   >
                     {showPassword ? (
                       <EyeOff
@@ -291,9 +342,9 @@ export const RegisterScreen: React.FC = () => {
                 }
                 right={
                   <Pressable
-                    onPress={() => setShowConfirm((s) => !s)}
-                    onPressIn={() => setConfirmIconPressed(true)}
-                    onPressOut={() => setConfirmIconPressed(false)}
+                    onPress={handleToggleConfirm}
+                    onPressIn={handleConfirmIconPressIn}
+                    onPressOut={handleConfirmIconPressOut}
                   >
                     {showConfirm ? (
                       <EyeOff
@@ -329,17 +380,15 @@ export const RegisterScreen: React.FC = () => {
 
               <Spacer size={6} />
 
-              <Button label={t('register')} onPress={() => handleSubmit()} loading={submitting} />
+              <Button
+                label={t('register')}
+                onPress={() => handleFormSubmit(handleSubmit)}
+                loading={submitting}
+              />
 
               {/* Divider */}
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  marginVertical: theme.spacing[6],
-                }}
-              >
-                <View style={{ flex: 1, height: 1, backgroundColor: theme.colors.border }} />
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
                 <Text
                   variant="caption"
                   color="tertiary"
@@ -347,85 +396,23 @@ export const RegisterScreen: React.FC = () => {
                 >
                   {t('auth.or')}
                 </Text>
-                <View style={{ flex: 1, height: 1, backgroundColor: theme.colors.border }} />
+                <View style={styles.dividerLine} />
               </View>
 
               {/* Social buttons */}
-              <View style={{ flexDirection: 'row', marginHorizontal: -6 }}>
-                <Pressable
-                  style={{
-                    flex: 1,
-                    height: theme.sizes.button.md,
-                    backgroundColor: theme.colors.surface,
-                    borderWidth: 1.5,
-                    borderColor: theme.colors.border,
-                    borderRadius: theme.radius.base,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'row',
-                    marginHorizontal: 6,
-                  }}
-                >
-                  <Svg width={20} height={20} viewBox="0 0 24 24">
-                    <Path
-                      fill="#4285F4"
-                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    />
-                    <Path
-                      fill="#34A853"
-                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    />
-                    <Path
-                      fill="#FBBC05"
-                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    />
-                    <Path
-                      fill="#EA4335"
-                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    />
-                  </Svg>
-                  <View style={{ width: theme.spacing[2] }} />
-                  <Text variant="body" style={{ fontWeight: '600' as const }}>
-                    Google
-                  </Text>
-                </Pressable>
-                <Pressable
-                  style={{
-                    flex: 1,
-                    height: theme.sizes.button.md,
-                    backgroundColor: theme.colors.surface,
-                    borderWidth: 1.5,
-                    borderColor: theme.colors.border,
-                    borderRadius: theme.radius.base,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'row',
-                    marginHorizontal: 6,
-                  }}
-                >
-                  <Svg width={20} height={20} viewBox="0 0 24 24">
-                    <Path
-                      fill="#1877F2"
-                      d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-                    />
-                  </Svg>
-                  <View style={{ width: theme.spacing[2] }} />
-                  <Text variant="body" style={{ fontWeight: '600' as const }}>
-                    Facebook
-                  </Text>
-                </Pressable>
+              <View style={styles.socialButtonsContainer}>
+                <SocialButton provider="google" onPress={() => handleSocialLogin('google')} />
+                <SocialButton provider="facebook" onPress={() => handleSocialLogin('facebook')} />
               </View>
 
               <Spacer size={6} />
 
               {/* Footer */}
-              <View
-                style={{ alignItems: 'center', flexDirection: 'row', justifyContent: 'center' }}
-              >
+              <View style={styles.footer}>
                 <Text variant="body" color="tertiary">
                   {t('auth.haveAccount')}{' '}
                 </Text>
-                <Pressable onPress={() => navigation.navigate('Login')}>
+                <Pressable onPress={handleNavigateToLogin}>
                   <Text variant="body" color="primary" style={{ fontWeight: '600' as const }}>
                     {t('auth.loginNow')}
                   </Text>

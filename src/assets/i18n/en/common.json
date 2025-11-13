@@ -44,7 +44,18 @@
     "loginFailed": "Login was unsuccessful. Please try again.",
     "loginMockMessage": "The login screen is under construction. Please check back later.",
     "or": "or",
-    "tagline": "Connect and learn with your study buddies"
+    "tagline": "Connect and learn with your study buddies",
+    "signOut": "Sign Out",
+    "signOutFailedTitle": "Sign Out Failed",
+    "signOutFailed": "Unable to sign out. Please try again.",
+    "passwordPlaceholderLogin": "Password",
+    "forgotPassword": "Forgot password?",
+    "invalidCredentials": "Invalid email or password",
+    "userNotFound": "User not found",
+    "wrongPassword": "Wrong password",
+    "tooManyRequests": "Too many requests. Please try again later.",
+    "networkError": "Network error. Please check your internet connection.",
+    "emailNotConfirmed": "Email not confirmed. Please check your email."
   },
   "profileSetup": {
     "title": "Profile Setup",

@@ -18,10 +18,13 @@ export const AppNavigator: React.FC = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Auth">
-          {() => <AuthNavigator initialScreen={authStartScreen} />}
-        </Stack.Screen>
-        {userId ? <Stack.Screen name="MainTabs" component={MainTabsNavigator} /> : null}
+        {userId ? (
+          <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
+        ) : (
+          <Stack.Screen name="Auth">
+            {() => <AuthNavigator initialScreen={authStartScreen} />}
+          </Stack.Screen>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
