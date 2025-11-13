@@ -2,7 +2,6 @@ import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import './src/config/i18n';
-import { useTranslation } from 'react-i18next';
 import {
   useFonts,
   Poppins_400Regular,
@@ -14,11 +13,32 @@ import {
   Inter_500Medium,
   Inter_600SemiBold,
 } from '@expo-google-fonts/inter';
+import { Provider } from 'react-redux';
 import { ThemeProvider } from './src/styles';
 import { AppNavigator } from './src/navigation/AppNavigator';
+import { store } from './src/store';
+import { useAuthSession } from './src/hooks/useAuthSession';
+
+const AppContent = () => {
+  const { initialized } = useAuthSession();
+
+  if (!initialized) {
+    return (
+      <SafeAreaProvider>
+        <ActivityIndicator />
+      </SafeAreaProvider>
+    );
+  }
+
+  return (
+    <SafeAreaProvider>
+      <AppNavigator />
+      <StatusBar style="auto" />
+    </SafeAreaProvider>
+  );
+};
 
 export default function App() {
-  const { t } = useTranslation();
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_600SemiBold,
@@ -37,11 +57,10 @@ export default function App() {
   }
 
   return (
-    <ThemeProvider>
-      <SafeAreaProvider>
-        <AppNavigator />
-        <StatusBar style="auto" />
-      </SafeAreaProvider>
-    </ThemeProvider>
+    <Provider store={store}>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </Provider>
   );
 }

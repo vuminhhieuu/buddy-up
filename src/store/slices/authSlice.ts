@@ -4,12 +4,14 @@ export interface AuthState {
   userId: string | null;
   email: string | null;
   loading: boolean;
+  authStartScreen: 'Register' | 'Login';
 }
 
 const initialState: AuthState = {
   userId: null,
   email: null,
   loading: false,
+  authStartScreen: 'Register',
 };
 
 const authSlice = createSlice({
@@ -23,12 +25,16 @@ const authSlice = createSlice({
     setLoading(state, action: PayloadAction<boolean>) {
       state.loading = action.payload;
     },
+    setAuthStartScreen(state, action: PayloadAction<'Register' | 'Login'>) {
+      state.authStartScreen = action.payload;
+    },
     signOutState(state) {
       state.userId = null;
       state.email = null;
+      state.authStartScreen = 'Register';
     },
   },
 });
 
-export const { setUser, setLoading, signOutState } = authSlice.actions;
+export const { setUser, setLoading, setAuthStartScreen, signOutState } = authSlice.actions;
 export default authSlice.reducer;

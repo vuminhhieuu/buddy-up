@@ -2,22 +2,26 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabsNavigator } from './MainTabsNavigator';
+import { AuthNavigator } from './AuthNavigator';
+import { useAppSelector } from '../store/hooks';
 
 export type RootStackParamList = {
+  Auth: undefined;
   MainTabs: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNavigator: React.FC = () => {
+  const { userId, authStartScreen } = useAppSelector((state) => state.auth);
+
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="MainTabs"
-          component={MainTabsNavigator}
-          options={{ headerShown: false }}
-        />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Auth">
+          {() => <AuthNavigator initialScreen={authStartScreen} />}
+        </Stack.Screen>
+        {userId ? <Stack.Screen name="MainTabs" component={MainTabsNavigator} /> : null}
       </Stack.Navigator>
     </NavigationContainer>
   );

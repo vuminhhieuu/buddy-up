@@ -1,5 +1,6 @@
 {
   "welcome": "Welcome to Buddy Up",
+  "appName": "Buddy Up",
   "login": "Log in",
   "register": "Register",
   "home": "Home",
@@ -11,5 +12,42 @@
     "buddy": "Buddy",
     "chat": "Messages",
     "profile": "Profile"
+  },
+  "auth": {
+    "displayName": "Display Name",
+    "displayNamePlaceholder": "Your name",
+    "email": "Email",
+    "emailPlaceholder": "Your email",
+    "password": "Password",
+    "passwordPlaceholder": "Create a password",
+    "confirmPassword": "Confirm password",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "invalidEmail": "Invalid email",
+    "required": "This field is required",
+    "nameMin": "Name must be at least 2 characters",
+    "passwordMin": "Password must be at least 6 characters",
+    "passwordMismatch": "Passwords do not match",
+    "strengthWeak": "Weak",
+    "strengthMedium": "Medium",
+    "strengthStrong": "Strong",
+    "ok": "OK",
+    "registerSuccessTitle": "Registration Successful",
+    "registerSuccessMessage": "Your account has been created successfully. Please log in to continue.",
+    "registerFailedTitle": "Registration Failed",
+    "registerFailed": "Registration failed. Please try again.",
+    "haveAccount": "Already have an account?",
+    "loginNow": "Log in now",
+    "noAccount": "Don't have an account?",
+    "registerNow": "Register now",
+    "loginSubtitle": "Connect and learn with your study buddies",
+    "loginFailedTitle": "Login Failed",
+    "loginFailed": "Login was unsuccessful. Please try again.",
+    "loginMockMessage": "The login screen is under construction. Please check back later.",
+    "or": "or",
+    "tagline": "Connect and learn with your study buddies"
+  },
+  "profileSetup": {
+    "title": "Profile Setup",
+    "description": "Placeholder screen for profile setup after registration."
   }
 }
