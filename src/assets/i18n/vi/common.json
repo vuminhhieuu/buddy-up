@@ -44,7 +44,18 @@
     "loginFailed": "Đăng nhập không thành công. Vui lòng thử lại.",
     "loginMockMessage": "Màn hình đăng nhập đang được xây dựng. Vui lòng quay lại sau.",
     "or": "hoặc",
-    "tagline": "Học tập cùng nhau, tiến bộ mỗi ngày"
+    "tagline": "Học tập cùng nhau, tiến bộ mỗi ngày",
+    "signOut": "Đăng xuất",
+    "signOutFailedTitle": "Đăng xuất thất bại",
+    "signOutFailed": "Không thể đăng xuất. Vui lòng thử lại.",
+    "passwordPlaceholderLogin": "Mật khẩu",
+    "forgotPassword": "Quên mật khẩu?",
+    "invalidCredentials": "Email hoặc mật khẩu không đúng",
+    "userNotFound": "Người dùng không tồn tại",
+    "wrongPassword": "Mật khẩu không đúng",
+    "tooManyRequests": "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
+    "networkError": "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.",
+    "emailNotConfirmed": "Email chưa được xác nhận. Vui lòng kiểm tra email của bạn."
   },
   "profileSetup": {
     "title": "Thiết lập hồ sơ",

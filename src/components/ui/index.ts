@@ -12,3 +12,5 @@ export { Input } from './Input/Input';
 export { Avatar } from './Avatar/Avatar';
 export { Loading } from './Loading/Loading';
 export { EmptyState } from './EmptyState/EmptyState';
+export { SocialButton } from './SocialButton';
+export type { SocialButtonProps } from './SocialButton';
