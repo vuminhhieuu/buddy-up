@@ -11,8 +11,28 @@ export async function signUpWithEmail(params: {
   password: string;
   displayName: string;
 }) {
-  const { data, error } = await supabase.auth.signUp(params);
+  const { data, error } = await supabase.auth.signUp({
+    email: params.email,
+    password: params.password,
+    options: {
+      data: {
+        display_name: params.displayName,
+      },
+    },
+  });
   if (error) throw error;
+
+  if (data.user) {
+    const { error: profileError } = await supabase.from('profiles').insert({
+      user_id: data.user.id,
+      display_name: params.displayName,
+    });
+
+    if (profileError) {
+      console.error('Failed to create profile:', profileError);
+    }
+  }
+
   return data;
 }
 
