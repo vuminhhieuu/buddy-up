@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../config/supabase';
-import { useAppDispatch } from '../store/hooks';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setLoading, setUser } from '../store/slices/authSlice';
 
 export const useAuthSession = () => {
   const dispatch = useAppDispatch();
+  const isRegistering = useAppSelector((state) => state.auth.isRegistering);
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -43,6 +44,8 @@ export const useAuthSession = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
+      if (isRegistering) return;
+
       if (session?.user) {
         dispatch(
           setUser({
@@ -59,7 +62,7 @@ export const useAuthSession = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [dispatch]);
+  }, [dispatch, isRegistering]);
 
   return { initialized };
 };

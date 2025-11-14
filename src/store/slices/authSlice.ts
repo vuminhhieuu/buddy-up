@@ -5,6 +5,7 @@ export interface AuthState {
   email: string | null;
   loading: boolean;
   authStartScreen: 'Register' | 'Login';
+  isRegistering: boolean;
 }
 
 const initialState: AuthState = {
@@ -12,6 +13,7 @@ const initialState: AuthState = {
   email: null,
   loading: false,
   authStartScreen: 'Register',
+  isRegistering: false,
 };
 
 const authSlice = createSlice({
@@ -33,8 +35,12 @@ const authSlice = createSlice({
       state.email = null;
       state.authStartScreen = 'Register';
     },
+    setIsRegistering(state, action: PayloadAction<boolean>) {
+      state.isRegistering = action.payload;
+    },
   },
 });
 
-export const { setUser, setLoading, setAuthStartScreen, signOutState } = authSlice.actions;
+export const { setUser, setLoading, setAuthStartScreen, signOutState, setIsRegistering } =
+  authSlice.actions;
 export default authSlice.reducer;
