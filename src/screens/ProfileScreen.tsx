@@ -3,6 +3,7 @@ import { ScreenContainer, Text, Spacer, Button } from '../components/ui';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { signOutState } from '../store/slices/authSlice';
+import { resetProfileSetup } from '../store/slices/profileSetupSlice';
 import { signOut } from '../services/auth';
 import { Alert } from 'react-native';
 
@@ -17,6 +18,7 @@ export const ProfileScreen: React.FC = () => {
     try {
       await signOut();
       dispatch(signOutState());
+      dispatch(resetProfileSetup());
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t('auth.signOutFailed');
       Alert.alert(t('auth.signOutFailedTitle'), errorMessage, [{ text: t('auth.ok') }]);

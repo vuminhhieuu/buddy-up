@@ -58,7 +58,39 @@
     "emailNotConfirmed": "Email chưa được xác nhận. Vui lòng kiểm tra email của bạn."
   },
   "profileSetup": {
-    "title": "Thiết lập hồ sơ",
-    "description": "Màn hình placeholder cho bước thiết lập hồ sơ sau đăng ký."
+    "step1": {
+      "headerTitle": "Thông tin cơ bản",
+      "title": "Tạo hồ sơ của bạn",
+      "subtitle": "Để tìm bạn học phù hợp nhất",
+      "displayNameLabel": "Tên hiển thị *",
+      "displayNamePlaceholder": "Ví dụ: Minh",
+      "primaryGoalLabel": "Mục tiêu học tập chính *",
+      "primaryGoalPlaceholder": "Ví dụ: React Native, Tiếng Anh...",
+      "primaryGoalHelp": "Bạn có thể chọn nhiều mục tiêu học tập sau",
+      "selectAvatar": "Chọn ảnh đại diện",
+      "continue": "Tiếp tục",
+      "skip": "Bỏ qua",
+      "confirmSkip": "Bỏ qua thiết lập hồ sơ?",
+      "skipMessage": "Bạn có thể hoàn thành hồ sơ sau. Tiếp tục vào Buddy Up không?"
+    },
+    "avatarPicker": {
+      "takePhoto": "Chụp hình",
+      "chooseFromLibrary": "Chọn từ thư viện",
+      "cancel": "Hủy"
+    },
+    "validation": {
+      "displayNameRequired": "Tên hiển thị là bắt buộc",
+      "displayNameMin": "Tên hiển thị phải có ít nhất 2 ký tự",
+      "primaryGoalRequired": "Mục tiêu học tập là bắt buộc"
+    },
+    "errors": {
+      "uploadFailed": "Không thể tải lên ảnh",
+      "updateFailed": "Không thể cập nhật hồ sơ",
+      "permissionDenied": "Từ chối quyền truy cập camera/thư viện",
+      "userNotFound": "Người dùng không tồn tại"
+    }
+  },
+  "common": {
+    "cancel": "Hủy"
   }
 }

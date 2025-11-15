@@ -41,7 +41,8 @@
     "react-native-url-polyfill": "^3.0.0",
     "react-native-web": "^0.21.0",
     "react-redux": "^9.2.0",
-    "yup": "^1.7.1"
+    "yup": "^1.7.1",
+    "expo-image-picker": "~17.0.8"
   },
   "devDependencies": {
     "@types/react": "~19.1.0",

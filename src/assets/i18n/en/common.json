@@ -58,7 +58,39 @@
     "emailNotConfirmed": "Email not confirmed. Please check your email."
   },
   "profileSetup": {
-    "title": "Profile Setup",
-    "description": "Placeholder screen for profile setup after registration."
+    "step1": {
+      "headerTitle": "Basic Information",
+      "title": "Create Your Profile",
+      "subtitle": "To find the most suitable study buddy",
+      "displayNameLabel": "Display Name *",
+      "displayNamePlaceholder": "e.g. Minh",
+      "primaryGoalLabel": "Primary Learning Goal *",
+      "primaryGoalPlaceholder": "e.g. React Native, English...",
+      "primaryGoalHelp": "You can choose multiple learning goals later",
+      "selectAvatar": "Choose profile picture",
+      "continue": "Continue",
+      "skip": "Skip",
+      "confirmSkip": "Skip Profile Setup?",
+      "skipMessage": "You can complete your profile later. Continue to Buddy Up?"
+    },
+    "avatarPicker": {
+      "takePhoto": "Take Photo",
+      "chooseFromLibrary": "Choose from Library",
+      "cancel": "Cancel"
+    },
+    "validation": {
+      "displayNameRequired": "Display name is required",
+      "displayNameMin": "Display name must be at least 2 characters",
+      "primaryGoalRequired": "Primary goal is required"
+    },
+    "errors": {
+      "uploadFailed": "Failed to upload image",
+      "updateFailed": "Failed to update profile",
+      "permissionDenied": "Permission denied to access camera/gallery",
+      "userNotFound": "User not found"
+    }
+  },
+  "common": {
+    "cancel": "Cancel"
   }
 }
