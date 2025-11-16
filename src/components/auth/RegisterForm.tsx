@@ -9,10 +9,13 @@ import * as Yup from 'yup';
 import { evaluatePasswordStrength } from '../../utils/password';
 import { signUpWithEmail } from '../../services/auth';
 import { useAppDispatch } from '../../store/hooks';
-import { setAuthStartScreen, setUser, setIsRegistering } from '../../store/slices/authSlice';
+import {
+  setIsRegistering,
+  setProfileSetupInProgress,
+  setProfileData,
+  setCurrentProfileStep,
+} from '../../store/slices/authSlice';
 import { translateAuthError } from '../../utils/authErrors';
-import { supabase } from '../../config/supabase';
-
 const PasswordStrengthIndicator: React.FC<{
   password: string;
   theme: ReturnType<typeof useTheme>['theme'];
@@ -83,9 +86,13 @@ const RegisterSchema = Yup.object().shape({
 
 type RegisterFormProps = {
   onSwitchToLogin: () => void;
+  onNavigateToProfileSetup?: (displayName: string) => void;
 };
 
-export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) => {
+export const RegisterForm: React.FC<RegisterFormProps> = ({
+  onSwitchToLogin,
+  onNavigateToProfileSetup,
+}) => {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [submitting, setSubmitting] = useState(false);
@@ -133,7 +140,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
         setStatus(undefined);
         try {
           dispatch(setIsRegistering(true));
-          dispatch(setUser(null));
 
           await signUpWithEmail({
             email: values.email,
@@ -141,30 +147,21 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({ onSwitchToLogin }) =
             displayName: values.displayName,
           });
 
-          await supabase.auth.signOut();
+          dispatch(
+            setProfileData({
+              displayName: values.displayName,
+            }),
+          );
 
-          dispatch(setUser(null));
-          dispatch(setAuthStartScreen('Login'));
-
-          setTimeout(() => {
-            dispatch(setIsRegistering(false));
-          }, 100);
+          dispatch(setProfileSetupInProgress(true));
+          dispatch(setCurrentProfileStep(1));
 
           resetForm();
 
-          Alert.alert(
-            t('auth.registerSuccessTitle'),
-            t('auth.registerSuccessMessage'),
-            [
-              {
-                text: t('auth.ok'),
-                onPress: () => {
-                  onSwitchToLogin();
-                },
-              },
-            ],
-            { cancelable: false },
-          );
+          setTimeout(() => {
+            dispatch(setIsRegistering(false));
+            onNavigateToProfileSetup?.(values.displayName);
+          }, 100);
         } catch (err: unknown) {
           dispatch(setIsRegistering(false));
           const errorMessage = translateAuthError(err as Error, t);

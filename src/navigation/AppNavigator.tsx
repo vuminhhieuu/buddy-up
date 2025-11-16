@@ -6,24 +6,26 @@ import { AuthNavigator } from './AuthNavigator';
 import { useAppSelector } from '../store/hooks';
 
 export type RootStackParamList = {
-  Auth: undefined;
+  Auth: { profileSetupInProgress: boolean };
   MainTabs: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export const AppNavigator: React.FC = () => {
-  const { userId, authStartScreen } = useAppSelector((state) => state.auth);
+  const { userId, profileSetupInProgress } = useAppSelector((state) => state.auth);
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {userId ? (
+        {userId && !profileSetupInProgress ? (
           <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
         ) : (
-          <Stack.Screen name="Auth">
-            {() => <AuthNavigator initialScreen={authStartScreen} />}
-          </Stack.Screen>
+          <Stack.Screen
+            name="Auth"
+            component={AuthNavigator}
+            initialParams={{ profileSetupInProgress }}
+          />
         )}
       </Stack.Navigator>
     </NavigationContainer>

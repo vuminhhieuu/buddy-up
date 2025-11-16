@@ -14,3 +14,5 @@ export { Loading } from './Loading/Loading';
 export { EmptyState } from './EmptyState/EmptyState';
 export { SocialButton } from './SocialButton';
 export type { SocialButtonProps } from './SocialButton';
+export { AvatarPickerSection } from './AvatarPickerSection';
+export type { AvatarPickerSectionProps } from './AvatarPickerSection';

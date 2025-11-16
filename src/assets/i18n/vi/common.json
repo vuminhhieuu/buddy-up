@@ -58,7 +58,35 @@
     "emailNotConfirmed": "Email chưa được xác nhận. Vui lòng kiểm tra email của bạn."
   },
   "profileSetup": {
-    "title": "Thiết lập hồ sơ",
-    "description": "Màn hình placeholder cho bước thiết lập hồ sơ sau đăng ký."
+    "skipButton": "Bỏ qua",
+    "step": "Bước {{current}}/4",
+    "basicInfo": "Thông tin cơ bản",
+    "step1Title": "Tạo hồ sơ của bạn",
+    "step1Subtitle": "Để tìm bạn học phù hợp nhất",
+    "avatarLabel": "Ảnh đại diện",
+    "selectAvatarButton": "Chọn ảnh đại diện",
+    "displayNameLabel": "Tên hiển thị",
+    "displayNamePlaceholder": "Ví dụ: Minh",
+    "displayNameMin": "Tên phải ít nhất 2 ký tự",
+    "displayNameMax": "Tên không được vượt quá 50 ký tự",
+    "displayNameRequired": "Tên hiển thị là bắt buộc",
+    "studyGoalLabel": "Mục tiêu học tập",
+    "studyGoalPlaceholder": "Ví dụ: Chuẩn bị kỳ thi IELTS",
+    "studyGoalMin": "Mục tiêu phải ít nhất 5 ký tự",
+    "studyGoalMax": "Mục tiêu không được vượt quá 200 ký tự",
+    "studyGoalRequired": "Mục tiêu học tập là bắt buộc",
+    "nextButton": "Tiếp tục",
+    "imagePickerTitle": "Chọn ảnh",
+    "takePhotoButton": "Chụp ảnh",
+    "chooseFromLibraryButton": "Thư viện",
+    "cancelButton": "Hủy",
+    "cameraError": "Không thể mở máy ảnh. Vui lòng thử lại.",
+    "libraryError": "Không thể truy cập thư viện. Vui lòng thử lại."
+  },
+  "common": {
+    "error": "Đã có lỗi xảy ra",
+    "permissionDenied": "Từ chối quyền",
+    "cameraPermissionRequired": "Cần quyền truy cập máy ảnh để chụp ảnh.",
+    "libraryPermissionRequired": "Cần quyền truy cập thư viện để chọn ảnh."
   }
 }
