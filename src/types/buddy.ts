@@ -47,11 +47,6 @@ export type Level = 'beginner' | 'intermediate' | 'advanced';
  */
 export type SortOption = 'best_match' | 'nearest' | 'newest';
 
-/**
- * Connection status (for filtering out existing connections)
- */
-export type ConnectionStatus = 'pending' | 'accepted' | 'blocked' | 'rejected';
-
 // ============================================================================
 // Filter Interfaces
 // ============================================================================
@@ -61,6 +56,8 @@ export type ConnectionStatus = 'pending' | 'accepted' | 'blocked' | 'rejected';
  * Matches all filter options from the filter modal UI
  */
 export interface BuddyFilters {
+  /** Search query text (for searching by name) */
+  searchQuery?: string;
   /** Selected learning goals (multi-select) */
   learningGoals?: LearningGoal[];
   /** Selected available times (multi-select) */
@@ -95,6 +92,7 @@ export interface BuddyFilters {
  * Default filter values
  */
 export const DEFAULT_BUDDY_FILTERS: BuddyFilters = {
+  searchQuery: undefined,
   learningGoals: [],
   availableTimes: [],
   learningStyle: undefined,
