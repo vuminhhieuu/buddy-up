@@ -1,9 +1,11 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthScreen, AuthScreenParams } from '../screens/AuthScreen';
+import { ProfileSetupScreen } from '../screens/ProfileSetupScreen';
 
 export type AuthStackParamList = {
   Auth: AuthScreenParams;
+  ProfileSetup: undefined;
 };
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -20,6 +22,7 @@ export const AuthNavigator: React.FC<AuthNavigatorProps> = ({ initialScreen = 'R
         component={AuthScreen}
         initialParams={{ activeTab: initialScreen }}
       />
+      <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
     </Stack.Navigator>
   );
 };

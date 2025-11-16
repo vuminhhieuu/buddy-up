@@ -3,7 +3,7 @@ import { View, Pressable } from 'react-native';
 import { ScreenContainer, Text, Spacer } from '../components/ui';
 import { useTheme } from '../styles';
 import { useTranslation } from 'react-i18next';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { RegisterForm } from '../components/auth/RegisterForm';
 import { LoginForm } from '../components/auth/LoginForm';
 import { useAppSelector, useAppDispatch } from '../store/hooks';
@@ -17,6 +17,7 @@ export const AuthScreen: React.FC = () => {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const route = useRoute();
+  const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const { authStartScreen } = useAppSelector((state) => state.auth);
 
@@ -73,6 +74,10 @@ export const AuthScreen: React.FC = () => {
     dispatch(setAuthStartScreen('Register'));
   };
 
+  const handleNavigateToProfileSetup = () => {
+    (navigation as any).navigate('ProfileSetup');
+  };
+
   return (
     <ScreenContainer scroll contentContainerStyle={{ paddingBottom: theme.spacing[12] }}>
       {/* Header */}
@@ -122,7 +127,10 @@ export const AuthScreen: React.FC = () => {
 
       {/* Render Form based on activeTab */}
       {activeTab === 'Register' ? (
-        <RegisterForm onSwitchToLogin={handleSwitchToLogin} />
+        <RegisterForm
+          onSwitchToLogin={handleSwitchToLogin}
+          onNavigateToProfileSetup={handleNavigateToProfileSetup}
+        />
       ) : (
         <LoginForm onSwitchToRegister={handleSwitchToRegister} />
       )}

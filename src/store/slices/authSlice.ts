@@ -1,19 +1,33 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+export interface ProfileSetupData {
+  displayName?: string;
+  studyGoal?: string;
+  avatarUrl?: string;
+}
+
 export interface AuthState {
   userId: string | null;
   email: string | null;
+  displayName?: string;
   loading: boolean;
   authStartScreen: 'Register' | 'Login';
   isRegistering: boolean;
+  profileSetupInProgress: boolean;
+  currentProfileStep: number;
+  profileData: ProfileSetupData;
 }
 
 const initialState: AuthState = {
   userId: null,
   email: null,
+  displayName: undefined,
   loading: false,
   authStartScreen: 'Register',
   isRegistering: false,
+  profileSetupInProgress: false,
+  currentProfileStep: 1,
+  profileData: {},
 };
 
 const authSlice = createSlice({
@@ -38,9 +52,32 @@ const authSlice = createSlice({
     setIsRegistering(state, action: PayloadAction<boolean>) {
       state.isRegistering = action.payload;
     },
+    setProfileSetupInProgress(state, action: PayloadAction<boolean>) {
+      state.profileSetupInProgress = action.payload;
+    },
+    setCurrentProfileStep(state, action: PayloadAction<number>) {
+      state.currentProfileStep = action.payload;
+    },
+    setProfileData(state, action: PayloadAction<ProfileSetupData>) {
+      state.profileData = { ...state.profileData, ...action.payload };
+    },
+    resetProfileSetup(state) {
+      state.profileSetupInProgress = false;
+      state.currentProfileStep = 1;
+      state.profileData = {};
+    },
   },
 });
 
-export const { setUser, setLoading, setAuthStartScreen, signOutState, setIsRegistering } =
-  authSlice.actions;
+export const {
+  setUser,
+  setLoading,
+  setAuthStartScreen,
+  signOutState,
+  setIsRegistering,
+  setProfileSetupInProgress,
+  setCurrentProfileStep,
+  setProfileData,
+  resetProfileSetup,
+} = authSlice.actions;
 export default authSlice.reducer;

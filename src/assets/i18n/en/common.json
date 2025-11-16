@@ -58,7 +58,35 @@
     "emailNotConfirmed": "Email not confirmed. Please check your email."
   },
   "profileSetup": {
-    "title": "Profile Setup",
-    "description": "Placeholder screen for profile setup after registration."
+    "skipButton": "Skip",
+    "step": "Step {{current}}/4",
+    "basicInfo": "Basic Information",
+    "step1Title": "Create Your Profile",
+    "step1Subtitle": "Find the perfect study buddy",
+    "avatarLabel": "Avatar",
+    "selectAvatarButton": "Select Avatar",
+    "displayNameLabel": "Display Name",
+    "displayNamePlaceholder": "e.g. Minh",
+    "displayNameMin": "Name must be at least 2 characters",
+    "displayNameMax": "Name must not exceed 50 characters",
+    "displayNameRequired": "Display name is required",
+    "studyGoalLabel": "Study Goal",
+    "studyGoalPlaceholder": "e.g. Prepare for IELTS exam",
+    "studyGoalMin": "Goal must be at least 5 characters",
+    "studyGoalMax": "Goal must not exceed 200 characters",
+    "studyGoalRequired": "Study goal is required",
+    "nextButton": "Next",
+    "imagePickerTitle": "Choose Photo",
+    "takePhotoButton": "Take Photo",
+    "chooseFromLibraryButton": "Library",
+    "cancelButton": "Cancel",
+    "cameraError": "Unable to open camera. Please try again.",
+    "libraryError": "Unable to access library. Please try again."
+  },
+  "common": {
+    "error": "Something went wrong",
+    "permissionDenied": "Permission denied",
+    "cameraPermissionRequired": "Camera permission is required to take photos.",
+    "libraryPermissionRequired": "Library permission is required to choose a photo."
   }
 }
