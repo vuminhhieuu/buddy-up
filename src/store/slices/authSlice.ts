@@ -4,6 +4,9 @@ export interface ProfileSetupData {
   displayName?: string;
   studyGoal?: string;
   avatarUrl?: string;
+  // Step 2 fields
+  availableTimes?: string[]; // e.g., ['morning','noon','evening','weekend','flexible']
+  learningStyle?: 'serious' | 'relaxed' | 'balanced';
 }
 
 export interface AuthState {

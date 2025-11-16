@@ -59,7 +59,9 @@
   },
   "profileSetup": {
     "skipButton": "Bỏ qua",
+    "progress75": "Hoàn thành 75%",
     "step": "Bước {{current}}/4",
+    "headerTitle": "Thiết lập hồ sơ",
     "basicInfo": "Thông tin cơ bản",
     "step1Title": "Tạo hồ sơ của bạn",
     "step1Subtitle": "Để tìm bạn học phù hợp nhất",
@@ -81,12 +83,32 @@
     "chooseFromLibraryButton": "Thư viện",
     "cancelButton": "Hủy",
     "cameraError": "Không thể mở máy ảnh. Vui lòng thử lại.",
-    "libraryError": "Không thể truy cập thư viện. Vui lòng thử lại."
+    "libraryError": "Không thể truy cập thư viện. Vui lòng thử lại.",
+    "step2Title": "Khi nào bạn rảnh học?",
+    "step2Subtitle": "Chúng tôi sẽ gợi ý bạn học phù hợp với lịch trình của bạn",
+    "availableTimesLabel": "Khi nào bạn rảnh học?",
+    "learningStyleLabel": "Phong cách học của bạn?",
+    "finishButton": "Tiếp tục",
+    "availableTimesRequired": "Vui lòng chọn ít nhất một khung thời gian",
+    "learningStyleRequired": "Vui lòng chọn một phong cách học"
+  },
+  "time": {
+    "morning": "Buổi sáng",
+    "noon": "Buổi trưa",
+    "evening": "Buổi tối",
+    "weekend": "Cuối tuần",
+    "flexible": "Linh hoạt"
+  },
+  "learningStyle": {
+    "serious": "Nghiêm túc, có kế hoạch rõ ràng",
+    "relaxed": "Thoải mái, không quá căng thẳng",
+    "balanced": "Cân bằng giữa kỷ luật và linh hoạt"
   },
   "common": {
     "error": "Đã có lỗi xảy ra",
     "permissionDenied": "Từ chối quyền",
     "cameraPermissionRequired": "Cần quyền truy cập máy ảnh để chụp ảnh.",
-    "libraryPermissionRequired": "Cần quyền truy cập thư viện để chọn ảnh."
+    "libraryPermissionRequired": "Cần quyền truy cập thư viện để chọn ảnh.",
+    "back": "Quay lại"
   }
 }

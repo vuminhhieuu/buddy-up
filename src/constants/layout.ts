@@ -1,0 +1,1 @@
+export const BASE_HORIZONTAL_PADDING = 20;

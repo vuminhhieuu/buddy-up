@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ProfileSetupStep1Screen } from './ProfileSetup/ProfileSetupStep1Screen';
 import { ProfileSetupStep2Screen } from './ProfileSetup/ProfileSetupStep2Screen';
+import { ProfileSetupStep3Screen } from './ProfileSetup/ProfileSetupStep3Screen';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setProfileSetupInProgress } from '../store/slices/authSlice';
 
@@ -19,6 +20,10 @@ export const ProfileSetupScreen: React.FC = () => {
     setStep(1);
   };
 
+  const handleNextFromStep2 = () => {
+    setStep(3);
+  };
+
   const handleFinish = () => {
     console.log('Finishing profile setup with data:', step1Data);
     dispatch(setProfileSetupInProgress(false));
@@ -28,7 +33,9 @@ export const ProfileSetupScreen: React.FC = () => {
     case 1:
       return <ProfileSetupStep1Screen onNext={handleNextFromStep1} onSkip={handleFinish} />;
     case 2:
-      return <ProfileSetupStep2Screen onBack={handleBackFromStep2} onNext={handleFinish} />;
+      return <ProfileSetupStep2Screen onBack={handleBackFromStep2} onNext={handleNextFromStep2} />;
+    case 3:
+      return <ProfileSetupStep3Screen onBack={() => setStep(2)} onFinish={handleFinish} />;
     default:
       return <ProfileSetupStep1Screen onNext={handleNextFromStep1} onSkip={handleFinish} />;
   }
