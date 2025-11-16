@@ -1,32 +1,31 @@
 import React, { useState } from 'react';
 import {
   View,
-  ViewStyle,
   ScrollView,
   Pressable,
   Modal,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
-import { Button } from '../../ui/Button/Button';
 import { Input } from '../../ui/Input/Input';
 import { Chip } from '../../ui/Chip';
 import { Checkbox } from '../../ui/Checkbox';
 import { RadioButton } from '../../ui/RadioButton';
-import { Slider } from '../../ui/Slider';
 import { ToggleSwitch } from '../../ui/ToggleSwitch';
 import { SegmentedControl } from '../../ui/SegmentedControl';
 import { Spacer } from '../../ui/Spacer/Spacer';
-import { ChevronDown, X, Search } from 'lucide-react-native';
+import { X, Search, ChevronDown } from 'lucide-react-native';
+import { countActiveFilters } from '../../../utils/buddy';
 import type {
   BuddyFilters,
   LearningGoal,
   AvailableTime,
   LearningStyle,
   Level,
-  SortOption,
 } from '../../../types/buddy';
 
 export type FilterModalProps = {
@@ -50,36 +49,29 @@ const DEFAULT_LEARNING_GOALS: LearningGoal[] = [
   'Marketing',
 ];
 
-// Available times with labels
-const AVAILABLE_TIMES: Array<{ value: AvailableTime; label: string }> = [
-  { value: 'morning', label: '☀️ Buổi sáng' },
-  { value: 'afternoon', label: '🌤️ Buổi trưa' },
-  { value: 'evening', label: '🌙 Buổi tối' },
-  { value: 'late_night', label: '🌃 Đêm muộn' },
-  { value: 'weekend', label: '🎉 Cuối tuần' },
-  { value: 'flexible', label: '⚡ Linh hoạt' },
+// Available times - labels will be translated in component
+const AVAILABLE_TIMES: Array<{ value: AvailableTime; translationKey: string }> = [
+  { value: 'morning', translationKey: 'buddy.filter.availableTime.morning' },
+  { value: 'afternoon', translationKey: 'buddy.filter.availableTime.afternoon' },
+  { value: 'evening', translationKey: 'buddy.filter.availableTime.evening' },
+  { value: 'late_night', translationKey: 'buddy.filter.availableTime.lateNight' },
+  { value: 'weekend', translationKey: 'buddy.filter.availableTime.weekend' },
+  { value: 'flexible', translationKey: 'buddy.filter.availableTime.flexible' },
 ];
 
-// Learning styles with labels
-const LEARNING_STYLES: Array<{ value: LearningStyle; label: string }> = [
-  { value: 'serious', label: '📋 Nghiêm túc, có kế hoạch rõ ràng' },
-  { value: 'relaxed', label: '😊 Thoải mái, không quá căng thẳng' },
-  { value: 'balanced', label: '🎯 Vừa học vừa chơi, cân bằng' },
-  { value: 'not_important', label: '💫 Không quan trọng' },
+// Learning styles - labels will be translated in component
+const LEARNING_STYLES: Array<{ value: LearningStyle; translationKey: string }> = [
+  { value: 'serious', translationKey: 'buddy.filter.learningStyleOptions.serious' },
+  { value: 'relaxed', translationKey: 'buddy.filter.learningStyleOptions.relaxed' },
+  { value: 'balanced', translationKey: 'buddy.filter.learningStyleOptions.balanced' },
+  { value: 'not_important', translationKey: 'buddy.filter.learningStyleOptions.notImportant' },
 ];
 
-// Levels with labels
-const LEVELS: Array<{ value: Level; label: string }> = [
-  { value: 'beginner', label: '🌱 Mới bắt đầu' },
-  { value: 'intermediate', label: '🌿 Trung bình' },
-  { value: 'advanced', label: '🌳 Nâng cao' },
-];
-
-// Sort options with labels
-const SORT_OPTIONS: Array<{ value: SortOption; label: string }> = [
-  { value: 'best_match', label: 'Phù hợp nhất ⭐' },
-  { value: 'nearest', label: 'Gần nhất' },
-  { value: 'newest', label: 'Mới nhất' },
+// Levels - labels will be translated in component
+const LEVELS: Array<{ value: Level; translationKey: string }> = [
+  { value: 'beginner', translationKey: 'buddy.filter.levelOptions.beginner' },
+  { value: 'intermediate', translationKey: 'buddy.filter.levelOptions.intermediate' },
+  { value: 'advanced', translationKey: 'buddy.filter.levelOptions.advanced' },
 ];
 
 export const FilterModal: React.FC<FilterModalProps> = ({
@@ -90,19 +82,18 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   onReset,
   resultCount,
 }) => {
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const [localFilters, setLocalFilters] = useState<BuddyFilters>(filters);
   const [goalSearch, setGoalSearch] = useState('');
   const [advancedExpanded, setAdvancedExpanded] = useState(false);
-  const [selectedSort, setSelectedSort] = useState<SortOption>(filters.sortBy || 'best_match');
 
   React.useEffect(() => {
     setLocalFilters(filters);
-    setSelectedSort(filters.sortBy || 'best_match');
   }, [filters]);
 
   const handleApply = () => {
-    onApply({ ...localFilters, sortBy: selectedSort });
+    onApply(localFilters);
   };
 
   const handleReset = () => {
@@ -110,16 +101,12 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       learningGoals: [],
       availableTimes: [],
       learningStyle: undefined,
-      distance: { min: 0, max: 50 },
-      age: { min: 18, max: 60 },
       level: undefined,
-      sortBy: 'best_match',
       onlyOnline: false,
       onlyVerified: false,
       hideRejected: false,
       prioritizeFreeSchedule: false,
     });
-    setSelectedSort('best_match');
     setGoalSearch('');
     onReset();
   };
@@ -139,22 +126,6 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   const filteredGoals = DEFAULT_LEARNING_GOALS.filter((goal) =>
     goal.toLowerCase().includes(goalSearch.toLowerCase()),
   );
-
-  const countActiveFilters = () => {
-    let count = 0;
-    if (localFilters.learningGoals?.length) count += localFilters.learningGoals.length;
-    if (localFilters.availableTimes?.length) count += localFilters.availableTimes.length;
-    if (localFilters.learningStyle) count += 1;
-    if (localFilters.distance && localFilters.distance.max !== 50) count += 1;
-    if (localFilters.age && (localFilters.age.min !== 18 || localFilters.age.max !== 60))
-      count += 1;
-    if (localFilters.level) count += 1;
-    if (localFilters.onlyOnline) count += 1;
-    if (localFilters.onlyVerified) count += 1;
-    if (localFilters.hideRejected) count += 1;
-    if (localFilters.prioritizeFreeSchedule) count += 1;
-    return count;
-  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
@@ -176,7 +147,8 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               borderTopLeftRadius: theme.radius.xxl,
               borderTopRightRadius: theme.radius.xxl,
               maxHeight: '85%',
-              paddingBottom: Platform.OS === 'ios' ? 40 : 20,
+              height: '85%',
+              flexDirection: 'column',
             }}
           >
             {/* Pull Handle */}
@@ -192,7 +164,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               }}
             />
 
-            {/* Header */}
+            {/* Header - Fixed */}
             <View
               style={{
                 flexDirection: 'row',
@@ -217,34 +189,315 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               >
                 <X color={theme.colors.text.secondary} size={18} />
               </Pressable>
-              <View style={{ alignItems: 'center' }}>
+              <View style={{ alignItems: 'center', flex: 1 }}>
                 <Text variant="h5" color="primary" style={{ fontWeight: '700' as const }}>
-                  Bộ lọc
+                  {t('buddy.filter.title')}
                 </Text>
                 <Text variant="caption" color="tertiary">
-                  {countActiveFilters()} bộ lọc đang áp dụng
+                  {t('buddy.filter.appliedCount', {
+                    count: countActiveFilters(localFilters).total,
+                  })}
                 </Text>
               </View>
-              <Pressable onPress={handleReset}>
-                <Text variant="body" color="info" style={{ fontWeight: '600' as const }}>
-                  Đặt lại
+              <Pressable onPress={handleApply} style={{ minWidth: 60, alignItems: 'flex-end' }}>
+                <Text variant="body" color="primary" style={{ fontWeight: '700' as const }}>
+                  {t('buddy.filter.apply')}
                 </Text>
               </Pressable>
             </View>
 
-            {/* Content */}
+            {/* Content - ScrollView */}
             <ScrollView
               style={{ flex: 1 }}
-              contentContainerStyle={{ padding: theme.spacing[5] }}
-              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{
+                padding: theme.spacing[5],
+                paddingBottom: theme.spacing[4],
+              }}
+              showsVerticalScrollIndicator={true}
+              nestedScrollEnabled={true}
+              onScrollBeginDrag={() => {
+                Keyboard.dismiss();
+              }}
             >
+              {/* Active Filters Section */}
+              {countActiveFilters(localFilters).total > 0 && (
+                <View style={{ marginBottom: theme.spacing[6] }}>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: theme.spacing[3],
+                    }}
+                  >
+                    <Text variant="h6" color="primary" style={{ fontWeight: '600' as const }}>
+                      {t('buddy.filter.activeFilters')}
+                    </Text>
+                    <Pressable
+                      onPress={handleReset}
+                      style={{
+                        paddingHorizontal: theme.spacing[3],
+                        paddingVertical: theme.spacing[2],
+                      }}
+                    >
+                      <Text
+                        variant="bodySmall"
+                        color="error"
+                        style={{ fontWeight: '600' as const }}
+                      >
+                        {t('buddy.filter.clearAll')}
+                      </Text>
+                    </Pressable>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                      flexWrap: 'wrap',
+                      gap: theme.spacing[2],
+                    }}
+                  >
+                    {/* Learning Goals */}
+                    {localFilters.learningGoals?.map((goal) => (
+                      <View
+                        key={goal}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.primary[100],
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.primary[300],
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="primary"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          {goal}
+                        </Text>
+                        <Pressable
+                          onPress={() => toggleLearningGoal(goal)}
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.primary[500],
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    ))}
+                    {/* Available Times */}
+                    {localFilters.availableTimes?.map((time) => (
+                      <View
+                        key={time}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.secondary[100],
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.secondary[300],
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="info"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          {t(`buddy.filter.availableTime.${time}`)}
+                        </Text>
+                        <Pressable
+                          onPress={() => toggleAvailableTime(time)}
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.secondary[500],
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    ))}
+                    {/* Learning Style */}
+                    {localFilters.learningStyle && (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.semantic.warning + '20',
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.semantic.warning + '40',
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="warning"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          {t(`buddy.filter.learningStyleOptions.${localFilters.learningStyle}`)}
+                        </Text>
+                        <Pressable
+                          onPress={() =>
+                            setLocalFilters({ ...localFilters, learningStyle: undefined })
+                          }
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.semantic.warning,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    )}
+                    {/* Level */}
+                    {localFilters.level && (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.semantic.success + '20',
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.semantic.success + '40',
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="success"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          {t(`buddy.filter.levelOptions.${localFilters.level}`)}
+                        </Text>
+                        <Pressable
+                          onPress={() => setLocalFilters({ ...localFilters, level: undefined })}
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.semantic.success,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    )}
+                    {/* Advanced Options */}
+                    {localFilters.onlyOnline && (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.secondary[100],
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.secondary[300],
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="info"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          {t('buddy.filter.onlyOnline')}
+                        </Text>
+                        <Pressable
+                          onPress={() => setLocalFilters({ ...localFilters, onlyOnline: false })}
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.secondary[500],
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    )}
+                    {localFilters.onlyVerified && (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.secondary[100],
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.secondary[300],
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="info"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          {t('buddy.filter.onlyVerified')}
+                        </Text>
+                        <Pressable
+                          onPress={() => setLocalFilters({ ...localFilters, onlyVerified: false })}
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.secondary[500],
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              )}
+
               {/* Learning Goals */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  Mục tiêu học tập
+                  {t('buddy.filter.learningGoals')}
                 </Text>
                 <Input
-                  placeholder="Tìm mục tiêu..."
+                  placeholder={t('buddy.filter.searchGoalPlaceholder')}
                   value={goalSearch}
                   onChangeText={setGoalSearch}
                   left={
@@ -261,21 +514,25 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     gap: theme.spacing[2],
                   }}
                 >
-                  {filteredGoals.map((goal) => (
-                    <Chip
-                      key={goal}
-                      label={goal}
-                      selected={(localFilters.learningGoals || []).includes(goal)}
-                      onPress={() => toggleLearningGoal(goal)}
-                    />
-                  ))}
+                  {filteredGoals.map((goal) => {
+                    const isSelected = (localFilters.learningGoals || []).includes(goal);
+                    return (
+                      <Chip
+                        key={`goal-${goal}`}
+                        label={goal}
+                        selected={isSelected}
+                        onPress={() => toggleLearningGoal(goal)}
+                        icon={isSelected ? <Text>✓</Text> : undefined}
+                      />
+                    );
+                  })}
                 </View>
               </View>
 
               {/* Available Times */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  Thời gian rảnh
+                  {t('buddy.filter.availableTimes')}
                 </Text>
                 <View
                   style={{
@@ -289,7 +546,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                       <Checkbox
                         checked={(localFilters.availableTimes || []).includes(time.value)}
                         onPress={() => toggleAvailableTime(time.value)}
-                        label={time.label}
+                        label={t(time.translationKey)}
                       />
                     </View>
                   ))}
@@ -299,7 +556,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               {/* Learning Style */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  Phong cách học
+                  {t('buddy.filter.learningStyle')}
                 </Text>
                 <View style={{ gap: theme.spacing[3] }}>
                   {LEARNING_STYLES.map((style) => (
@@ -309,77 +566,31 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                       onPress={() =>
                         setLocalFilters({ ...localFilters, learningStyle: style.value })
                       }
-                      label={style.label}
+                      label={t(style.translationKey)}
                     />
                   ))}
                 </View>
               </View>
 
-              {/* Distance */}
+              {/* Online Status */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  Khoảng cách
+                  {t('buddy.filter.onlineStatus')}
                 </Text>
-                <Slider
-                  value={localFilters.distance?.max || 50}
-                  min={0}
-                  max={50}
-                  onValueChange={(value) =>
-                    setLocalFilters({
-                      ...localFilters,
-                      distance: { min: 0, max: value },
-                    })
-                  }
-                  showLabels
-                  labelLeft="🏠 Rất gần"
-                  labelRight="🚗 Xa hơn"
-                />
-                <Spacer size={2} />
                 <ToggleSwitch
                   value={localFilters.onlyOnline || false}
                   onValueChange={(value) => setLocalFilters({ ...localFilters, onlyOnline: value })}
-                  label="Chỉ hiện người online ngay"
+                  label={t('buddy.filter.onlyOnline')}
                 />
-              </View>
-
-              {/* Age */}
-              <View style={{ marginBottom: theme.spacing[8] }}>
-                <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  Độ tuổi
-                </Text>
-                <Slider
-                  value={localFilters.age?.min || 18}
-                  min={18}
-                  max={60}
-                  onValueChange={(value) => {
-                    const maxAge = Math.min(60, value + 6);
-                    setLocalFilters({
-                      ...localFilters,
-                      age: { min: value, max: maxAge },
-                    });
-                  }}
-                  showValue
-                />
-                <Text
-                  variant="body"
-                  color="success"
-                  style={{
-                    textAlign: 'center',
-                    marginTop: theme.spacing[2],
-                    fontWeight: '600' as const,
-                  }}
-                >
-                  {localFilters.age?.min || 18} - {localFilters.age?.max || 60} tuổi
-                </Text>
               </View>
 
               {/* Level */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  Trình độ
+                  {t('buddy.filter.level')}
                 </Text>
                 <SegmentedControl
-                  segments={LEVELS.map((l) => l.label)}
+                  segments={LEVELS.map((l) => t(l.translationKey))}
                   selectedIndex={
                     localFilters.level
                       ? LEVELS.findIndex((l) => l.value === localFilters.level)
@@ -389,32 +600,6 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     setLocalFilters({ ...localFilters, level: LEVELS[index].value })
                   }
                 />
-              </View>
-
-              {/* Sort */}
-              <View style={{ marginBottom: theme.spacing[8] }}>
-                <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  Sắp xếp kết quả theo
-                </Text>
-                <Pressable
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: theme.spacing[4],
-                    backgroundColor: theme.colors.surface,
-                    borderWidth: 1.5,
-                    borderColor: theme.colors.border,
-                    borderRadius: theme.radius.md,
-                    minHeight: theme.sizes.input.md,
-                  }}
-                >
-                  <Text variant="body" color="primary" style={{ fontWeight: '500' as const }}>
-                    {SORT_OPTIONS.find((opt) => opt.value === selectedSort)?.label ||
-                      'Phù hợp nhất ⭐'}
-                  </Text>
-                  <ChevronDown color={theme.colors.text.tertiary} size={14} />
-                </Pressable>
               </View>
 
               {/* Advanced Options */}
@@ -432,7 +617,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   }}
                 >
                   <Text variant="h6" color="tertiary" style={{ fontWeight: '600' as const }}>
-                    Tùy chọn nâng cao
+                    {t('buddy.filter.advancedOptions')}
                   </Text>
                   <ChevronDown
                     color={theme.colors.text.tertiary}
@@ -449,52 +634,26 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                       onValueChange={(value) =>
                         setLocalFilters({ ...localFilters, onlyVerified: value })
                       }
-                      label="Chỉ hiện hồ sơ đã xác thực ✓"
+                      label={t('buddy.filter.onlyVerified')}
                     />
                     <ToggleSwitch
                       value={localFilters.hideRejected || false}
                       onValueChange={(value) =>
                         setLocalFilters({ ...localFilters, hideRejected: value })
                       }
-                      label="Ẩn người đã từ chối trước đó"
+                      label={t('buddy.filter.hideRejected')}
                     />
                     <ToggleSwitch
                       value={localFilters.prioritizeFreeSchedule || false}
                       onValueChange={(value) =>
                         setLocalFilters({ ...localFilters, prioritizeFreeSchedule: value })
                       }
-                      label="Ưu tiên người có lịch trống"
+                      label={t('buddy.filter.prioritizeFreeSchedule')}
                     />
                   </View>
                 )}
               </View>
             </ScrollView>
-
-            {/* Bottom Action Bar */}
-            <View
-              style={{
-                paddingHorizontal: theme.spacing[5],
-                paddingTop: theme.spacing[4],
-                borderTopWidth: 1,
-                borderTopColor: theme.colors.neutral[100],
-                backgroundColor: theme.colors.surface,
-              }}
-            >
-              {resultCount !== undefined && (
-                <Text
-                  variant="bodySmall"
-                  color="secondary"
-                  style={{
-                    textAlign: 'center',
-                    marginBottom: theme.spacing[3],
-                    fontWeight: '500' as const,
-                  }}
-                >
-                  Tìm thấy {resultCount} kết quả phù hợp
-                </Text>
-              )}
-              <Button label="Áp dụng bộ lọc" onPress={handleApply} />
-            </View>
           </View>
         </View>
       </KeyboardAvoidingView>

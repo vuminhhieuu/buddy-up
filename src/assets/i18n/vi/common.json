@@ -110,5 +110,66 @@
     "cameraPermissionRequired": "Cần quyền truy cập máy ảnh để chụp ảnh.",
     "libraryPermissionRequired": "Cần quyền truy cập thư viện để chọn ảnh.",
     "back": "Quay lại"
+  },
+  "buddy": {
+    "searchPlaceholder": "Tìm kiếm theo tên...",
+    "searching": "Đang tìm kiếm...",
+    "errorTitle": "Lỗi tìm kiếm",
+    "retry": "Thử lại",
+    "noResultsTitle": "Không tìm thấy kết quả",
+    "noResultsMessage": "Không có bạn học nào phù hợp với tiêu chí tìm kiếm của bạn. Hãy thử điều chỉnh bộ lọc.",
+    "resetFilters": "Đặt lại bộ lọc",
+    "filter": {
+      "title": "Bộ lọc",
+      "appliedCount": "{{count}} bộ lọc đang áp dụng",
+      "appliedCount_one": "1 bộ lọc đang áp dụng",
+      "appliedCount_other": "{{count}} bộ lọc đang áp dụng",
+      "apply": "Áp dụng",
+      "learningGoals": "Mục tiêu học tập",
+      "searchGoalPlaceholder": "Tìm mục tiêu...",
+      "availableTimes": "Thời gian rảnh",
+      "availableTime": {
+        "morning": "☀️ Buổi sáng",
+        "afternoon": "🌤️ Buổi trưa",
+        "evening": "🌙 Buổi tối",
+        "lateNight": "🌃 Đêm muộn",
+        "weekend": "🎉 Cuối tuần",
+        "flexible": "⚡ Linh hoạt"
+      },
+      "learningStyle": "Phong cách học",
+      "learningStyleOptions": {
+        "serious": "📋 Nghiêm túc, có kế hoạch rõ ràng",
+        "relaxed": "😊 Thoải mái, không quá căng thẳng",
+        "balanced": "🎯 Vừa học vừa chơi, cân bằng",
+        "notImportant": "💫 Không quan trọng"
+      },
+      "onlineStatus": "Trạng thái online",
+      "onlyOnline": "Chỉ hiện người online ngay",
+      "level": "Trình độ",
+      "levelOptions": {
+        "beginner": "🌱 Mới bắt đầu",
+        "intermediate": "🌿 Trung bình",
+        "advanced": "🌳 Nâng cao"
+      },
+      "activeFilters": "Bộ lọc đang chọn",
+      "clearAll": "Xóa tất cả",
+      "advancedOptions": "Tùy chọn nâng cao",
+      "onlyVerified": "Chỉ hiện hồ sơ đã xác thực ✓",
+      "hideRejected": "Ẩn người đã từ chối trước đó",
+      "prioritizeFreeSchedule": "Ưu tiên người có lịch trống"
+    },
+    "card": {
+      "learningInterests": "Sở thích học tập",
+      "availableTimes": "Thời gian rảnh",
+      "bio": "Giới thiệu",
+      "age": "{{age}} tuổi",
+      "notUpdated": "Chưa cập nhật"
+    },
+    "loading": "Đang tải...",
+    "stack": {
+      "noMoreResults": "Không còn kết quả",
+      "allViewed": "Đã xem hết",
+      "adjustFilters": "Hãy thử điều chỉnh bộ lọc để tìm thêm bạn học"
+    }
   }
 }

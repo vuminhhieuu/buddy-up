@@ -26,5 +26,3 @@ export { ToggleSwitch } from './ToggleSwitch';
 export type { ToggleSwitchProps } from './ToggleSwitch';
 export { SegmentedControl } from './SegmentedControl';
 export type { SegmentedControlProps } from './SegmentedControl';
-export { Slider } from './Slider';
-export type { SliderProps } from './Slider';

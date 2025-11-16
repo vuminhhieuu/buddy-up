@@ -1,6 +1,14 @@
 import type { RootState } from '../store';
-import type { BuddyFilters, FilterCount } from '../types/buddy';
+import type {
+  BuddyFilters,
+  FilterCount,
+  BuddyProfile,
+  BuddyCardData,
+  AvailableTime,
+  LearningStyle,
+} from '../types/buddy';
 import { DEFAULT_BUDDY_FILTERS } from '../types/buddy';
+import i18n from '../config/i18n';
 
 /**
  * Get current user ID from Redux store
@@ -18,8 +26,6 @@ export function countActiveFilters(filters: BuddyFilters): FilterCount {
     learningGoals: 0,
     availableTimes: 0,
     learningStyle: 0,
-    distance: 0,
-    age: 0,
     level: 0,
     advanced: 0,
   };
@@ -39,22 +45,6 @@ export function countActiveFilters(filters: BuddyFilters): FilterCount {
   // Learning style
   if (filters.learningStyle) {
     byCategory.learningStyle = 1;
-    total += 1;
-  }
-
-  // Distance (check if not default)
-  if (filters.distance && filters.distance.max !== DEFAULT_BUDDY_FILTERS.distance?.max) {
-    byCategory.distance = 1;
-    total += 1;
-  }
-
-  // Age (check if not default)
-  if (
-    filters.age &&
-    (filters.age.min !== DEFAULT_BUDDY_FILTERS.age?.min ||
-      filters.age.max !== DEFAULT_BUDDY_FILTERS.age?.max)
-  ) {
-    byCategory.age = 1;
     total += 1;
   }
 
@@ -101,35 +91,88 @@ export function getDefaultFilters(): BuddyFilters {
 export function validateFilters(filters: BuddyFilters): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
-  // Validate age range
-  if (filters.age) {
-    if (filters.age.min && filters.age.max && filters.age.min > filters.age.max) {
-      errors.push('Age min must be less than or equal to age max');
-    }
-    if (filters.age.min && filters.age.min < 18) {
-      errors.push('Age min must be at least 18');
-    }
-    if (filters.age.max && filters.age.max > 100) {
-      errors.push('Age max must be at most 100');
-    }
-  }
-
-  // Validate distance range
-  if (filters.distance) {
-    if (
-      filters.distance.min &&
-      filters.distance.max &&
-      filters.distance.min > filters.distance.max
-    ) {
-      errors.push('Distance min must be less than or equal to distance max');
-    }
-    if (filters.distance.min && filters.distance.min < 0) {
-      errors.push('Distance min must be at least 0');
-    }
-  }
-
   return {
     valid: errors.length === 0,
     errors,
+  };
+}
+
+/**
+ * Get available time icon
+ */
+function getAvailableTimeIcon(time: AvailableTime): string {
+  const iconMap: Record<AvailableTime, string> = {
+    morning: '🌅',
+    afternoon: '☀️',
+    evening: '🌆',
+    late_night: '🌙',
+    weekend: '📅',
+    flexible: '🕐',
+  };
+  return iconMap[time] || '🕐';
+}
+
+/**
+ * Get learning style text
+ */
+function getLearningStyleText(style: LearningStyle | null): string {
+  if (!style) return 'Chưa cập nhật';
+  const textMap: Record<LearningStyle, string> = {
+    serious: 'Nghiêm túc',
+    relaxed: 'Thoải mái',
+    balanced: 'Cân bằng',
+    not_important: 'Không quan trọng',
+  };
+  return textMap[style] || 'Chưa cập nhật';
+}
+
+/**
+ * Format location and age string
+ */
+function formatLocationAge(location: string | null, age: number | null): string {
+  const parts: string[] = [];
+  if (location) {
+    parts.push(`📍 ${location}`);
+  }
+  if (age) {
+    parts.push(i18n.t('buddy.card.age', { age }));
+  }
+  return parts.join(' • ') || i18n.t('buddy.card.notUpdated');
+}
+
+/**
+ * Convert BuddyProfile to BuddyCardData
+ */
+export function profileToCardData(profile: BuddyProfile): BuddyCardData {
+  // Format location and age
+  const locationAge = formatLocationAge(profile.location, profile.age);
+
+  // Format main goal
+  const mainGoal =
+    profile.main_learning_goal || profile.learning_goals[0] || i18n.t('buddy.card.notUpdated');
+
+  // Format available times with icons
+  const availableTimes = profile.available_times.map((time, index) => ({
+    icon: getAvailableTimeIcon(time),
+    text: profile.available_times_detail[index] || time,
+  }));
+
+  // Format learning style
+  const learningStyle = getLearningStyleText(profile.learning_style);
+
+  // Use learning_interests if available, otherwise use interests
+  const interests =
+    profile.learning_interests.length > 0 ? profile.learning_interests : profile.interests;
+
+  return {
+    userId: profile.user_id,
+    name: profile.display_name,
+    avatar: profile.avatar_url,
+    locationAge,
+    mainGoal,
+    interests,
+    availableTimes,
+    learningStyle,
+    bio: profile.bio,
   };
 }

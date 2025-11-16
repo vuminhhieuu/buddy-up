@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, ViewStyle, Pressable } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
 import { Avatar } from '../../ui/Avatar/Avatar';
@@ -17,6 +18,7 @@ export type BuddyCardProps = {
 };
 
 export const BuddyCard: React.FC<BuddyCardProps> = ({ data, onLike, onPass, onPress, style }) => {
+  const { t } = useTranslation();
   const { theme } = useTheme();
 
   const cardContent = (
@@ -37,8 +39,8 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({ data, onLike, onPass, onPr
       >
         <Avatar
           size="xxl"
-          uri={data.avatar.startsWith('http') ? data.avatar : undefined}
-          name={!data.avatar.startsWith('http') ? data.avatar : data.name}
+          uri={data.avatar && data.avatar.startsWith('http') ? data.avatar : undefined}
+          name={data.avatar && !data.avatar.startsWith('http') ? data.avatar : data.name}
         />
         <Spacer size={4} />
         <Text
@@ -88,7 +90,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({ data, onLike, onPass, onPr
           fontWeight: '600' as const,
         }}
       >
-        Sở thích học tập
+        {t('buddy.card.learningInterests')}
       </Text>
       <View
         style={{
@@ -100,7 +102,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({ data, onLike, onPass, onPr
       >
         {data.interests.map((interest, index) => (
           <View
-            key={index}
+            key={`interest-${interest}-${index}`}
             style={{
               paddingHorizontal: theme.spacing[3],
               paddingVertical: theme.spacing[2],
@@ -128,12 +130,12 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({ data, onLike, onPass, onPr
           fontWeight: '600' as const,
         }}
       >
-        Thời gian rảnh
+        {t('buddy.card.availableTimes')}
       </Text>
       <View style={{ gap: theme.spacing[2], marginBottom: theme.spacing[5] }}>
         {data.availableTimes.map((time, index) => (
           <View
-            key={index}
+            key={`time-${time.text}-${index}`}
             style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[2] }}
           >
             <Text variant="body" color="primary">
@@ -180,7 +182,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({ data, onLike, onPass, onPr
               fontWeight: '600' as const,
             }}
           >
-            Giới thiệu
+            {t('buddy.card.bio')}
           </Text>
           <Text variant="bodySmall" color="secondary" style={{ lineHeight: 22 }}>
             {data.bio}
