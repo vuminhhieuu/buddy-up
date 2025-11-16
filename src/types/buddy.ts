@@ -170,7 +170,7 @@ export interface BuddyCardData {
   /** Display name */
   name: string;
   /** Avatar (emoji or URL) */
-  avatar: string;
+  avatar: string | null;
   /** Location and age string (e.g., "📍 TP.HCM • 23 tuổi") */
   locationAge: string;
   /** Main learning goal badge (e.g., "🎯 JLPT N3 - Tháng 12/2024") */
