@@ -1,6 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import './src/config/i18n';
 import {
   useFonts,
@@ -57,10 +58,12 @@ export default function App() {
   }
 
   return (
-    <Provider store={store}>
-      <ThemeProvider>
-        <AppContent />
-      </ThemeProvider>
-    </Provider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <Provider store={store}>
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
+      </Provider>
+    </GestureHandlerRootView>
   );
 }
