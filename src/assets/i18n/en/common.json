@@ -59,7 +59,9 @@
   },
   "profileSetup": {
     "skipButton": "Skip",
+    "progress75": "75% completed",
     "step": "Step {{current}}/4",
+    "headerTitle": "Profile Setup",
     "basicInfo": "Basic Information",
     "step1Title": "Create Your Profile",
     "step1Subtitle": "Find the perfect study buddy",
@@ -81,12 +83,32 @@
     "chooseFromLibraryButton": "Library",
     "cancelButton": "Cancel",
     "cameraError": "Unable to open camera. Please try again.",
-    "libraryError": "Unable to access library. Please try again."
+    "libraryError": "Unable to access library. Please try again.",
+    "step2Title": "When are you free to study?",
+    "step2Subtitle": "We will suggest buddies that fit your schedule",
+    "availableTimesLabel": "Your available times",
+    "learningStyleLabel": "Your learning style",
+    "finishButton": "Finish",
+    "availableTimesRequired": "Please choose at least one time",
+    "learningStyleRequired": "Please select a learning style"
+  },
+  "time": {
+    "morning": "Morning",
+    "noon": "Midday",
+    "evening": "Evening",
+    "weekend": "Weekend",
+    "flexible": "Flexible"
+  },
+  "learningStyle": {
+    "serious": "Serious, well-planned",
+    "relaxed": "Relaxed, low-pressure",
+    "balanced": "Balanced between discipline and flexibility"
   },
   "common": {
     "error": "Something went wrong",
     "permissionDenied": "Permission denied",
     "cameraPermissionRequired": "Camera permission is required to take photos.",
-    "libraryPermissionRequired": "Library permission is required to choose a photo."
+    "libraryPermissionRequired": "Library permission is required to choose a photo.",
+    "back": "Back"
   }
 }
