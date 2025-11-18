@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Pressable } from 'react-native';
 import { Camera, User } from 'lucide-react-native';
-import { Avatar } from './Avatar/Avatar';
-import { Text } from './Text/Text';
-import { ImagePickerModal } from './ImagePickerModal/ImagePickerModal';
-import { useTheme } from '../../styles';
+import { Avatar } from '../Avatar/Avatar';
+import { Text } from '../Text/Text';
+import { ImagePickerModal } from '../ImagePickerModal/ImagePickerModal';
+import { useTheme } from '../../../styles';
 import { useTranslation } from 'react-i18next';
 
 export type AvatarPickerSectionProps = {

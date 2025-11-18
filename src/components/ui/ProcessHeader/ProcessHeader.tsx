@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Text } from './index';
+import { Text } from '../Text/Text';
 
 export type ProcessHeaderProps = {
   leftText: string;
@@ -11,7 +11,7 @@ export type ProcessHeaderProps = {
   rightFontSize?: number;
   leftFontWeight?: string;
   rightFontWeight?: string;
-  progress?: number; // 0..1
+  progress?: number;
   progressBarColor?: string;
   progressBarBgColor?: string;
   containerStyle?: object;
