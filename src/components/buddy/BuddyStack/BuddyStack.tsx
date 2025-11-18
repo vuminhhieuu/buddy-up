@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, ViewStyle, Dimensions, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -36,6 +37,12 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
   loading = false,
   style,
 }) => {
+  // Early returns must come BEFORE all hooks
+  // But we need useTranslation for i18n, so we'll handle loading/empty after hooks
+  // For now, we'll use a simple check that doesn't require hooks
+
+  // Now all hooks can be called safely
+  const { t } = useTranslation();
   const { theme } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const translateX = useSharedValue(0);
@@ -46,6 +53,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
   const currentCard = cards[currentIndex];
   const nextCard = cards[currentIndex + 1];
 
+  // Define worklets and handlers (before hooks that might not execute)
   const resetPositionWorklet = () => {
     'worklet';
     translateX.value = withSpring(0);
@@ -90,7 +98,8 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
       scale.value = withSpring(1);
       opacity.value = withSpring(1);
     })();
-  }, [currentIndex, translateX, translateY, scale, opacity]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentIndex]);
 
   const panGesture = Gesture.Pan()
     .onUpdate((event) => {
@@ -109,6 +118,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
       }
     });
 
+  // ALL HOOKS MUST BE CALLED BEFORE ANY EARLY RETURNS
   const animatedStyle = useAnimatedStyle(() => {
     const rotation = interpolate(translateX.value, [-SCREEN_WIDTH, SCREEN_WIDTH], [-15, 15]);
     return {
@@ -131,10 +141,37 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
     };
   });
 
+  // Swipe overlay animated styles (must be called before early returns)
+  const swipeOverlayStyle = useAnimatedStyle(() => {
+    const showLike = translateX.value > 50;
+    const showPass = translateX.value < -50;
+    return {
+      opacity: showLike || showPass ? 0.8 : 0,
+      transform: [{ translateX: -60 }, { translateY: -60 }],
+    };
+  });
+
+  const likeOverlayStyle = useAnimatedStyle(() => {
+    const showLike = translateX.value > 50;
+    return {
+      opacity: showLike ? 1 : 0,
+      position: 'absolute',
+    };
+  });
+
+  const passOverlayStyle = useAnimatedStyle(() => {
+    const showPass = translateX.value < -50;
+    return {
+      opacity: showPass ? 1 : 0,
+      position: 'absolute',
+    };
+  });
+
+  // NOW early returns are safe (all hooks have been called)
   if (loading) {
     return (
       <View style={[{ height: 520, justifyContent: 'center', alignItems: 'center' }, style]}>
-        <Loading message="Đang tải..." />
+        <Loading message={t('buddy.loading')} />
       </View>
     );
   }
@@ -143,19 +180,20 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
     return (
       <View style={[{ height: 520 }, style]}>
         <EmptyState
-          title="Không còn kết quả"
-          description="Hãy thử điều chỉnh bộ lọc để tìm thêm bạn học"
+          title={t('buddy.stack.noMoreResults')}
+          description={t('buddy.stack.adjustFilters')}
         />
       </View>
     );
   }
 
+  // Check for no current card after hooks
   if (!currentCard) {
     return (
       <View style={[{ height: 520 }, style]}>
         <EmptyState
-          title="Đã xem hết"
-          description="Bạn đã xem tất cả kết quả. Hãy thử điều chỉnh bộ lọc"
+          title={t('buddy.stack.allViewed')}
+          description={t('buddy.stack.adjustFilters')}
         />
       </View>
     );
@@ -170,6 +208,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
           maxWidth: 390,
           alignSelf: 'center',
           position: 'relative',
+          marginTop: theme.spacing[2],
         },
         style,
       ]}
@@ -224,38 +263,15 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
             zIndex: 3,
             pointerEvents: 'none',
           },
-          useAnimatedStyle(() => {
-            const showLike = translateX.value > 50;
-            const showPass = translateX.value < -50;
-            return {
-              opacity: showLike || showPass ? 0.8 : 0,
-              transform: [{ translateX: -60 }, { translateY: -60 }],
-            };
-          }),
+          swipeOverlayStyle,
         ]}
       >
         {/* Like Overlay */}
-        <Animated.View
-          style={useAnimatedStyle(() => {
-            const showLike = translateX.value > 50;
-            return {
-              opacity: showLike ? 1 : 0,
-              position: 'absolute',
-            };
-          })}
-        >
+        <Animated.View style={likeOverlayStyle}>
           <Text style={{ fontSize: 120 }}>💚</Text>
         </Animated.View>
         {/* Pass Overlay */}
-        <Animated.View
-          style={useAnimatedStyle(() => {
-            const showPass = translateX.value < -50;
-            return {
-              opacity: showPass ? 1 : 0,
-              position: 'absolute',
-            };
-          })}
-        >
+        <Animated.View style={passOverlayStyle}>
           <Text style={{ fontSize: 120 }}>❌</Text>
         </Animated.View>
       </Animated.View>

@@ -6,7 +6,6 @@
   "home": "Home",
   "chat": "Chat",
   "profile": "Profile",
-  "buddy": "Buddy",
   "navigation": {
     "home": "Home",
     "buddy": "Buddy",
@@ -110,5 +109,66 @@
     "cameraPermissionRequired": "Camera permission is required to take photos.",
     "libraryPermissionRequired": "Library permission is required to choose a photo.",
     "back": "Back"
+  },
+  "buddy": {
+    "searchPlaceholder": "Search by name...",
+    "searching": "Searching...",
+    "errorTitle": "Search Error",
+    "retry": "Retry",
+    "noResultsTitle": "No Results Found",
+    "noResultsMessage": "No study buddies match your search criteria. Try adjusting your filters.",
+    "resetFilters": "Reset Filters",
+    "filter": {
+      "title": "Filters",
+      "appliedCount": "{{count}} filters applied",
+      "appliedCount_one": "1 filter applied",
+      "appliedCount_other": "{{count}} filters applied",
+      "apply": "Apply",
+      "learningGoals": "Learning Goals",
+      "searchGoalPlaceholder": "Search goal...",
+      "availableTimes": "Available Time",
+      "availableTime": {
+        "morning": "☀️ Morning",
+        "afternoon": "🌤️ Afternoon",
+        "evening": "🌙 Evening",
+        "lateNight": "🌃 Late night",
+        "weekend": "🎉 Weekend",
+        "flexible": "⚡ Flexible"
+      },
+      "learningStyle": "Learning Style",
+      "learningStyleOptions": {
+        "serious": "📋 Serious, with clear plan",
+        "relaxed": "😊 Relaxed, not too stressful",
+        "balanced": "🎯 Study and play, balanced",
+        "notImportant": "💫 Not important"
+      },
+      "onlineStatus": "Online Status",
+      "onlyOnline": "Only show people online now",
+      "level": "Level",
+      "levelOptions": {
+        "beginner": "🌱 Beginner",
+        "intermediate": "🌿 Intermediate",
+        "advanced": "🌳 Advanced"
+      },
+      "activeFilters": "Active Filters",
+      "clearAll": "Clear All",
+      "advancedOptions": "Advanced Options",
+      "onlyVerified": "Only show verified profiles ✓",
+      "hideRejected": "Hide people who previously rejected",
+      "prioritizeFreeSchedule": "Prioritize people with free schedule"
+    },
+    "card": {
+      "learningInterests": "Learning Interests",
+      "availableTimes": "Available Time",
+      "bio": "Bio",
+      "age": "{{age}} years old",
+      "notUpdated": "Not updated"
+    },
+    "loading": "Loading...",
+    "stack": {
+      "noMoreResults": "No more results",
+      "allViewed": "All viewed",
+      "adjustFilters": "Try adjusting your filters to find more study buddies"
+    }
   }
 }

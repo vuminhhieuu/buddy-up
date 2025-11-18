@@ -64,16 +64,6 @@ export interface BuddyFilters {
   availableTimes?: AvailableTime[];
   /** Selected learning style (single-select) */
   learningStyle?: LearningStyle;
-  /** Distance range in kilometers */
-  distance?: {
-    min: number;
-    max: number;
-  };
-  /** Age range */
-  age?: {
-    min: number;
-    max: number;
-  };
   /** Learning level (single-select) */
   level?: Level;
   /** Sort option */
@@ -96,14 +86,6 @@ export const DEFAULT_BUDDY_FILTERS: BuddyFilters = {
   learningGoals: [],
   availableTimes: [],
   learningStyle: undefined,
-  distance: {
-    min: 0,
-    max: 50,
-  },
-  age: {
-    min: 18,
-    max: 60,
-  },
   level: undefined,
   sortBy: 'best_match',
   onlyOnline: false,
@@ -221,8 +203,6 @@ export interface FilterCount {
     learningGoals: number;
     availableTimes: number;
     learningStyle: number;
-    distance: number;
-    age: number;
     level: number;
     advanced: number;
   };
