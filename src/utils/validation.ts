@@ -6,7 +6,7 @@ export const profileStep1Schema = Yup.object().shape({
     .max(50, 'profileSetup.displayNameMax')
     .required('profileSetup.displayNameRequired'),
   studyGoal: Yup.string()
-    .min(5, 'profileSetup.studyGoalMin')
+    .min(2, 'profileSetup.studyGoalMin')
     .max(200, 'profileSetup.studyGoalMax')
     .required('profileSetup.studyGoalRequired'),
 });

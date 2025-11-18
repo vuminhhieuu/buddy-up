@@ -73,7 +73,7 @@
     "displayNameRequired": "Display name is required",
     "studyGoalLabel": "Study Goal",
     "studyGoalPlaceholder": "e.g. Prepare for IELTS exam",
-    "studyGoalMin": "Goal must be at least 5 characters",
+    "studyGoalMin": "Goal must be at least 2 characters",
     "studyGoalMax": "Goal must not exceed 200 characters",
     "studyGoalRequired": "Study goal is required",
     "nextButton": "Next",
