@@ -164,7 +164,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           }, 100);
         } catch (err: unknown) {
           dispatch(setIsRegistering(false));
-          const errorMessage = translateAuthError(err as Error, t);
+          const errorMessage = translateAuthError(err as Error, t, 'register');
           setStatus(errorMessage);
           setTimeout(() => {
             Alert.alert(t('auth.registerFailedTitle'), errorMessage, [{ text: t('auth.ok') }], {

@@ -55,7 +55,8 @@
     "wrongPassword": "Mật khẩu không đúng",
     "tooManyRequests": "Quá nhiều yêu cầu. Vui lòng thử lại sau.",
     "networkError": "Lỗi kết nối mạng. Vui lòng kiểm tra kết nối internet.",
-    "emailNotConfirmed": "Email chưa được xác nhận. Vui lòng kiểm tra email của bạn."
+    "emailNotConfirmed": "Email chưa được xác nhận. Vui lòng kiểm tra email của bạn.",
+    "emailAlreadyExists": "Email này đã được sử dụng. Vui lòng sử dụng email khác hoặc đăng nhập."
   },
   "profileSetup": {
     "selectedCount": "Đã chọn {{count}}/3 môn",
