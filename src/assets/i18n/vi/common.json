@@ -96,7 +96,7 @@
     "displayNameRequired": "Tên hiển thị là bắt buộc",
     "studyGoalLabel": "Mục tiêu học tập",
     "studyGoalPlaceholder": "Ví dụ: Chuẩn bị kỳ thi IELTS",
-    "studyGoalMin": "Mục tiêu phải ít nhất 5 ký tự",
+    "studyGoalMin": "Mục tiêu phải ít nhất 2 ký tự",
     "studyGoalMax": "Mục tiêu không được vượt quá 200 ký tự",
     "studyGoalRequired": "Mục tiêu học tập là bắt buộc",
     "nextButton": "Tiếp tục",
