@@ -27,6 +27,8 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
             paddingTop: insets.top ? 0 : 12,
             ...(contentContainerStyle as object),
           }}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
           {...rest}
         >
           {children}

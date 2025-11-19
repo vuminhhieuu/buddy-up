@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from 'react';
-import { View, Pressable } from 'react-native';
+import { View, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
 import { ScreenContainer, Text, Spacer } from '../components/ui';
 import { useTheme } from '../styles';
 import { useTranslation } from 'react-i18next';
@@ -79,61 +79,67 @@ export const AuthScreen: React.FC = () => {
   };
 
   return (
-    <ScreenContainer scroll contentContainerStyle={{ paddingBottom: theme.spacing[12] }}>
-      {/* Header */}
-      <View style={styles.headerContainer}>
-        <View style={styles.headerIcon}>
-          <Text variant="h3">🤝</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScreenContainer scroll contentContainerStyle={{ paddingBottom: theme.spacing[12] }}>
+        {/* Header */}
+        <View style={styles.headerContainer}>
+          <View style={styles.headerIcon}>
+            <Text variant="h3">🤝</Text>
+          </View>
+          <Spacer size={2} />
+          <Text variant="h4" style={{ fontWeight: '700' as const }}>
+            {t('appName')}
+          </Text>
+          <Spacer size={1} />
+          <Text variant="caption" color="tertiary">
+            {t('auth.tagline')}
+          </Text>
         </View>
-        <Spacer size={2} />
-        <Text variant="h4" style={{ fontWeight: '700' as const }}>
-          {t('appName')}
-        </Text>
-        <Spacer size={1} />
-        <Text variant="caption" color="tertiary">
-          {t('auth.tagline')}
-        </Text>
-      </View>
 
-      {/* Tab Switcher */}
-      <View style={styles.tabSwitcher}>
-        <Pressable
-          style={[styles.tabItem, activeTab === 'Login' && styles.tabItemActive]}
-          onPress={handleSwitchToLogin}
-        >
-          <Text
-            variant="body"
-            color={activeTab === 'Login' ? 'inverse' : undefined}
-            style={{ fontWeight: '600' as const }}
+        {/* Tab Switcher */}
+        <View style={styles.tabSwitcher}>
+          <Pressable
+            style={[styles.tabItem, activeTab === 'Login' && styles.tabItemActive]}
+            onPress={handleSwitchToLogin}
           >
-            {t('login')}
-          </Text>
-        </Pressable>
-        <Pressable
-          style={[styles.tabItem, activeTab === 'Register' && styles.tabItemActive]}
-          onPress={handleSwitchToRegister}
-        >
-          <Text
-            variant="body"
-            color={activeTab === 'Register' ? 'inverse' : undefined}
-            style={{ fontWeight: '600' as const }}
+            <Text
+              variant="body"
+              color={activeTab === 'Login' ? 'inverse' : undefined}
+              style={{ fontWeight: '600' as const }}
+            >
+              {t('login')}
+            </Text>
+          </Pressable>
+          <Pressable
+            style={[styles.tabItem, activeTab === 'Register' && styles.tabItemActive]}
+            onPress={handleSwitchToRegister}
           >
-            {t('register')}
-          </Text>
-        </Pressable>
-      </View>
+            <Text
+              variant="body"
+              color={activeTab === 'Register' ? 'inverse' : undefined}
+              style={{ fontWeight: '600' as const }}
+            >
+              {t('register')}
+            </Text>
+          </Pressable>
+        </View>
 
-      <Spacer size={6} />
+        <Spacer size={6} />
 
-      {/* Render Form based on activeTab */}
-      {activeTab === 'Register' ? (
-        <RegisterForm
-          onSwitchToLogin={handleSwitchToLogin}
-          onNavigateToProfileSetup={handleNavigateToProfileSetup}
-        />
-      ) : (
-        <LoginForm onSwitchToRegister={handleSwitchToRegister} />
-      )}
-    </ScreenContainer>
+        {/* Render Form based on activeTab */}
+        {activeTab === 'Register' ? (
+          <RegisterForm
+            onSwitchToLogin={handleSwitchToLogin}
+            onNavigateToProfileSetup={handleNavigateToProfileSetup}
+          />
+        ) : (
+          <LoginForm onSwitchToRegister={handleSwitchToRegister} />
+        )}
+      </ScreenContainer>
+    </KeyboardAvoidingView>
   );
 };
