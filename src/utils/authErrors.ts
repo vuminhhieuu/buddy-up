@@ -3,9 +3,10 @@ import { AuthError } from '@supabase/supabase-js';
 export function translateAuthError(
   error: AuthError | Error | null | undefined,
   t: (key: string) => string,
+  context: 'login' | 'register' = 'login',
 ): string {
   if (!error) {
-    return t('auth.loginFailed');
+    return context === 'register' ? t('auth.registerFailed') : t('auth.loginFailed');
   }
 
   const errorMessage = error.message || '';
@@ -27,6 +28,18 @@ export function translateAuthError(
       return t('auth.networkError');
     default: {
       const lowerMessage = errorMessage.toLowerCase();
+
+      if (
+        lowerMessage.includes('user already registered') ||
+        lowerMessage.includes('email already registered') ||
+        lowerMessage.includes('email already exists') ||
+        lowerMessage.includes('user already exists') ||
+        lowerMessage.includes('already registered') ||
+        errorCode === 'signup_disabled'
+      ) {
+        return t('auth.emailAlreadyExists');
+      }
+
       if (
         lowerMessage.includes('invalid login credentials') ||
         lowerMessage.includes('invalid credentials')
@@ -48,7 +61,7 @@ export function translateAuthError(
       if (lowerMessage.includes('network') || lowerMessage.includes('connection')) {
         return t('auth.networkError');
       }
-      return t('auth.loginFailed');
+      return context === 'register' ? t('auth.registerFailed') : t('auth.loginFailed');
     }
   }
 }

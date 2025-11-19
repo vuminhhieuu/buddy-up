@@ -54,7 +54,8 @@
     "wrongPassword": "Wrong password",
     "tooManyRequests": "Too many requests. Please try again later.",
     "networkError": "Network error. Please check your internet connection.",
-    "emailNotConfirmed": "Email not confirmed. Please check your email."
+    "emailNotConfirmed": "Email not confirmed. Please check your email.",
+    "emailAlreadyExists": "This email is already registered. Please use a different email or log in."
   },
   "profileSetup": {
     "selectedCount": "Selected {{count}}/3 subjects",
