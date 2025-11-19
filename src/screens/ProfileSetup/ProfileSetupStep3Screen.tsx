@@ -14,6 +14,7 @@ import { MAX_CATEGORIES, MIN_CATEGORIES } from '../../constants/profileSetup';
 export type ProfileSetupStep3ScreenProps = {
   onNext?: (selectedOptions?: string[]) => void;
   onBack?: () => void;
+  onSkip?: () => void;
 };
 
 export const CATEGORY_GROUPS = [
@@ -151,6 +152,8 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
           progressBarColor={theme.colors.primary[500]}
           progressBarBgColor={theme.colors.border}
           containerStyle={styles.header}
+          onSkip={props.onSkip}
+          skipText={t('profileSetup.skipButton')}
         >
           <Pressable
             accessibilityRole="button"

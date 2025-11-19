@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import { Text } from '../Text/Text';
 
 export type ProcessHeaderProps = {
   leftText: string;
   rightText: string;
+  onSkip?: () => void;
+  skipText?: string;
   leftColor?: string;
   rightColor?: string;
   leftFontSize?: number;
@@ -21,6 +23,8 @@ export type ProcessHeaderProps = {
 export const ProcessHeader: React.FC<ProcessHeaderProps> = ({
   leftText,
   rightText,
+  onSkip,
+  skipText = 'Skip',
   leftColor = '#2196F3',
   rightColor = '#888',
   leftFontSize = 16,
@@ -45,7 +49,18 @@ export const ProcessHeader: React.FC<ProcessHeaderProps> = ({
 
   return (
     <View style={[styles.header, containerStyle]}>
-      {children}
+      {/* Top row: children (usually back button) on left, optional skip on right */}
+      <View style={styles.topRow}>
+        <View style={styles.leftChild}>{children}</View>
+        {onSkip ? (
+          <Pressable style={styles.skipButton} onPress={onSkip} accessibilityRole="button">
+            <Text variant="body" style={styles.skipText}>
+              {skipText}
+            </Text>
+          </Pressable>
+        ) : null}
+      </View>
+
       <View style={styles.row}>
         <Text
           variant="body"
@@ -114,5 +129,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  leftChild: {
+    flex: 1,
+  },
+  skipButton: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
+  },
+  skipText: {
+    color: '#888',
   },
 });

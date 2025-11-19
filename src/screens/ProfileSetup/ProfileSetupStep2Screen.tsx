@@ -14,11 +14,13 @@ import { BASE_HORIZONTAL_PADDING } from '../../constants/layout';
 export type ProfileSetupStep2ScreenProps = {
   onNext?: () => void;
   onBack?: () => void;
+  onSkip?: () => void;
 };
 
 export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = ({
   onNext,
   onBack,
+  onSkip,
 }) => {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -177,6 +179,8 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
           progressBarColor={theme.colors.primary[500]}
           progressBarBgColor={theme.colors.border}
           containerStyle={styles.header}
+          onSkip={onSkip}
+          skipText={t('profileSetup.skipButton')}
         >
           <Pressable
             accessibilityRole="button"

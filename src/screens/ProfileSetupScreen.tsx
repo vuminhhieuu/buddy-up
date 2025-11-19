@@ -34,7 +34,13 @@ export const ProfileSetupScreen: React.FC = () => {
     case 1:
       return <ProfileSetupStep1Screen onNext={handleNextFromStep1} onSkip={handleFinish} />;
     case 2:
-      return <ProfileSetupStep2Screen onBack={handleBackFromStep2} onNext={handleNextFromStep2} />;
+      return (
+        <ProfileSetupStep2Screen
+          onBack={handleBackFromStep2}
+          onNext={handleNextFromStep2}
+          onSkip={handleFinish}
+        />
+      );
     case 3:
       return (
         <ProfileSetupStep3Screen
@@ -49,6 +55,7 @@ export const ProfileSetupScreen: React.FC = () => {
             }
             setStep(4);
           }}
+          onSkip={handleFinish}
         />
       );
     case 4:
