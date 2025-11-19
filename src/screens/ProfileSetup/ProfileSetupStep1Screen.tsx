@@ -32,12 +32,17 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
   const { theme } = useTheme();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { userId, displayName: registeredDisplayName } = useAppSelector((s) => s.auth);
-  const { displayName: profileDisplayName, avatarUrl } = useAppSelector((s) => s.auth.profileData);
+  const { userId, displayName: registeredDisplayName, profileData } = useAppSelector((s) => s.auth);
+  const { displayName: profileDisplayName, avatarUrl, studyGoal: profileStudyGoal } = profileData;
 
   const [avatarUri, setAvatarUri] = useState<string | undefined>(avatarUrl);
   const [submitting, setSubmitting] = useState(false);
   const [skipPressed, setSkipPressed] = useState(false);
+
+  const handleAvatarSelected = async (uri: string) => {
+    setAvatarUri(uri);
+    dispatch(setProfileData({ avatarUrl: uri }));
+  };
 
   const styles = useMemo(() => {
     const containerWidth = Dimensions.get('window').width - theme.spacing[8];
@@ -79,10 +84,6 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
   const handleSkip = () => {
     dispatch(setProfileSetupInProgress(false));
     onSkip?.();
-  };
-
-  const handleAvatarSelected = async (uri: string) => {
-    setAvatarUri(uri);
   };
 
   return (
@@ -162,7 +163,7 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
             <Formik
               initialValues={{
                 displayName: registeredDisplayName || profileDisplayName || '',
-                studyGoal: '',
+                studyGoal: profileStudyGoal || '',
               }}
               validationSchema={profileStep1Schema}
               onSubmit={async (values, { setStatus }) => {
