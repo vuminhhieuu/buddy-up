@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Pressable, Dimensions } from 'react-native';
 import { ScreenContainer, Text, Button, Spacer } from '../../components/ui';
-import { ProcessHeader } from '../../components/ui/ProcessHeader';
+import { ProcessHeader } from '../../components/ui';
 import { useTheme } from '../../styles';
 import { useTranslation } from 'react-i18next';
 import { Formik } from 'formik';

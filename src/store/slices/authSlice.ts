@@ -4,9 +4,10 @@ export interface ProfileSetupData {
   displayName?: string;
   studyGoal?: string;
   avatarUrl?: string;
-  // Step 2 fields
-  availableTimes?: string[]; // e.g., ['morning','noon','evening','weekend','flexible']
+
+  availableTimes?: string[];
   learningStyle?: 'serious' | 'relaxed' | 'balanced';
+  categories?: string[];
 }
 
 export interface AuthState {
@@ -51,6 +52,9 @@ const authSlice = createSlice({
       state.userId = null;
       state.email = null;
       state.authStartScreen = 'Register';
+      state.profileSetupInProgress = false;
+      state.currentProfileStep = 1;
+      state.profileData = {};
     },
     setIsRegistering(state, action: PayloadAction<boolean>) {
       state.isRegistering = action.payload;
