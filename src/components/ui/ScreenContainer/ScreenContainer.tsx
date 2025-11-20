@@ -1,12 +1,19 @@
 import React from 'react';
-import { View, ViewProps, ScrollView, ViewStyle } from 'react-native';
+import {
+  View,
+  ViewProps,
+  ScrollView,
+  ViewStyle,
+  StyleProp,
+  RefreshControlProps,
+} from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../../styles';
 
 export type ScreenContainerProps = ViewProps & {
   children: React.ReactNode;
   scroll?: boolean;
-  contentContainerStyle?: ViewStyle;
+  contentContainerStyle?: StyleProp<ViewStyle>;
   refreshControl?: React.ReactElement | undefined;
 };
 
@@ -24,25 +31,30 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
     <SafeAreaView style={[{ flex: 1, backgroundColor: theme.colors.background }, style]}>
       {scroll ? (
         <ScrollView
-          contentContainerStyle={{
-            paddingHorizontal: 20,
-            paddingTop: insets.top ? 0 : 12,
-            ...(contentContainerStyle as object),
-          }}
+          contentContainerStyle={[
+            {
+              paddingHorizontal: 20,
+              paddingTop: insets.top ? 0 : 12,
+            },
+            contentContainerStyle,
+          ]}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           {...rest}
-          refreshControl={refreshControl}
+          refreshControl={refreshControl as React.ReactElement<RefreshControlProps>}
         >
           {children}
         </ScrollView>
       ) : (
         <View
-          style={{
-            flex: 1,
-            paddingHorizontal: 20,
-            paddingTop: insets.top ? 0 : 12,
-          }}
+          style={[
+            {
+              flex: 1,
+              paddingHorizontal: 20,
+              paddingTop: insets.top ? 0 : 12,
+            },
+            contentContainerStyle,
+          ]}
           {...rest}
         >
           {children}

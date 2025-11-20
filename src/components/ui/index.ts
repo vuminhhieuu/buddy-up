@@ -39,3 +39,4 @@ export { SubjectCard } from './SubjectCard/SubjectCard';
 export type { SubjectCardProps } from './SubjectCard/SubjectCard';
 export { LevelBadge } from './LevelBadge/LevelBadge';
 export type { LevelBadgeProps } from './LevelBadge/LevelBadge';
+export { Toast } from './Toast/Toast';

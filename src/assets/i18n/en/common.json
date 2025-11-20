@@ -160,6 +160,25 @@
     "searching": "Searching...",
     "errorTitle": "Search Error",
     "retry": "Retry",
+    "searchHelper": "Type a name, subject, or keyword (e.g. “IELTS”)",
+    "quickFilters": {
+      "all": "All",
+      "programming": "Programming",
+      "japanese": "Japanese",
+      "english": "English",
+      "toeic": "TOEIC",
+      "more": "+ More"
+    },
+    "pendingCard": {
+      "title": "{{count}} matches waiting",
+      "subtitle": "Check your invites so you don’t miss a chance to study together",
+      "action": "View all"
+    },
+    "header": {
+      "matchCount": "{{count}} matches ready",
+      "noMatches": "No matches yet – try broadening your filters",
+      "filterHint": "Tweak keywords or filters to discover more study buddies"
+    },
     "noResultsTitle": "No Results Found",
     "noResultsMessage": "No study buddies match your search criteria. Try adjusting your filters.",
     "resetFilters": "Reset Filters",
@@ -207,13 +226,33 @@
       "availableTimes": "Available Time",
       "bio": "Bio",
       "age": "{{age}} years old",
-      "notUpdated": "Not updated"
+      "notUpdated": "Not updated",
+      "noInterests": "No learning interests yet",
+      "noAvailableTimes": "No schedule shared",
+      "learningStyleTitle": "Learning Style",
+      "viewDetailsHint": "Swipe right to connect and view full profile"
     },
     "loading": "Loading...",
     "stack": {
       "noMoreResults": "No more results",
       "allViewed": "All viewed",
-      "adjustFilters": "Try adjusting your filters to find more study buddies"
+      "adjustFilters": "Try adjusting your filters to find more study buddies",
+      "overlay": {
+        "like": "Connect",
+        "pass": "Pass"
+      }
+    },
+    "actions": {
+      "skip": "Skip",
+      "save": "Save",
+      "connect": "Connect"
+    },
+    "swipeHint": "Swipe left to pass, right to connect ↔️",
+    "toast": {
+      "saved": "Profile saved",
+      "unsaved": "Removed from saved",
+      "connected": "Invitation sent! 💚",
+      "skipped": "Profile dismissed"
     }
   },
   "home": {
