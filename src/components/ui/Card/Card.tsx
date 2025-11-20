@@ -1,10 +1,12 @@
 import React from 'react';
 import { View, ViewProps } from 'react-native';
 import { useTheme } from '../../../styles';
+import type { Spacing } from '../../../styles/tokens';
+import type { Shadows } from '../../../styles/tokens';
 
 export type CardProps = ViewProps & {
-  padding?: keyof typeof theme.spacing;
-  elevation?: keyof typeof theme.shadows;
+  padding?: keyof Spacing;
+  elevation?: keyof Shadows;
 };
 
 export const Card: React.FC<CardProps> = ({

@@ -2,6 +2,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthScreen, AuthScreenParams } from '../screens/AuthScreen';
 import { ProfileSetupScreen } from '../screens/ProfileSetupScreen';
+import { useAppSelector } from '../store/hooks';
 
 export type AuthStackParamList = {
   Auth: AuthScreenParams;
@@ -10,17 +11,15 @@ export type AuthStackParamList = {
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
-type AuthNavigatorProps = {
-  initialScreen?: 'Register' | 'Login';
-};
+export const AuthNavigator: React.FC = () => {
+  const { authStartScreen } = useAppSelector((state) => state.auth);
 
-export const AuthNavigator: React.FC<AuthNavigatorProps> = ({ initialScreen = 'Register' }) => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen
         name="Auth"
         component={AuthScreen}
-        initialParams={{ activeTab: initialScreen }}
+        initialParams={{ activeTab: authStartScreen }}
       />
       <Stack.Screen name="ProfileSetup" component={ProfileSetupScreen} />
     </Stack.Navigator>
