@@ -27,7 +27,7 @@ const initialState: AuthState = {
   email: null,
   displayName: undefined,
   loading: false,
-  authStartScreen: 'Register',
+  authStartScreen: 'Login',
   isRegistering: false,
   profileSetupInProgress: false,
   currentProfileStep: 1,
@@ -51,7 +51,7 @@ const authSlice = createSlice({
     signOutState(state) {
       state.userId = null;
       state.email = null;
-      state.authStartScreen = 'Register';
+      state.authStartScreen = 'Login';
       state.profileSetupInProgress = false;
       state.currentProfileStep = 1;
       state.profileData = {};

@@ -10,6 +10,19 @@ import {
   Calendar,
   Plus,
   Search,
+  Trophy,
+  Flame,
+  BookOpen,
+  ChartLine,
+  Settings,
+  UserCog,
+  Lock,
+  Globe,
+  HelpCircle,
+  LogOut,
+  Pencil,
+  ChevronRight,
+  Star,
   type LucideIcon,
 } from 'lucide-react-native';
 
@@ -21,7 +34,20 @@ export type IconName =
   | 'bell'
   | 'calendar'
   | 'plus'
-  | 'search';
+  | 'search'
+  | 'trophy'
+  | 'flame'
+  | 'book'
+  | 'chart'
+  | 'settings'
+  | 'userEdit'
+  | 'lock'
+  | 'globe'
+  | 'help'
+  | 'logout'
+  | 'pencil'
+  | 'chevronRight'
+  | 'star';
 
 const NAME_TO_ICON: Record<IconName, LucideIcon> = {
   home: Home,
@@ -32,6 +58,19 @@ const NAME_TO_ICON: Record<IconName, LucideIcon> = {
   calendar: Calendar,
   plus: Plus,
   search: Search,
+  trophy: Trophy,
+  flame: Flame,
+  book: BookOpen,
+  chart: ChartLine,
+  settings: Settings,
+  userEdit: UserCog,
+  lock: Lock,
+  globe: Globe,
+  help: HelpCircle,
+  logout: LogOut,
+  pencil: Pencil,
+  chevronRight: ChevronRight,
+  star: Star,
 };
 
 export type IconProps = {

@@ -1,9 +1,10 @@
 import React from 'react';
 import { View } from 'react-native';
 import { useTheme } from '../../../styles';
+import type { Spacing } from '../../../styles/tokens';
 
 export type SpacerProps = {
-  size?: keyof typeof theme.spacing | number;
+  size?: keyof Spacing | number;
   horizontal?: boolean;
 };
 

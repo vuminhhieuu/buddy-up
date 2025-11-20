@@ -1,0 +1,12 @@
+export { ProfileHeader } from './ProfileHeader/ProfileHeader';
+export type { ProfileHeaderProps } from './ProfileHeader/ProfileHeader';
+export { QuickStatsSection } from './QuickStatsSection/QuickStatsSection';
+export type { QuickStatsSectionProps } from './QuickStatsSection/QuickStatsSection';
+export { AchievementsSection } from './AchievementsSection/AchievementsSection';
+export type { AchievementsSectionProps } from './AchievementsSection/AchievementsSection';
+export { StudyStatsSection } from './StudyStatsSection/StudyStatsSection';
+export type { StudyStatsSectionProps } from './StudyStatsSection/StudyStatsSection';
+export { SubjectsSection } from './SubjectsSection/SubjectsSection';
+export type { SubjectsSectionProps } from './SubjectsSection/SubjectsSection';
+export { SettingsSection } from './SettingsSection/SettingsSection';
+export type { SettingsSectionProps } from './SettingsSection/SettingsSection';
