@@ -195,14 +195,9 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
             paddingVertical: theme.spacing[3],
           }}
         >
-          <Text variant="h5" style={{ fontWeight: '700' as const }}>
+          {/* <Text variant="h5" style={{ fontWeight: '700' as const }}>
             {t('profileSetup.step2Title')}
-          </Text>
-          <Spacer size={1} />
-          <Text variant="body" color="tertiary">
-            {t('profileSetup.step2Subtitle')}
-          </Text>
-
+          </Text> */}
           <Spacer size={4} />
 
           <Formik
@@ -269,6 +264,11 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
                     >
                       {t('profileSetup.availableTimesLabel')}
                     </Text>
+                    <Spacer size={3} />
+                    <Text variant="body" color="tertiary">
+                      {t('profileSetup.step2Subtitle1')}
+                    </Text>
+                    <Spacer size={3} />
                     <View style={styles.grid}>
                       {renderTimeTile('morning')}
                       {renderTimeTile('noon')}
@@ -282,7 +282,7 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
                       </Text>
                     ) : null}
                   </View>
-
+                  <Spacer size={3} />
                   <View style={styles.section}>
                     <Text
                       variant="h5"
@@ -290,6 +290,11 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
                     >
                       {t('profileSetup.learningStyleLabel')}
                     </Text>
+                    <Spacer size={1} />
+                    <Text variant="body" color="tertiary">
+                      {t('profileSetup.step2Subtitle2')}
+                    </Text>
+                    <Spacer size={3} />
                     {STYLE_OPTIONS.map((opt) => {
                       const active = values.learningStyle === opt.key;
                       return (
