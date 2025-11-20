@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, View, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../../../styles';
 
 export type ProgressBarVariant = 'primary' | 'secondary' | 'blue' | 'orange' | 'green';
@@ -21,6 +21,19 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
 }) => {
   const { theme } = useTheme();
   const clampedProgress = Math.max(0, Math.min(100, progress));
+  const animatedValue = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    const animation = Animated.timing(animatedValue, {
+      toValue: clampedProgress,
+      duration: 500,
+      useNativeDriver: false,
+    });
+    animation.start();
+    return () => {
+      animation.stop();
+    };
+  }, [clampedProgress, animatedValue]);
 
   const getVariantColor = (): string => {
     switch (variant) {
@@ -51,11 +64,14 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
         style,
       ]}
     >
-      <View
+      <Animated.View
         style={[
           styles.fill,
           {
-            width: `${clampedProgress}%`,
+            width: animatedValue.interpolate({
+              inputRange: [0, 100],
+              outputRange: ['0%', '100%'],
+            }),
             height,
             borderRadius: height / 2,
             backgroundColor: getVariantColor(),

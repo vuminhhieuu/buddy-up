@@ -6,6 +6,7 @@ import { Icon } from '../../ui/Icon/Icon';
 import { AchievementCard } from '../../ui/AchievementCard/AchievementCard';
 import { Spacer } from '../../ui/Spacer/Spacer';
 import type { Achievement } from '../../../types/profile';
+import { useTranslation } from 'react-i18next';
 
 export type AchievementsSectionProps = {
   achievements: Achievement[];
@@ -14,16 +15,17 @@ export type AchievementsSectionProps = {
   style?: ViewStyle;
 };
 
-export const AchievementsSection: React.FC<AchievementsSectionProps> = ({
+const AchievementsSectionComponent: React.FC<AchievementsSectionProps> = ({
   achievements,
   onViewAllPress,
   onAchievementPress,
   style,
 }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
-    <View style={[styles.container, { paddingHorizontal: theme.spacing[5] }, style]}>
+    <View style={[styles.container, { paddingHorizontal: theme.spacing[3] }, style]}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Icon name="trophy" size={20} color={theme.colors.primary[500]} />
@@ -38,13 +40,13 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({
               },
             ]}
           >
-            Thành tích
+            {t('profileScreen.achievements.title')}
           </Text>
         </View>
         {onViewAllPress && (
           <Pressable onPress={onViewAllPress} accessibilityRole="button">
             <Text variant="bodySmall" color="info" style={styles.viewAll}>
-              Xem tất cả
+              {t('profileScreen.achievements.viewAll')}
             </Text>
           </Pressable>
         )}
@@ -52,23 +54,31 @@ export const AchievementsSection: React.FC<AchievementsSectionProps> = ({
 
       <Spacer size={4} />
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
-      >
-        {achievements.map((achievement, index) => (
-          <AchievementCard
-            key={achievement.id}
-            achievement={achievement}
-            onPress={() => onAchievementPress?.(achievement)}
-            style={styles.achievementCard}
-          />
-        ))}
-      </ScrollView>
+      {achievements.length === 0 ? (
+        <Text variant="bodySmall" color="secondary">
+          {t('profileScreen.achievements.empty')}
+        </Text>
+      ) : (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {achievements.map((achievement) => (
+            <AchievementCard
+              key={achievement.id}
+              achievement={achievement}
+              onPress={() => onAchievementPress?.(achievement)}
+              style={styles.achievementCard}
+            />
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };
+
+export const AchievementsSection = React.memo(AchievementsSectionComponent);
 
 const styles = StyleSheet.create({
   container: {

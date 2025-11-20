@@ -6,17 +6,19 @@ import { Icon } from '../../ui/Icon/Icon';
 import { Card } from '../../ui/Card/Card';
 import { Spacer } from '../../ui/Spacer/Spacer';
 import type { SettingsItem } from '../../../types/profile';
+import { useTranslation } from 'react-i18next';
 
 export type SettingsSectionProps = {
   items: SettingsItem[];
   style?: ViewStyle;
 };
 
-export const SettingsSection: React.FC<SettingsSectionProps> = ({ items, style }) => {
+const SettingsSectionComponent: React.FC<SettingsSectionProps> = ({ items, style }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
-    <View style={[styles.container, { paddingHorizontal: theme.spacing[5] }, style]}>
+    <View style={[styles.container, { paddingHorizontal: theme.spacing[3] }, style]}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Icon name="settings" size={20} color={theme.colors.primary[500]} />
@@ -31,7 +33,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ items, style }
               },
             ]}
           >
-            Cài đặt
+            {t('profileScreen.settings.title')}
           </Text>
         </View>
       </View>
@@ -89,6 +91,8 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({ items, style }
     </View>
   );
 };
+
+export const SettingsSection = React.memo(SettingsSectionComponent);
 
 const styles = StyleSheet.create({
   container: {

@@ -6,6 +6,7 @@ import { Icon } from '../../ui/Icon/Icon';
 import { SubjectCard } from '../../ui/SubjectCard/SubjectCard';
 import { Spacer } from '../../ui/Spacer/Spacer';
 import type { Subject } from '../../../types/profile';
+import { useTranslation } from 'react-i18next';
 
 export type SubjectsSectionProps = {
   subjects: Subject[];
@@ -13,15 +14,16 @@ export type SubjectsSectionProps = {
   style?: ViewStyle;
 };
 
-export const SubjectsSection: React.FC<SubjectsSectionProps> = ({
+const SubjectsSectionComponent: React.FC<SubjectsSectionProps> = ({
   subjects,
   onSubjectPress,
   style,
 }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
-    <View style={[styles.container, { paddingHorizontal: theme.spacing[5] }, style]}>
+    <View style={[styles.container, { paddingHorizontal: theme.spacing[3] }, style]}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Icon name="book" size={20} color={theme.colors.primary[500]} />
@@ -36,26 +38,34 @@ export const SubjectsSection: React.FC<SubjectsSectionProps> = ({
               },
             ]}
           >
-            Môn học đang theo
+            {t('profileScreen.subjects.title')}
           </Text>
         </View>
       </View>
 
       <Spacer size={4} />
 
-      <View style={styles.subjectsList}>
-        {subjects.map((subject, index) => (
-          <SubjectCard
-            key={subject.id}
-            subject={subject}
-            onPress={() => onSubjectPress?.(subject)}
-            style={styles.subjectCard}
-          />
-        ))}
-      </View>
+      {subjects.length === 0 ? (
+        <Text variant="bodySmall" color="secondary">
+          {t('profileScreen.subjects.empty')}
+        </Text>
+      ) : (
+        <View style={styles.subjectsList}>
+          {subjects.map((subject) => (
+            <SubjectCard
+              key={subject.id}
+              subject={subject}
+              onPress={() => onSubjectPress?.(subject)}
+              style={styles.subjectCard}
+            />
+          ))}
+        </View>
+      )}
     </View>
   );
 };
+
+export const SubjectsSection = React.memo(SubjectsSectionComponent);
 
 const styles = StyleSheet.create({
   container: {

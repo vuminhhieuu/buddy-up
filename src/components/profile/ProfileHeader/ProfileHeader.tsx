@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import { Animated, View, StyleSheet, Pressable } from 'react-native';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
 import { Avatar } from '../../ui/Avatar/Avatar';
@@ -20,6 +20,15 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   onEditAvatarPress,
 }) => {
   const { theme } = useTheme();
+  const avatarScale = useRef(new Animated.Value(0.9)).current;
+
+  useEffect(() => {
+    Animated.spring(avatarScale, {
+      toValue: 1,
+      friction: 6,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
   return (
     <View
@@ -58,22 +67,31 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
       {/* Avatar with Edit Button */}
       <View style={styles.avatarContainer}>
-        <View
+        <Animated.View
           style={[
-            styles.avatar,
+            styles.avatarWrapper,
             {
-              borderWidth: 4,
-              borderColor: theme.colors.surface,
-              shadowColor: theme.colors.primary[500],
-              shadowOpacity: 0.3,
-              shadowRadius: 12,
-              shadowOffset: { width: 0, height: 8 },
-              elevation: 5,
+              transform: [{ scale: avatarScale }],
             },
           ]}
         >
-          <Avatar uri={profile.avatarUri} name={profile.name} size="xxxl" />
-        </View>
+          <View
+            style={[
+              styles.avatar,
+              {
+                borderWidth: 4,
+                borderColor: theme.colors.surface,
+                shadowColor: theme.colors.primary[500],
+                shadowOpacity: 0.3,
+                shadowRadius: 12,
+                shadowOffset: { width: 0, height: 8 },
+                elevation: 5,
+              },
+            ]}
+          >
+            <Avatar uri={profile.avatarUri} name={profile.name} size="xxxl" />
+          </View>
+        </Animated.View>
         {onEditAvatarPress && (
           <Pressable
             onPress={onEditAvatarPress}
@@ -132,17 +150,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: 48,
-    paddingBottom: 24,
+    paddingTop: 28,
+    paddingBottom: 16,
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 280,
+    minHeight: 220,
     position: 'relative',
   },
   settingsButton: {
     position: 'absolute',
-    top: 48,
+    top: 28,
     right: 20,
     zIndex: 10,
   },
@@ -156,6 +174,10 @@ const styles = StyleSheet.create({
   avatarContainer: {
     position: 'relative',
     marginBottom: 16,
+  },
+  avatarWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   avatar: {
     borderRadius: 50,
