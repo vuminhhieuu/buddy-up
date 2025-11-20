@@ -1,15 +1,37 @@
 import React from 'react';
 import type { ViewStyle } from 'react-native';
 import { useTheme } from '../../../styles';
-import { Home, Users, MessageCircle, User, type LucideIcon } from 'lucide-react-native';
+import {
+  Home,
+  Users,
+  MessageCircle,
+  User,
+  Bell,
+  Calendar,
+  Plus,
+  Search,
+  type LucideIcon,
+} from 'lucide-react-native';
 
-export type IconName = 'home' | 'buddy' | 'chat' | 'profile';
+export type IconName =
+  | 'home'
+  | 'buddy'
+  | 'chat'
+  | 'profile'
+  | 'bell'
+  | 'calendar'
+  | 'plus'
+  | 'search';
 
 const NAME_TO_ICON: Record<IconName, LucideIcon> = {
   home: Home,
   buddy: Users,
   chat: MessageCircle,
   profile: User,
+  bell: Bell,
+  calendar: Calendar,
+  plus: Plus,
+  search: Search,
 };
 
 export type IconProps = {
