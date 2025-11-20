@@ -1,26 +1,58 @@
-import React from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../../styles';
 import { Avatar } from '../ui';
 import { Text } from '../ui/Text/Text';
 import { Bell } from 'lucide-react-native';
-import { useAppSelector } from '../../store/hooks';
+import { useTranslation } from 'react-i18next';
 
-export const HomeHeader: React.FC<{
+export type HomeHeaderProps = {
+  name?: string;
+  avatarUrl?: string | null;
+  notificationsCount?: number;
   onNotificationPress?: () => void;
   onAvatarPress?: () => void;
-}> = ({ onNotificationPress, onAvatarPress }) => {
-  const { theme } = useTheme();
-  const userId = useAppSelector((state) => state.auth.userId);
-  const displayName = useAppSelector((state) => state.auth.displayName) || 'Bạn';
+};
 
-  // Get greeting based on time of day
-  const getGreeting = () => {
+export const HomeHeader: React.FC<HomeHeaderProps> = ({
+  name,
+  avatarUrl,
+  notificationsCount = 0,
+  onNotificationPress,
+  onAvatarPress,
+}) => {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const [greetingKey, setGreetingKey] = useState<'morning' | 'afternoon' | 'evening'>(() => {
     const hour = new Date().getHours();
-    if (hour < 12) return 'Chào buổi sáng';
-    if (hour < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
-  };
+    if (hour < 12) return 'morning';
+    if (hour < 18) return 'afternoon';
+    return 'evening';
+  });
+
+  const firstName = useMemo(() => {
+    const trimmed = (name || '').trim();
+    if (!trimmed) return t('home.header.defaultName');
+    return trimmed.split(/\s+/)[0];
+  }, [name, t]);
+
+  useEffect(() => {
+    const getKey = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) return 'morning' as const;
+      if (hour < 18) return 'afternoon' as const;
+      return 'evening' as const;
+    };
+    const interval = setInterval(() => {
+      setGreetingKey((prev) => {
+        const next = getKey();
+        return prev === next ? prev : next;
+      });
+    }, 60 * 1000);
+    setGreetingKey(getKey());
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -28,15 +60,15 @@ export const HomeHeader: React.FC<{
         onPress={onAvatarPress}
         style={styles.leftSection}
         accessibilityRole="button"
-        accessibilityLabel="Mở profile"
+        accessibilityLabel={t('home.header.openProfile')}
       >
-        <Avatar size="md" name={displayName} />
+        <Avatar size="md" name={firstName} uri={avatarUrl || undefined} />
         <View style={styles.greetingContainer}>
           <Text variant="h5" style={styles.greetingMain}>
-            {getGreeting()}, {displayName.split(' ')[0] || displayName}! 👋
+            {t(`home.header.greeting.${greetingKey}`, { name: firstName })}
           </Text>
           <Text variant="bodySmall" color="secondary">
-            Sẵn sàng học hôm nay?
+            {t('home.header.subtitle')}
           </Text>
         </View>
       </Pressable>
@@ -51,18 +83,34 @@ export const HomeHeader: React.FC<{
           },
         ]}
         accessibilityRole="button"
-        accessibilityLabel="Thông báo"
+        accessibilityLabel={t('home.header.notifications')}
       >
         <Bell size={20} color={theme.colors.text.secondary} strokeWidth={2} />
-        <View
-          style={[
-            styles.badge,
-            {
-              backgroundColor: theme.colors.semantic.error,
-              borderColor: theme.colors.surface,
-            },
-          ]}
-        />
+        {notificationsCount > 0 ? (
+          <View
+            style={[
+              styles.badge,
+              {
+                backgroundColor: theme.colors.semantic.error,
+                borderColor: theme.colors.surface,
+              },
+            ]}
+          >
+            <Text variant="caption" color="inverse">
+              {notificationsCount > 99 ? '99+' : notificationsCount}
+            </Text>
+          </View>
+        ) : (
+          <View
+            style={[
+              styles.dot,
+              {
+                backgroundColor: theme.colors.semantic.error,
+                borderColor: theme.colors.surface,
+              },
+            ]}
+          />
+        )}
       </Pressable>
     </View>
   );
@@ -95,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
-  badge: {
+  dot: {
     position: 'absolute',
     top: 6,
     right: 6,
@@ -103,5 +151,17 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     borderWidth: 2,
+  },
+  badge: {
+    position: 'absolute',
+    top: -6,
+    right: -6,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
   },
 });

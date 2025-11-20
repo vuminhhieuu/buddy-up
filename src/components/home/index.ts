@@ -1,4 +1,5 @@
 export { HomeHeader } from './HomeHeader';
+export type { HomeHeaderProps } from './HomeHeader';
 export { HeroProgressCard } from './HeroProgressCard';
 export type { HeroProgressCardProps } from './HeroProgressCard';
 export { StudyStatsRow } from './StudyStatsRow';

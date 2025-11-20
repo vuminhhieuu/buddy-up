@@ -4,15 +4,17 @@ import { useTheme } from '../../styles';
 import { Card } from '../ui';
 import { Text } from '../ui/Text/Text';
 import { Avatar } from '../ui';
-import { Calendar, ChevronRight } from 'lucide-react-native';
+import { Calendar } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 export type Session = {
   id: string;
-  time: string;
-  buddyName: string;
-  buddyAvatar?: string;
-  subject: string;
-  countdown: string;
+  title?: string | null;
+  subject?: string | null;
+  scheduledStart: string;
+  scheduledEnd?: string | null;
+  buddyName?: string;
+  buddyAvatar?: string | null;
 };
 
 export type UpcomingSessionsProps = {
@@ -21,123 +23,175 @@ export type UpcomingSessionsProps = {
   onViewAllPress?: () => void;
 };
 
+const formatTimeRange = (startIso: string, endIso: string | null | undefined, locale: string) => {
+  const start = new Date(startIso);
+  const end = endIso ? new Date(endIso) : null;
+  const today = new Date();
+  const isToday =
+    start.getDate() === today.getDate() &&
+    start.getMonth() === today.getMonth() &&
+    start.getFullYear() === today.getFullYear();
+
+  const timeFormatter = new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  if (isToday && end) {
+    return `${timeFormatter.format(start)} - ${timeFormatter.format(end)}`;
+  }
+
+  const dayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'long' });
+  const dayLabel = dayFormatter.format(start);
+  return `${dayLabel} - ${timeFormatter.format(start)}`;
+};
+
+const formatCountdown = (startIso: string, t: (key: string, opts?: any) => string) => {
+  const diffMs = new Date(startIso).getTime() - Date.now();
+  if (diffMs <= 0) return t('home.sessions.startingSoon');
+  const minutes = Math.round(diffMs / 60000);
+  if (minutes < 60) {
+    return t('home.sessions.countdownMinutes', { count: Math.max(1, minutes) });
+  }
+  const hours = Math.round(diffMs / 3_600_000);
+  if (hours < 24) {
+    return t('home.sessions.countdownHours', { count: Math.max(1, hours) });
+  }
+  const days = Math.round(diffMs / 86_400_000);
+  return t('home.sessions.countdownDays', { count: Math.max(1, days) });
+};
+
 export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
   sessions,
   onSessionPress,
   onViewAllPress,
 }) => {
   const { theme } = useTheme();
+  const { t, i18n } = useTranslation();
+  const locale = i18n.language || 'vi';
 
   return (
     <View style={styles.container}>
-      {/* Section Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Calendar size={18} color={theme.colors.secondary[500]} strokeWidth={2} />
           <Text variant="h5" style={styles.sectionTitle}>
-            Lịch học sắp tới
+            {t('home.sessions.title')}
           </Text>
         </View>
         {onViewAllPress && (
           <Pressable
             onPress={onViewAllPress}
             accessibilityRole="button"
-            accessibilityLabel="Xem tất cả sessions"
+            accessibilityLabel={t('home.sessions.viewAll')}
           >
             <Text variant="bodySmall" color="info" style={styles.viewAll}>
-              Xem tất cả
+              {t('home.sessions.viewAll')}
             </Text>
           </Pressable>
         )}
       </View>
 
-      {/* Sessions List */}
-      <View style={styles.sessionsList}>
-        {sessions.map((session, index) => (
-          <Pressable
-            key={session.id}
-            onPress={() => onSessionPress?.(session.id)}
-            style={styles.sessionWrapper}
-            accessibilityRole="button"
-            accessibilityLabel={`Session với ${session.buddyName} lúc ${session.time}`}
-          >
-            <Card padding={4} elevation="sm" style={styles.sessionCard}>
-              {/* Session Header */}
-              <View style={styles.sessionHeader}>
-                <Text
-                  variant="body"
-                  style={[
-                    styles.sessionTime,
-                    {
-                      fontFamily: theme.typography.families.display,
-                      fontWeight: '700',
-                    },
-                  ]}
-                >
-                  {session.time}
-                </Text>
-                <View
-                  style={[
-                    styles.countdownBadge,
-                    {
-                      backgroundColor: theme.colors.primary[50],
-                    },
-                  ]}
-                >
+      {sessions.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Text variant="body" style={styles.emptyTitle}>
+            {t('home.sessions.emptyTitle')}
+          </Text>
+          <Text variant="bodySmall" color="secondary" style={styles.emptySubtitle}>
+            {t('home.sessions.emptySubtitle')}
+          </Text>
+        </View>
+      ) : (
+        <View style={styles.sessionsList}>
+          {sessions.map((session) => (
+            <Pressable
+              key={session.id}
+              onPress={() => onSessionPress?.(session.id)}
+              style={styles.sessionWrapper}
+              accessibilityRole="button"
+              accessibilityLabel={t('home.sessions.accessibilityLabel', {
+                name: session.buddyName || session.title || '',
+                time: new Date(session.scheduledStart).toLocaleString(),
+              })}
+            >
+              <Card padding={4} elevation="sm" style={styles.sessionCard}>
+                <View style={styles.sessionHeader}>
                   <Text
-                    variant="caption"
+                    variant="body"
                     style={[
-                      styles.countdownText,
+                      styles.sessionTime,
                       {
-                        color: theme.colors.semantic.warning,
-                        fontWeight: '600',
+                        fontFamily: theme.typography.families.display,
+                        fontWeight: '700',
                       },
                     ]}
                   >
-                    {session.countdown}
-                  </Text>
-                </View>
-              </View>
-
-              {/* Session Body */}
-              <View style={styles.sessionBody}>
-                <Avatar
-                  size="md"
-                  uri={session.buddyAvatar}
-                  name={session.buddyName}
-                  style={styles.avatar}
-                />
-                <View style={styles.sessionInfo}>
-                  <Text variant="body" style={styles.buddyName}>
-                    Học với {session.buddyName}
+                    {formatTimeRange(session.scheduledStart, session.scheduledEnd, locale)}
                   </Text>
                   <View
                     style={[
-                      styles.subjectTag,
+                      styles.countdownBadge,
                       {
-                        backgroundColor: theme.colors.secondary[50],
+                        backgroundColor: theme.colors.primary[50],
                       },
                     ]}
                   >
                     <Text
                       variant="caption"
                       style={[
-                        styles.subjectText,
+                        styles.countdownText,
                         {
-                          color: theme.colors.secondary[500],
+                          color: theme.colors.semantic.warning,
                           fontWeight: '600',
                         },
                       ]}
                     >
-                      {session.subject}
+                      {formatCountdown(session.scheduledStart, t)}
                     </Text>
                   </View>
                 </View>
-              </View>
-            </Card>
-          </Pressable>
-        ))}
-      </View>
+
+                <View style={styles.sessionBody}>
+                  <Avatar
+                    size="md"
+                    uri={session.buddyAvatar || undefined}
+                    name={session.buddyName}
+                    style={styles.avatar}
+                  />
+                  <View style={styles.sessionInfo}>
+                    <Text variant="body" style={styles.buddyName}>
+                      {t('home.sessions.studyWith', {
+                        name: session.buddyName || t('home.sessions.defaultBuddyName'),
+                      })}
+                    </Text>
+                    <View
+                      style={[
+                        styles.subjectTag,
+                        {
+                          backgroundColor: theme.colors.secondary[50],
+                        },
+                      ]}
+                    >
+                      <Text
+                        variant="caption"
+                        style={[
+                          styles.subjectText,
+                          {
+                            color: theme.colors.secondary[500],
+                            fontWeight: '600',
+                          },
+                        ]}
+                      >
+                        {session.subject || session.title || t('home.sessions.unknownSubject')}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </Card>
+            </Pressable>
+          ))}
+        </View>
+      )}
     </View>
   );
 };
@@ -212,5 +266,17 @@ const styles = StyleSheet.create({
   },
   subjectText: {
     fontSize: 12,
+  },
+  emptyState: {
+    paddingVertical: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: {
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  emptySubtitle: {
+    textAlign: 'center',
   },
 });

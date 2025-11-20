@@ -7,6 +7,7 @@ export type ScreenContainerProps = ViewProps & {
   children: React.ReactNode;
   scroll?: boolean;
   contentContainerStyle?: ViewStyle;
+  refreshControl?: React.ReactElement | undefined;
 };
 
 export const ScreenContainer: React.FC<ScreenContainerProps> = ({
@@ -14,6 +15,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
   style,
   scroll,
   contentContainerStyle,
+  refreshControl,
   ...rest
 }) => {
   const insets = useSafeAreaInsets();
@@ -30,6 +32,7 @@ export const ScreenContainer: React.FC<ScreenContainerProps> = ({
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           {...rest}
+          refreshControl={refreshControl}
         >
           {children}
         </ScrollView>

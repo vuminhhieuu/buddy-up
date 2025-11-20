@@ -1,20 +1,32 @@
-import React, { useRef, useEffect } from 'react';
-import { StyleSheet, View, Animated } from 'react-native';
-import { ScreenContainer, Spacer } from '../components/ui';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
+import { StyleSheet, Animated, RefreshControl } from 'react-native';
+import { ScreenContainer, Spacer, Loading, EmptyState } from '../components/ui';
 import {
   HomeHeader,
   HeroProgressCard,
   StudyStatsRow,
   UpcomingSessions,
   QuickActions,
-  type Session,
   type StatItem,
 } from '../components/home';
 import { useTheme } from '../styles';
+import { useAppSelector } from '../store/hooks';
+import { fetchHomeDashboard, type HomeDashboardData } from '../services/home';
+import { useTranslation } from 'react-i18next';
+import { useNavigation, type NavigationProp } from '@react-navigation/native';
+import type { MainTabParamList } from '../navigation/MainTabsNavigator';
 
 export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
+  const userId = useAppSelector((state) => state.auth.userId);
+  const authDisplayName = useAppSelector((state) => state.auth.displayName);
+  const navigation = useNavigation<NavigationProp<MainTabParamList>>();
   const fadeAnim = useRef(new Animated.Value(0)).current;
+  const [dashboard, setDashboard] = useState<HomeDashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -22,117 +34,180 @@ export const HomeScreen: React.FC = () => {
       duration: 400,
       useNativeDriver: true,
     }).start();
-  }, []);
+  }, [fadeAnim]);
 
-  // Mock data - will be replaced with API calls later
-  const mockStats: StatItem[] = [
-    {
-      icon: '📚',
-      value: '12.5h',
-      label: 'Giờ học tuần này',
+  const loadDashboard = useCallback(
+    async (showSpinner: boolean) => {
+      if (!userId) return;
+      if (showSpinner) {
+        setLoading(true);
+      }
+      setError(null);
+      try {
+        const data = await fetchHomeDashboard(userId);
+        setDashboard(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error');
+      } finally {
+        if (showSpinner) {
+          setLoading(false);
+        }
+        setRefreshing(false);
+      }
     },
-    {
-      icon: '🎯',
-      value: '3/5',
-      label: 'Buổi hoàn thành',
-    },
-    {
-      icon: '⭐',
-      value: '+250',
-      label: 'Điểm thưởng',
-    },
-  ];
+    [userId],
+  );
 
-  const mockSessions: Session[] = [
-    {
-      id: '1',
-      time: '20:00 - 21:30',
-      buddyName: 'Linh',
-      subject: 'React Native',
-      countdown: 'Còn 2 giờ',
-    },
-    {
-      id: '2',
-      time: 'Thứ 7 - 09:00',
-      buddyName: 'Hùng',
-      subject: 'TOEIC',
-      countdown: 'Còn 1 ngày',
-    },
-    {
-      id: '3',
-      time: 'Chủ nhật - 14:00',
-      buddyName: 'Mai',
-      subject: 'Data Science',
-      countdown: 'Còn 2 ngày',
-    },
-  ];
+  useEffect(() => {
+    if (userId) {
+      void loadDashboard(true);
+    } else {
+      setLoading(false);
+    }
+  }, [loadDashboard, userId]);
+
+  const handleRefresh = useCallback(() => {
+    if (!userId) return;
+    setRefreshing(true);
+    void loadDashboard(false);
+  }, [loadDashboard, userId]);
+
+  const stats: StatItem[] = useMemo(() => {
+    const weeklyHours = dashboard?.weeklyStudyHours ?? 0;
+    const hoursLabel =
+      Number.isFinite(weeklyHours) && weeklyHours % 1 === 0
+        ? `${weeklyHours.toFixed(0)}h`
+        : `${weeklyHours.toFixed(1)}h`;
+
+    const completedSessions = dashboard?.completedSessions ?? 0;
+    const sessionGoal = dashboard?.sessionGoal ?? 0;
+    const rewardPoints = dashboard?.xp ?? 0;
+
+    const adjustedCompleted =
+      sessionGoal > 0 ? Math.min(completedSessions, sessionGoal) : completedSessions;
+    const sessionValue =
+      sessionGoal > 0 ? `${adjustedCompleted}/${sessionGoal}` : `${completedSessions}/0`;
+
+    return [
+      { icon: '📚', value: hoursLabel, label: t('home.stats.studyHours') },
+      {
+        icon: '🎯',
+        value: sessionValue,
+        label: t('home.stats.completedSessions'),
+      },
+      {
+        icon: '⭐',
+        value: rewardPoints >= 0 ? `+${rewardPoints}` : String(rewardPoints),
+        label: t('home.stats.rewardPoints'),
+      },
+    ];
+  }, [dashboard, t]);
+
+  const streakGoal = dashboard?.weeklyGoalDays ?? 7;
+  const streakDays = Math.min(dashboard?.streak ?? 0, streakGoal);
+  const weeklyProgress = {
+    completed: streakDays,
+    total: streakGoal || 1,
+  };
+
+  const refreshControl = (
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={handleRefresh}
+      tintColor={theme.colors.primary[500]}
+    />
+  );
+
+  const upcomingSessions = dashboard?.sessions ?? [];
 
   const handleNotificationPress = () => {
-    // TODO: Navigate to notifications screen
     console.log('Notification pressed');
   };
 
   const handleAvatarPress = () => {
-    // TODO: Navigate to profile screen
     console.log('Avatar pressed');
   };
 
   const handleSessionPress = (sessionId: string) => {
-    // TODO: Navigate to session details
     console.log('Session pressed:', sessionId);
   };
 
   const handleViewAllPress = () => {
-    // TODO: Navigate to all sessions screen
     console.log('View all pressed');
   };
 
   const handleCreateSessionPress = () => {
-    // TODO: Navigate to create session screen
     console.log('Create session pressed');
   };
 
   const handleFindBuddyPress = () => {
-    // TODO: Navigate to find buddy screen
-    console.log('Find buddy pressed');
+    navigation.navigate('Buddy');
   };
 
   const handleStatPress = (index: number) => {
-    // TODO: Navigate to stats detail screen
     console.log('Stat pressed:', index);
   };
 
+  if (!userId) {
+    return (
+      <ScreenContainer>
+        <EmptyState title={t('home.errors.title')} description={t('home.errors.subtitle')} />
+      </ScreenContainer>
+    );
+  }
+
+  if (loading && !dashboard) {
+    return (
+      <ScreenContainer>
+        <Loading fullScreen message={t('buddy.loading')} />
+      </ScreenContainer>
+    );
+  }
+
+  if (error && !dashboard) {
+    return (
+      <ScreenContainer>
+        <EmptyState
+          title={t('home.errors.title')}
+          description={t('home.errors.subtitle')}
+          actionLabel={t('home.errors.retry')}
+          onActionPress={() => loadDashboard(true)}
+        />
+      </ScreenContainer>
+    );
+  }
+
   return (
-    <ScreenContainer scroll contentContainerStyle={styles.scrollContent}>
+    <ScreenContainer
+      scroll
+      contentContainerStyle={styles.scrollContent}
+      refreshControl={refreshControl}
+    >
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
-        {/* Header */}
         <HomeHeader
+          name={dashboard?.profileName || authDisplayName || undefined}
+          avatarUrl={dashboard?.avatarUrl}
           onNotificationPress={handleNotificationPress}
           onAvatarPress={handleAvatarPress}
         />
 
         <Spacer size={4} />
 
-        {/* Hero Progress Card */}
-        <HeroProgressCard streakDays={7} weeklyProgress={{ completed: 5, total: 7 }} />
+        <HeroProgressCard streakDays={dashboard?.streak ?? 0} weeklyProgress={weeklyProgress} />
 
-        {/* Study Stats Row */}
-        <StudyStatsRow stats={mockStats} onStatPress={handleStatPress} />
+        <StudyStatsRow stats={stats} onStatPress={handleStatPress} />
 
-        {/* Upcoming Sessions */}
         <UpcomingSessions
-          sessions={mockSessions}
+          sessions={upcomingSessions}
           onSessionPress={handleSessionPress}
           onViewAllPress={handleViewAllPress}
         />
 
-        {/* Quick Actions */}
         <QuickActions
           onCreateSessionPress={handleCreateSessionPress}
           onFindBuddyPress={handleFindBuddyPress}
         />
 
-        {/* Bottom padding for safe area */}
         <Spacer size={8} />
       </Animated.View>
     </ScreenContainer>
