@@ -3,6 +3,7 @@ import { View, Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '../../styles';
 import { Text } from '../ui/Text/Text';
 import { Icon, type IconName } from '../ui/Icon/Icon';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type TabItem = {
   key: string;
@@ -19,68 +20,89 @@ export type BottomTabBarProps = {
 
 export const BottomTabBar: React.FC<BottomTabBarProps> = ({ tabs, activeKey, onTabPress }) => {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={[styles.container, { paddingHorizontal: theme.spacing[4] }]}>
-      {tabs.map((tab) => {
-        const isActive = activeKey === tab.key;
-        const iconColor = isActive ? theme.colors.text.inverse : theme.colors.text.secondary;
-        return (
-          <Pressable
-            key={tab.key}
-            accessibilityRole="button"
-            accessibilityLabel={tab.label}
-            accessibilityState={{ selected: isActive }}
-            onPress={() => onTabPress(tab.key)}
-            style={styles.tab}
-          >
-            {isActive ? (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: theme.spacing[2],
-                  backgroundColor: theme.colors.primary[500],
-                  paddingHorizontal: theme.spacing[4],
-                  minHeight: 40,
-                  borderRadius: theme.radius.base,
-                }}
-              >
-                <Icon name={tab.icon} color={iconColor} size={theme.sizes.icon.lg} />
-                <Text
-                  variant="caption"
-                  color="inverse"
+    <View
+      style={[
+        styles.wrapper,
+        {
+          paddingBottom: Math.max(insets.bottom, theme.spacing[3]),
+          backgroundColor: theme.colors.surface,
+          borderTopColor: theme.colors.border,
+          shadowColor: '#000',
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
+          shadowOffset: { width: 0, height: -6 },
+          elevation: 12,
+        },
+      ]}
+    >
+      <View style={[styles.container, { paddingHorizontal: theme.spacing[4] }]}>
+        {tabs.map((tab) => {
+          const isActive = activeKey === tab.key;
+          const iconColor = isActive ? theme.colors.text.inverse : theme.colors.text.secondary;
+          return (
+            <Pressable
+              key={tab.key}
+              accessibilityRole="button"
+              accessibilityLabel={tab.label}
+              accessibilityState={{ selected: isActive }}
+              onPress={() => onTabPress(tab.key)}
+              style={styles.tab}
+            >
+              {isActive ? (
+                <View
                   style={{
-                    fontFamily: theme.typography.families.display,
-                    fontWeight: '600' as const,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: theme.spacing[2],
+                    backgroundColor: theme.colors.primary[500],
+                    paddingHorizontal: theme.spacing[4],
+                    minHeight: 40,
+                    borderRadius: theme.radius.base,
                   }}
                 >
-                  {tab.label}
-                </Text>
-              </View>
-            ) : (
-              <Icon name={tab.icon} color={iconColor} size={theme.sizes.icon.lg} />
-            )}
-            {tab.badge && tab.badge > 0 ? (
-              <View
-                style={[
-                  styles.badge,
-                  { backgroundColor: theme.colors.semantic.error },
-                  isActive ? { right: '22%' } : { right: '28%' },
-                ]}
-              >
-                <Text variant="caption" color="inverse">
-                  {tab.badge > 99 ? '99+' : String(tab.badge)}
-                </Text>
-              </View>
-            ) : null}
-          </Pressable>
-        );
-      })}
+                  <Icon name={tab.icon} color={iconColor} size={theme.sizes.icon.lg} />
+                  <Text
+                    variant="caption"
+                    color="inverse"
+                    style={{
+                      fontFamily: theme.typography.families.display,
+                      fontWeight: '600' as const,
+                    }}
+                  >
+                    {tab.label}
+                  </Text>
+                </View>
+              ) : (
+                <Icon name={tab.icon} color={iconColor} size={theme.sizes.icon.lg} />
+              )}
+              {tab.badge && tab.badge > 0 ? (
+                <View
+                  style={[
+                    styles.badge,
+                    { backgroundColor: theme.colors.semantic.error },
+                    isActive ? { right: '22%' } : { right: '28%' },
+                  ]}
+                >
+                  <Text variant="caption" color="inverse">
+                    {tab.badge > 99 ? '99+' : String(tab.badge)}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
+          );
+        })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+  },
   badge: {
     alignItems: 'center',
     borderRadius: 9,
@@ -95,7 +117,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     overflow: 'hidden',
-    paddingBottom: 8,
     paddingTop: 8,
   },
   tab: {

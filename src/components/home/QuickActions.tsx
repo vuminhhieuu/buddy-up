@@ -3,6 +3,7 @@ import { View, StyleSheet, Pressable } from 'react-native';
 import { useTheme } from '../../styles';
 import { Text } from '../ui/Text/Text';
 import { Plus, Search } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 
 export type QuickActionsProps = {
   onCreateSessionPress?: () => void;
@@ -14,6 +15,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   onFindBuddyPress,
 }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
@@ -30,7 +32,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           },
         ]}
         accessibilityRole="button"
-        accessibilityLabel="Tạo buổi học"
+        accessibilityLabel={t('home.actions.createSession')}
       >
         <Plus size={16} color={theme.colors.text.inverse} strokeWidth={2.5} />
         <Text
@@ -44,7 +46,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             },
           ]}
         >
-          Tạo buổi học
+          {t('home.actions.createSession')}
         </Text>
       </Pressable>
 
@@ -63,7 +65,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           },
         ]}
         accessibilityRole="button"
-        accessibilityLabel="Tìm bạn học"
+        accessibilityLabel={t('home.actions.findBuddy')}
       >
         <Search size={16} color={theme.colors.primary[500]} strokeWidth={2.5} />
         <Text
@@ -77,7 +79,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             },
           ]}
         >
-          Tìm bạn học
+          {t('home.actions.findBuddy')}
         </Text>
       </Pressable>
     </View>

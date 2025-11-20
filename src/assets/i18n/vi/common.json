@@ -216,5 +216,51 @@
       "allViewed": "Đã xem hết",
       "adjustFilters": "Hãy thử điều chỉnh bộ lọc để tìm thêm bạn học"
     }
+  },
+  "home": {
+    "header": {
+      "defaultName": "bạn",
+      "openProfile": "Mở hồ sơ",
+      "notifications": "Thông báo",
+      "subtitle": "Sẵn sàng học hôm nay?",
+      "greeting": {
+        "morning": "Chào buổi sáng, {{name}}! 👋",
+        "afternoon": "Chào buổi chiều, {{name}}! 👋",
+        "evening": "Chào buổi tối, {{name}}! 👋"
+      }
+    },
+    "hero": {
+      "streakLabel": "Chuỗi học tập",
+      "weekLabel": "tuần này",
+      "encouragement": "Tuyệt vời! Tiếp tục phát huy nhé 💪"
+    },
+    "stats": {
+      "studyHours": "Giờ học tuần này",
+      "completedSessions": "Buổi hoàn thành",
+      "rewardPoints": "Điểm thưởng"
+    },
+    "sessions": {
+      "title": "Lịch học sắp tới",
+      "viewAll": "Xem tất cả",
+      "studyWith": "Học với {{name}}",
+      "defaultBuddyName": "bạn học",
+      "unknownSubject": "Chưa có môn học",
+      "startingSoon": "Sắp diễn ra",
+      "countdownMinutes": "Còn {{count}} phút",
+      "countdownHours": "Còn {{count}} giờ",
+      "countdownDays": "Còn {{count}} ngày",
+      "accessibilityLabel": "Buổi học cùng {{name}} lúc {{time}}",
+      "emptyTitle": "Chưa có lịch học",
+      "emptySubtitle": "Tạo buổi học mới hoặc tìm bạn học để bắt đầu."
+    },
+    "actions": {
+      "createSession": "Tạo buổi học",
+      "findBuddy": "Tìm bạn học"
+    },
+    "errors": {
+      "title": "Không thể tải dữ liệu",
+      "subtitle": "Vui lòng kiểm tra kết nối hoặc thử lại sau.",
+      "retry": "Thử lại"
+    }
   }
 }

@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, Animated } from 'react-native';
 import { useTheme } from '../../styles';
 import { Text } from '../ui/Text/Text';
 import Svg, { Circle } from 'react-native-svg';
+import { useTranslation } from 'react-i18next';
 
 export type HeroProgressCardProps = {
   streakDays: number;
@@ -10,26 +11,31 @@ export type HeroProgressCardProps = {
   encouragementMessage?: string;
 };
 
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+
 export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
   streakDays,
   weeklyProgress,
-  encouragementMessage = 'Tuyệt vời! Tiếp tục phát huy nhé 💪',
+  encouragementMessage,
 }) => {
   const { theme } = useTheme();
-  const progress = weeklyProgress.completed / weeklyProgress.total;
+  const { t } = useTranslation();
+  const safeProgress =
+    weeklyProgress.total > 0 ? weeklyProgress.completed / weeklyProgress.total : 0;
   const circumference = 2 * Math.PI * 52;
-  const [strokeDashoffset, setStrokeDashoffset] = useState(circumference);
+  const progressAnimated = useRef(new Animated.Value(circumference)).current;
 
   const flameScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    // Animate progress ring
-    const targetOffset = circumference * (1 - progress);
-    const timer = setTimeout(() => {
-      setStrokeDashoffset(targetOffset);
-    }, 300);
+    const targetOffset = circumference * (1 - safeProgress);
+    const progressAnimation = Animated.timing(progressAnimated, {
+      toValue: targetOffset,
+      duration: 700,
+      useNativeDriver: false,
+    });
+    progressAnimation.start();
 
-    // Animate flame
     const flameAnimation = Animated.loop(
       Animated.sequence([
         Animated.timing(flameScale, {
@@ -47,10 +53,10 @@ export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
     flameAnimation.start();
 
     return () => {
-      clearTimeout(timer);
+      progressAnimation.stop();
       flameAnimation.stop();
     };
-  }, [progress, circumference, flameScale]);
+  }, [safeProgress, circumference, flameScale, progressAnimated]);
 
   return (
     <View
@@ -92,7 +98,7 @@ export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
           </Animated.Text>
         </View>
         <Text variant="bodySmall" color="secondary" style={styles.streakLabel}>
-          Chuỗi học tập
+          {t('home.hero.streakLabel')}
         </Text>
       </View>
 
@@ -109,7 +115,7 @@ export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
             fill="none"
           />
           {/* Progress circle */}
-          <Circle
+          <AnimatedCircle
             cx={60}
             cy={60}
             r={52}
@@ -117,7 +123,7 @@ export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
             strokeWidth={10}
             fill="none"
             strokeDasharray={circumference}
-            strokeDashoffset={strokeDashoffset}
+            strokeDashoffset={progressAnimated}
             strokeLinecap="round"
             transform="rotate(-90 60 60)"
           />
@@ -133,14 +139,14 @@ export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
             {weeklyProgress.completed}/{weeklyProgress.total}
           </Text>
           <Text variant="caption" color="secondary">
-            tuần này
+            {t('home.hero.weekLabel')}
           </Text>
         </View>
       </View>
 
       {/* Encouragement Text */}
       <Text variant="bodySmall" style={styles.encouragement}>
-        {encouragementMessage}
+        {encouragementMessage || t('home.hero.encouragement')}
       </Text>
     </View>
   );

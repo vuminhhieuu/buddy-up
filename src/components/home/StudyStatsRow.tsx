@@ -59,21 +59,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 12,
     marginBottom: 28,
-    alignItems: 'stretch',
   },
   statWrapper: {
     flex: 1,
   },
   statCard: {
-    alignItems: 'stretch',
+    alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 100,
-    height: '100%',
+    minHeight: 120,
   },
   statContent: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: '100%',
   },
   statIcon: {
     fontSize: 24,
@@ -84,11 +81,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
     lineHeight: 20,
     textAlign: 'center',
-    width: '100%',
   },
   statLabel: {
     textAlign: 'center',
     lineHeight: 14,
-    width: '100%',
   },
 });
