@@ -110,6 +110,7 @@
     "step2Title": "Khi nào bạn rảnh học?",
     "step2Subtitle": "Chúng tôi sẽ gợi ý bạn học phù hợp với lịch trình của bạn",
     "availableTimesLabel": "Khi nào bạn rảnh học?",
+    "availableTimesLabelShort": "THỜI GIAN RẢNH",
     "learningStyleLabel": "Phong cách học của bạn?",
     "finishButton": "Hoàn thành",
     "step3Title": "Bạn quan tâm đến môn học nào?",
@@ -122,7 +123,17 @@
     "categoriesRequired": "Vui lòng chọn ít nhất một môn học.",
     "categoriesMaxExceeded": "Bạn chỉ được chọn tối đa {{max}} môn.",
     "availableTimesRequired": "Vui lòng chọn ít nhất một khung thời gian",
-    "learningStyleRequired": "Vui lòng chọn một phong cách học"
+    "learningStyleRequired": "Vui lòng chọn một phong cách học",
+    "completedTitle": "Hoàn thành!",
+    "completedSubtitle": "Chào mừng bạn đến với Buddy Up, {{name}}! 🎉",
+    "goalsLabel": "MỤC TIÊU HỌC TẬP",
+    "noAvailableTimes": "Chưa chọn thời gian rảnh",
+    "interestedSubjectsLabel": "MÔN HỌC QUAN TÂM",
+    "noSubjectsSelected": "Chưa chọn môn học quan tâm",
+    "findBuddyButton": "Tìm bạn học ngay",
+    "exploreAppLink": "Khám phá ứng dụng trước",
+    "noNameSet": "Chưa đặt tên",
+    "newLearnerLabel": "Học viên mới"
   },
   "time": {
     "morning": "Buổi sáng",

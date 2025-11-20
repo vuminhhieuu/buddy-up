@@ -109,6 +109,7 @@
     "step2Title": "When are you free to study?",
     "step2Subtitle": "We will suggest buddies that fit your schedule",
     "availableTimesLabel": "Your available times",
+    "availableTimesLabelShort": "AVAILABLE TIMES",
     "learningStyleLabel": "Your learning style",
     "finishButton": "Finish",
     "step3Title": "What subjects are you interested in?",
@@ -121,7 +122,17 @@
     "categoriesRequired": "Please select at least one subject.",
     "categoriesMaxExceeded": "You can select up to {{max}} subjects.",
     "availableTimesRequired": "Please choose at least one time",
-    "learningStyleRequired": "Please select a learning style"
+    "learningStyleRequired": "Please select a learning style",
+    "completedTitle": "Completed!",
+    "completedSubtitle": "Welcome to Buddy Up, {{name}}! 🎉",
+    "goalsLabel": "STUDY GOALS",
+    "noAvailableTimes": "No available times selected",
+    "interestedSubjectsLabel": "INTERESTED SUBJECTS",
+    "noSubjectsSelected": "No subjects selected",
+    "findBuddyButton": "Find a study buddy now",
+    "exploreAppLink": "Explore the app first",
+    "noNameSet": "No name set",
+    "newLearnerLabel": "New learner"
   },
   "time": {
     "morning": "Morning",
