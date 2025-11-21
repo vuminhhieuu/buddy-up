@@ -6,19 +6,21 @@ import { Icon } from '../../ui/Icon/Icon';
 import { Card } from '../../ui/Card/Card';
 import { Spacer } from '../../ui/Spacer/Spacer';
 import type { StudyStats } from '../../../types/profile';
+import { useTranslation } from 'react-i18next';
 
 export type StudyStatsSectionProps = {
   stats: StudyStats;
   style?: ViewStyle;
 };
 
-export const StudyStatsSection: React.FC<StudyStatsSectionProps> = ({ stats, style }) => {
+const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, style }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   const maxValue = Math.max(...stats.weeklyActivity.map((a) => a.value), 1);
 
   return (
-    <View style={[styles.container, { paddingHorizontal: theme.spacing[5] }, style]}>
+    <View style={[styles.container, { paddingHorizontal: theme.spacing[3] }, style]}>
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <Icon name="chart" size={20} color={theme.colors.primary[500]} />
@@ -33,7 +35,7 @@ export const StudyStatsSection: React.FC<StudyStatsSectionProps> = ({ stats, sty
               },
             ]}
           >
-            Thống kê học tập
+            {t('profileScreen.studyStats.title')}
           </Text>
         </View>
       </View>
@@ -85,7 +87,7 @@ export const StudyStatsSection: React.FC<StudyStatsSectionProps> = ({ stats, sty
               {stats.completedSessions}
             </Text>
             <Text variant="bodySmall" color="secondary" style={styles.statLabel}>
-              Buổi học hoàn thành
+              {t('profileScreen.studyStats.sessions')}
             </Text>
           </View>
           <View style={styles.statItem}>
@@ -103,7 +105,7 @@ export const StudyStatsSection: React.FC<StudyStatsSectionProps> = ({ stats, sty
               {stats.averagePerDay}
             </Text>
             <Text variant="bodySmall" color="secondary" style={styles.statLabel}>
-              Trung bình/ngày
+              {t('profileScreen.studyStats.average')}
             </Text>
           </View>
         </View>
@@ -111,6 +113,8 @@ export const StudyStatsSection: React.FC<StudyStatsSectionProps> = ({ stats, sty
     </View>
   );
 };
+
+export const StudyStatsSection = React.memo(StudyStatsSectionComponent);
 
 const styles = StyleSheet.create({
   container: {

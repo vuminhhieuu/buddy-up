@@ -1,54 +1,102 @@
-import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { Animated, View, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../../../styles';
 import { StatCard } from '../../ui/StatCard/StatCard';
-import type { UserProfile } from '../../../types/profile';
+import { useTranslation } from 'react-i18next';
 
 export type QuickStatsSectionProps = {
-  profile: UserProfile;
+  stats: {
+    streak: number;
+    totalTime: number;
+    xp: number;
+  };
   style?: ViewStyle;
 };
 
-export const QuickStatsSection: React.FC<QuickStatsSectionProps> = ({ profile, style }) => {
+const QuickStatsSectionComponent: React.FC<QuickStatsSectionProps> = ({ stats, style }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
+  const animatedValues = useRef([0, 1, 2].map(() => new Animated.Value(0))).current;
+
+  useEffect(() => {
+    Animated.stagger(
+      100,
+      animatedValues.map((value) =>
+        Animated.timing(value, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ),
+    ).start();
+  }, []);
+
+  const cards = useMemo(
+    () => [
+      {
+        id: 'streak',
+        value: t('profileScreen.quickStats.days', { count: stats.streak }),
+        label: t('profileScreen.quickStats.streak'),
+        emoji: '🔥',
+      },
+      {
+        id: 'time',
+        value: t('profileScreen.quickStats.hours', { count: stats.totalTime }),
+        label: t('profileScreen.quickStats.totalTime'),
+        emoji: '📚',
+      },
+      {
+        id: 'xp',
+        value: t('profileScreen.quickStats.xpValue', { count: stats.xp }),
+        label: t('profileScreen.quickStats.xpLabel'),
+        emoji: '⭐',
+      },
+    ],
+    [stats, t],
+  );
 
   return (
     <View
       style={[
         styles.container,
         {
-          paddingHorizontal: theme.spacing[4],
+          paddingHorizontal: theme.spacing[3],
         },
         style,
       ]}
     >
       <View style={styles.statsGrid}>
-        <StatCard
-          value={`${profile.streak} ngày`}
-          label="Streak"
-          emoji="🔥"
-          style={styles.statCard}
-        />
-        <StatCard
-          value={`${profile.totalTime} giờ`}
-          label="Tổng thời gian"
-          emoji="📚"
-          style={styles.statCard}
-        />
-        <StatCard
-          value={profile.xp.toString()}
-          label="Điểm XP"
-          emoji="⭐"
-          style={styles.statCard}
-        />
+        {cards.map((card, index) => (
+          <Animated.View
+            key={card.id}
+            style={[
+              styles.statCard,
+              {
+                opacity: animatedValues[index],
+                transform: [
+                  {
+                    translateY: animatedValues[index].interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [12, 0],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            <StatCard value={card.value} label={card.label} emoji={card.emoji} />
+          </Animated.View>
+        ))}
       </View>
     </View>
   );
 };
 
+export const QuickStatsSection = React.memo(QuickStatsSectionComponent);
+
 const styles = StyleSheet.create({
   container: {
-    marginTop: -40,
+    marginTop: -12,
     marginBottom: 24,
     position: 'relative',
     zIndex: 10,
@@ -56,17 +104,13 @@ const styles = StyleSheet.create({
   },
   statsGrid: {
     flexDirection: 'row',
-    flexWrap: 'nowrap',
     alignItems: 'stretch',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     width: '100%',
-    maxWidth: 360,
-    alignSelf: 'center',
   },
   statCard: {
-    flexGrow: 0,
-    flexShrink: 0,
-    width: 110,
-    marginHorizontal: 8,
+    flex: 1,
+    minWidth: 0,
+    marginHorizontal: 6,
   },
 });

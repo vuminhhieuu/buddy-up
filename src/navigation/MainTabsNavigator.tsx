@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { HomeScreen } from '../screens/HomeScreen';
 import { BuddyScreen } from '../screens/BuddyScreen';
 import { ChatScreen } from '../screens/ChatScreen';
-import { ProfileScreen } from '../screens/ProfileScreen';
+import { ProfileStackNavigator } from './ProfileStackNavigator';
 export type MainTabParamList = {
   Home: undefined;
   Buddy: undefined;
@@ -46,7 +46,7 @@ export const MainTabsNavigator: React.FC = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Buddy" component={BuddyScreen} />
       <Tab.Screen name="Chat" component={ChatScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
 };

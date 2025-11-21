@@ -21,6 +21,7 @@ export const HomeScreen: React.FC = () => {
   const { t } = useTranslation();
   const userId = useAppSelector((state) => state.auth.userId);
   const authDisplayName = useAppSelector((state) => state.auth.displayName);
+  const profileData = useAppSelector((state) => state.auth.profileData);
   const navigation = useNavigation<NavigationProp<MainTabParamList>>();
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const [dashboard, setDashboard] = useState<HomeDashboardData | null>(null);
@@ -186,7 +187,7 @@ export const HomeScreen: React.FC = () => {
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <HomeHeader
           name={dashboard?.profileName || authDisplayName || undefined}
-          avatarUrl={dashboard?.avatarUrl}
+          avatarUrl={profileData?.avatarUrl || dashboard?.avatarUrl}
           onNotificationPress={handleNotificationPress}
           onAvatarPress={handleAvatarPress}
         />
