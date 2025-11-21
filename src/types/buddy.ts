@@ -191,6 +191,49 @@ export interface BuddySearchResult {
 }
 
 // ============================================================================
+// Connection Request Types
+// ============================================================================
+
+/**
+ * Connection status enum (matches database enum)
+ */
+export type ConnectionStatus = 'pending' | 'accepted' | 'blocked' | 'rejected';
+
+/**
+ * Connection request from database
+ */
+export interface ConnectionRequest {
+  id: string;
+  user_id_1: string;
+  user_id_2: string;
+  status: ConnectionStatus;
+  requested_by: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+/**
+ * Response from sending a buddy request
+ */
+export interface SendBuddyRequestResponse {
+  success: boolean;
+  connection?: ConnectionRequest;
+  error?: string;
+  errorCode?: 'ALREADY_EXISTS' | 'SELF_CONNECTION' | 'INVALID_USER' | 'NETWORK_ERROR';
+}
+
+/**
+ * Connection status between two users
+ */
+export interface ConnectionStatusResult {
+  exists: boolean;
+  status: ConnectionStatus | null;
+  connectionId: string | null;
+  isRequestedByMe: boolean;
+}
+
+// ============================================================================
 // Utility Types
 // ============================================================================
 

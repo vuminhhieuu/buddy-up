@@ -4,11 +4,171 @@ import type {
   BuddyProfile,
   BuddySearchResult,
   PaginationOptions,
+  ConnectionRequest,
+  SendBuddyRequestResponse,
+  ConnectionStatusResult,
+  ConnectionStatus,
 } from '../types/buddy';
 
 /**
+ * Get connection status between two users
+ */
+export async function getConnectionStatus(
+  currentUserId: string,
+  targetUserId: string,
+): Promise<ConnectionStatusResult> {
+  try {
+    if (currentUserId === targetUserId) {
+      return {
+        exists: false,
+        status: null,
+        connectionId: null,
+        isRequestedByMe: false,
+      };
+    }
+
+    const { data: connections, error } = await supabase
+      .from('connections')
+      .select('id, user_id_1, user_id_2, status, requested_by')
+      .or(
+        `and(user_id_1.eq.${currentUserId},user_id_2.eq.${targetUserId}),and(user_id_1.eq.${targetUserId},user_id_2.eq.${currentUserId})`,
+      )
+      .is('deleted_at', null);
+
+    if (error) {
+      console.error('Error fetching connection status:', error);
+      return {
+        exists: false,
+        status: null,
+        connectionId: null,
+        isRequestedByMe: false,
+      };
+    }
+
+    // Find connection where both users are involved
+    const connection = connections?.find(
+      (conn) =>
+        (conn.user_id_1 === currentUserId && conn.user_id_2 === targetUserId) ||
+        (conn.user_id_1 === targetUserId && conn.user_id_2 === currentUserId),
+    );
+
+    if (!connection) {
+      return {
+        exists: false,
+        status: null,
+        connectionId: null,
+        isRequestedByMe: false,
+      };
+    }
+
+    return {
+      exists: true,
+      status: connection.status as ConnectionStatus,
+      connectionId: connection.id,
+      isRequestedByMe: connection.requested_by === currentUserId,
+    };
+  } catch (error) {
+    console.error('Error in getConnectionStatus:', error);
+    return {
+      exists: false,
+      status: null,
+      connectionId: null,
+      isRequestedByMe: false,
+    };
+  }
+}
+
+/**
+ * Send a buddy connection request
+ */
+export async function sendBuddyRequest(
+  currentUserId: string,
+  targetUserId: string,
+): Promise<SendBuddyRequestResponse> {
+  try {
+    // Validate: cannot send request to self
+    if (currentUserId === targetUserId) {
+      return {
+        success: false,
+        error: 'Cannot send connection request to yourself',
+        errorCode: 'SELF_CONNECTION',
+      };
+    }
+
+    // Check if connection already exists
+    const existingStatus = await getConnectionStatus(currentUserId, targetUserId);
+    if (existingStatus.exists) {
+      return {
+        success: false,
+        error: 'Connection request already exists',
+        errorCode: 'ALREADY_EXISTS',
+      };
+    }
+
+    // Verify target user exists
+    const { data: targetProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('user_id', targetUserId)
+      .is('deleted_at', null)
+      .single();
+
+    if (profileError || !targetProfile) {
+      return {
+        success: false,
+        error: 'Target user not found',
+        errorCode: 'INVALID_USER',
+      };
+    }
+
+    // Create connection request
+    // Ensure user_id_1 < user_id_2 for consistency (or use any order, database will handle)
+    const { data: connection, error: insertError } = await supabase
+      .from('connections')
+      .insert({
+        user_id_1: currentUserId,
+        user_id_2: targetUserId,
+        status: 'pending',
+        requested_by: currentUserId,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error('Error creating connection request:', insertError);
+      // Check if it's a duplicate (race condition)
+      if (insertError.code === '23505') {
+        // Unique constraint violation
+        return {
+          success: false,
+          error: 'Connection request already exists',
+          errorCode: 'ALREADY_EXISTS',
+        };
+      }
+      return {
+        success: false,
+        error: insertError.message || 'Failed to send connection request',
+        errorCode: 'NETWORK_ERROR',
+      };
+    }
+
+    return {
+      success: true,
+      connection: connection as ConnectionRequest,
+    };
+  } catch (error) {
+    console.error('Error in sendBuddyRequest:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      errorCode: 'NETWORK_ERROR',
+    };
+  }
+}
+
+/**
  * Get list of user IDs that should be excluded from search results
- * (current user + users with existing connections)
+ * (current user + users with existing connections including pending requests)
  */
 export async function getExcludedUserIds(currentUserId: string): Promise<string[]> {
   try {
@@ -25,6 +185,7 @@ export async function getExcludedUserIds(currentUserId: string): Promise<string[
       return Array.from(excludedIds);
     }
 
+    // Exclude all users with any connection status (pending, accepted, blocked, rejected)
     connections?.forEach((conn) => {
       if (conn.user_id_1 === currentUserId) {
         excludedIds.add(conn.user_id_2);

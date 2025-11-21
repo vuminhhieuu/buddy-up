@@ -242,6 +242,16 @@
         "pass": "Pass"
       }
     },
+    "request": {
+      "sent": "Request sent",
+      "sentSuccess": "Connection request sent successfully",
+      "sentError": "Failed to send connection request. Please try again.",
+      "alreadySent": "You have already sent a connection request to this user",
+      "alreadyExists": "Connection request already exists",
+      "selfConnection": "Cannot send connection request to yourself",
+      "invalidUser": "User not found",
+      "networkError": "Network error. Please try again."
+    },
     "actions": {
       "skip": "Skip",
       "save": "Save",
