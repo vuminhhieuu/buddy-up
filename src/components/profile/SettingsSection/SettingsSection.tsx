@@ -73,17 +73,29 @@ const SettingsSectionComponent: React.FC<SettingsSectionProps> = ({ items, style
                     color={isDanger ? theme.colors.semantic.error : theme.colors.text.secondary}
                   />
                 </View>
-                <Text
-                  variant="body"
-                  style={[
-                    styles.settingsItemText,
-                    isDanger && { color: theme.colors.semantic.error },
-                  ]}
-                >
-                  {item.label}
-                </Text>
+                <View style={styles.settingsItemBody}>
+                  <Text
+                    variant="body"
+                    style={[
+                      styles.settingsItemText,
+                      isDanger && { color: theme.colors.semantic.error },
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                  {item.subtitle ? (
+                    <Text variant="bodySmall" color="secondary">
+                      {item.subtitle}
+                    </Text>
+                  ) : null}
+                </View>
               </View>
-              <Icon name="chevronRight" size={14} color={theme.colors.text.tertiary} />
+              <View style={styles.settingsItemRight}>
+                {item.rightElement ? (
+                  <View style={styles.customRightElement}>{item.rightElement}</View>
+                ) : null}
+                <Icon name="chevronRight" size={14} color={theme.colors.text.tertiary} />
+              </View>
             </Pressable>
           );
         })}
@@ -133,6 +145,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
+  settingsItemBody: {
+    flex: 1,
+  },
+  settingsItemRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   settingsIcon: {
     width: 36,
     height: 36,
@@ -143,5 +162,8 @@ const styles = StyleSheet.create({
   settingsItemText: {
     fontSize: 15,
     fontWeight: '500',
+  },
+  customRightElement: {
+    marginRight: 8,
   },
 });

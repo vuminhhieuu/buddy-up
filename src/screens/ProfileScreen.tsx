@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   ActivityIndicator,
   Alert,
+  Modal,
+  Pressable,
   RefreshControl,
   ScrollView,
   StyleSheet,
@@ -28,12 +30,28 @@ import {
   uploadAvatarToStorage,
   updateProfileAvatar,
 } from '../services/profile';
+import { saveLanguage, getStoredLanguage, type SupportedLanguage } from '../services/language';
 import { useTheme } from '../styles';
 import type { ProfileStackParamList } from '../navigation/ProfileStackNavigator';
 import { ImagePickerModal } from '../components/ui/ImagePickerModal/ImagePickerModal';
+import {
+  VietnamFlagIcon,
+  UnitedStatesFlagIcon,
+  type FlagIconProps,
+} from '../components/icons/flags';
+
+type FlagComponent = React.FC<FlagIconProps>;
+
+const LANGUAGE_CONFIGS: Array<{
+  code: SupportedLanguage;
+  Flag: FlagComponent;
+}> = [
+  { code: 'vi', Flag: VietnamFlagIcon },
+  { code: 'en', Flag: UnitedStatesFlagIcon },
+];
 
 export const ProfileScreen: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const dispatch = useAppDispatch();
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
   const {
@@ -59,6 +77,9 @@ export const ProfileScreen: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [imagePickerVisible, setImagePickerVisible] = useState(false);
   const [updatingAvatar, setUpdatingAvatar] = useState(false);
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
+  const [languageChanging, setLanguageChanging] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState<SupportedLanguage>('vi');
 
   const resolvedProfile: UserProfile = useMemo(() => {
     const profileName = profileOverview?.name;
@@ -89,6 +110,16 @@ export const ProfileScreen: React.FC = () => {
       xp: resolvedProfile.xp,
     }),
     [resolvedProfile],
+  );
+
+  const languageOptions = useMemo(
+    () =>
+      LANGUAGE_CONFIGS.map((config) => ({
+        ...config,
+        nativeName: t(`languageScreen.languages.${config.code}`),
+        englishName: t(`languageScreen.languageNames.${config.code}`),
+      })),
+    [t, i18n.language],
   );
 
   const loadData = useCallback(
@@ -125,6 +156,15 @@ export const ProfileScreen: React.FC = () => {
     }
   }, [userId]);
 
+  useEffect(() => {
+    const loadLanguagePreference = async () => {
+      const stored = await getStoredLanguage();
+      const current = (stored || i18n.language || 'vi') as SupportedLanguage;
+      setSelectedLanguage(current);
+    };
+    loadLanguagePreference();
+  }, [i18n.language]);
+
   const handleRefresh = useCallback(() => {
     if (!userId) return;
     setRefreshing(true);
@@ -145,7 +185,9 @@ export const ProfileScreen: React.FC = () => {
   }, [dispatch, t]);
 
   const handleOpenSettingsSection = useCallback(
-    (section?: string) => navigation.navigate('ProfileSettings', { section }),
+    (section?: string) => {
+      navigation.navigate('ProfileSettings', { section });
+    },
     [navigation],
   );
 
@@ -198,6 +240,40 @@ export const ProfileScreen: React.FC = () => {
     [dispatch, t, userId],
   );
 
+  const currentLanguage =
+    languageOptions.find((lang) => lang.code === selectedLanguage) ?? languageOptions[0];
+
+  const handleLanguageItemPress = useCallback(() => {
+    setLanguageModalVisible(true);
+  }, []);
+
+  const closeLanguageModal = useCallback(() => {
+    if (!languageChanging) {
+      setLanguageModalVisible(false);
+    }
+  }, [languageChanging]);
+
+  const handleLanguageChange = useCallback(
+    async (language: SupportedLanguage) => {
+      if (language === selectedLanguage || languageChanging) {
+        setLanguageModalVisible(false);
+        return;
+      }
+
+      setLanguageChanging(true);
+      try {
+        await saveLanguage(language);
+        setSelectedLanguage(language);
+        setLanguageModalVisible(false);
+      } catch (err) {
+        Alert.alert(t('common.error'), t('languageScreen.changeError'));
+      } finally {
+        setLanguageChanging(false);
+      }
+    },
+    [languageChanging, selectedLanguage, t],
+  );
+
   const settingsItems: SettingsItem[] = useMemo(
     () => [
       {
@@ -228,7 +304,24 @@ export const ProfileScreen: React.FC = () => {
         id: 'language',
         label: t('profileScreen.settings.language'),
         icon: 'globe',
-        onPress: () => handleOpenSettingsSection('language'),
+        onPress: handleLanguageItemPress,
+        rightElement: (
+          <View
+            style={[
+              styles.languageSettingBadge,
+              {
+                backgroundColor: theme.colors.surface,
+                shadowColor: '#000',
+                shadowOpacity: 0.06,
+                shadowRadius: 6,
+                shadowOffset: { width: 0, height: 2 },
+                elevation: 1,
+              },
+            ]}
+          >
+            <currentLanguage.Flag width={28} height={18} borderRadius={4} />
+          </View>
+        ),
       },
       {
         id: 'help',
@@ -248,7 +341,14 @@ export const ProfileScreen: React.FC = () => {
           ]),
       },
     ],
-    [handleOpenSettingsSection, handleSignOut, t],
+    [
+      handleLanguageItemPress,
+      handleOpenSettingsSection,
+      handleSignOut,
+      t,
+      theme.colors.surface,
+      currentLanguage,
+    ],
   );
 
   if (!userId) {
@@ -323,6 +423,86 @@ export const ProfileScreen: React.FC = () => {
         onClose={() => setImagePickerVisible(false)}
         onSelectImage={handleAvatarSelected}
       />
+      <Modal
+        visible={languageModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={closeLanguageModal}
+      >
+        <View style={styles.languageModalOverlay}>
+          <Pressable
+            style={styles.languageModalBackdrop}
+            onPress={closeLanguageModal}
+            accessibilityRole="button"
+            accessibilityLabel={t('languageScreen.closeLanguageSelection')}
+          />
+          <View style={[styles.languageModalContent, { backgroundColor: theme.colors.surface }]}>
+            <View style={[styles.languagePullHandle, { backgroundColor: theme.colors.border }]} />
+            <View style={styles.languageModalHeader}>
+              <Text variant="h5" style={styles.languageModalTitle}>
+                {t('languageScreen.selectLanguage')}
+              </Text>
+            </View>
+            <View style={styles.languageOptionList}>
+              {languageOptions.map((lang) => {
+                const isSelected = lang.code === selectedLanguage;
+                return (
+                  <Pressable
+                    key={lang.code}
+                    onPress={() => handleLanguageChange(lang.code)}
+                    disabled={languageChanging}
+                    style={({ pressed }) => [
+                      styles.languageOptionItem,
+                      pressed && { backgroundColor: theme.colors.neutral[100] },
+                      isSelected && { backgroundColor: theme.colors.primary[50] },
+                    ]}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${lang.nativeName}${
+                      isSelected ? `, ${t('languageScreen.currentLanguage')}` : ''
+                    }`}
+                  >
+                    <View
+                      style={[
+                        styles.languageOptionFlag,
+                        {
+                          backgroundColor: theme.colors.surface,
+                        },
+                      ]}
+                    >
+                      <lang.Flag width={30} height={20} borderRadius={4} />
+                    </View>
+                    <View style={styles.languageOptionTexts}>
+                      <Text variant="body" style={styles.languageOptionName}>
+                        {lang.nativeName}
+                      </Text>
+                      <Text variant="bodySmall" color="secondary">
+                        {lang.englishName}
+                      </Text>
+                    </View>
+                    {isSelected && (
+                      <View
+                        style={[
+                          styles.languageOptionCheck,
+                          { backgroundColor: theme.colors.primary[500] },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.languageOptionCheckText,
+                            { color: theme.colors.text.inverse },
+                          ]}
+                        >
+                          ✓
+                        </Text>
+                      </View>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenContainer>
   );
 };
@@ -341,5 +521,78 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  languageSettingBadge: {
+    width: 36,
+    height: 24,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  languageModalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  languageModalBackdrop: {
+    flex: 1,
+  },
+  languageModalContent: {
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingBottom: 24,
+  },
+  languagePullHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  languageModalHeader: {
+    paddingHorizontal: 24,
+    paddingBottom: 12,
+  },
+  languageModalTitle: {
+    fontWeight: '700',
+  },
+  languageOptionList: {
+    paddingHorizontal: 24,
+  },
+  languageOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    marginBottom: 12,
+  },
+  languageOptionFlag: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+  },
+  languageOptionTexts: {
+    flex: 1,
+  },
+  languageOptionName: {
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  languageOptionCheck: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  languageOptionCheckText: {
+    fontWeight: '700',
   },
 });

@@ -3,13 +3,10 @@
   "appName": "Buddy Up",
   "login": "Log in",
   "register": "Register",
-  "home": "Home",
-  "chat": "Chat",
-  "profile": "Profile",
   "navigation": {
     "home": "Home",
     "buddy": "Buddy",
-    "chat": "Messages",
+    "chat": "Chat",
     "profile": "Profile"
   },
   "auth": {
@@ -357,5 +354,21 @@
       "progress": "Progress: {{value}}%"
     },
     "pullToRefresh": "Pull to refresh"
+  },
+  "languageScreen": {
+    "title": "Language",
+    "currentLanguage": "Current language",
+    "closeLanguageSelection": "Close language selection",
+    "selectLanguage": "Select language",
+    "languages": {
+      "vi": "Tiếng Việt",
+      "en": "English"
+    },
+    "languageNames": {
+      "vi": "Vietnamese",
+      "en": "English"
+    },
+    "changeSuccess": "Language changed successfully",
+    "changeError": "An error occurred while changing the language"
   }
 }

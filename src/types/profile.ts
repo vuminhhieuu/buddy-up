@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react';
+
 /**
  * Profile-related types and interfaces
  */
@@ -49,4 +51,6 @@ export type SettingsItem = {
   icon: string;
   onPress: () => void;
   variant?: 'default' | 'danger';
+  subtitle?: string;
+  rightElement?: ReactNode;
 };
