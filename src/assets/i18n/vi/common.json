@@ -161,6 +161,25 @@
     "searching": "Đang tìm kiếm...",
     "errorTitle": "Lỗi tìm kiếm",
     "retry": "Thử lại",
+    "searchHelper": "Gõ nhanh tên, môn học hoặc từ khóa (ví dụ: “IELTS”)",
+    "quickFilters": {
+      "all": "Tất cả",
+      "programming": "Lập trình",
+      "japanese": "Tiếng Nhật",
+      "english": "Tiếng Anh",
+      "toeic": "TOEIC",
+      "more": "+ Thêm"
+    },
+    "pendingCard": {
+      "title": "{{count}} đề xuất đang chờ",
+      "subtitle": "Xem lời mời kết nối để không bỏ lỡ cơ hội học cùng nhau",
+      "action": "Xem tất cả"
+    },
+    "header": {
+      "matchCount": "{{count}} bạn học phù hợp",
+      "noMatches": "Chưa có gợi ý nào, thử đổi tiêu chí nhé",
+      "filterHint": "Điều chỉnh từ khóa hoặc mở rộng bộ lọc để thấy nhiều kết quả hơn"
+    },
     "noResultsTitle": "Không tìm thấy kết quả",
     "noResultsMessage": "Không có bạn học nào phù hợp với tiêu chí tìm kiếm của bạn. Hãy thử điều chỉnh bộ lọc.",
     "resetFilters": "Đặt lại bộ lọc",
@@ -208,13 +227,33 @@
       "availableTimes": "Thời gian rảnh",
       "bio": "Giới thiệu",
       "age": "{{age}} tuổi",
-      "notUpdated": "Chưa cập nhật"
+      "notUpdated": "Chưa cập nhật",
+      "noInterests": "Chưa thêm sở thích học tập",
+      "noAvailableTimes": "Chưa chia sẻ thời gian rảnh",
+      "learningStyleTitle": "Phong cách học",
+      "viewDetailsHint": "Vuốt phải để kết nối hoặc xem chi tiết đầy đủ"
     },
     "loading": "Đang tải...",
     "stack": {
       "noMoreResults": "Không còn kết quả",
       "allViewed": "Đã xem hết",
-      "adjustFilters": "Hãy thử điều chỉnh bộ lọc để tìm thêm bạn học"
+      "adjustFilters": "Hãy thử điều chỉnh bộ lọc để tìm thêm bạn học",
+      "overlay": {
+        "like": "Kết nối",
+        "pass": "Bỏ qua"
+      }
+    },
+    "actions": {
+      "skip": "Bỏ qua",
+      "save": "Lưu",
+      "connect": "Kết nối"
+    },
+    "swipeHint": "Vuốt trái để bỏ qua, vuốt phải để kết nối ↔️",
+    "toast": {
+      "saved": "Đã lưu hồ sơ",
+      "unsaved": "Đã bỏ lưu",
+      "connected": "Đã gửi lời mời kết nối! 💚",
+      "skipped": "Đã bỏ qua"
     }
   },
   "home": {

@@ -4,3 +4,7 @@ export { BuddyStack } from './BuddyStack';
 export type { BuddyStackProps } from './BuddyStack';
 export { FilterModal } from './FilterModal';
 export type { FilterModalProps } from './FilterModal';
+export { BuddyHero } from './BuddyHero';
+export type { BuddyHeroProps } from './BuddyHero';
+export { BuddyBackground } from './BuddyBackground';
+export { SwipeHint } from './SwipeHint';
