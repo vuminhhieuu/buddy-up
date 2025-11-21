@@ -243,6 +243,16 @@
         "pass": "Bỏ qua"
       }
     },
+    "request": {
+      "sent": "Đã gửi lời mời",
+      "sentSuccess": "Đã gửi lời mời kết nối thành công",
+      "sentError": "Không thể gửi lời mời. Vui lòng thử lại.",
+      "alreadySent": "Bạn đã gửi lời mời kết nối đến người này rồi",
+      "alreadyExists": "Lời mời kết nối đã tồn tại",
+      "selfConnection": "Không thể gửi lời mời cho chính mình",
+      "invalidUser": "Người dùng không tồn tại",
+      "networkError": "Lỗi kết nối mạng. Vui lòng thử lại."
+    },
     "actions": {
       "skip": "Bỏ qua",
       "save": "Lưu",
