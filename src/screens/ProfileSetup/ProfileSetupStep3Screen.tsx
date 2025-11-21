@@ -1,19 +1,22 @@
 import React, { useMemo, useState } from 'react';
 import { View, Pressable } from 'react-native';
 import { ScreenContainer, Text, Button } from '../../components/ui';
+import { SkipButton } from '../../components/ui/SkipButton/SkipButton';
 import { ProcessHeader } from '../../components/ui';
 import { useTheme } from '../../styles';
 import { ArrowLeft } from 'lucide-react-native';
 import { Globe, Laptop, Pencil, BookOpen } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
+import { setProfileSetupInProgress } from '../../store/slices/authSlice';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
-import { useAppSelector } from '../../store/hooks';
 import { MIN_CATEGORIES } from '../../constants/profileSetup';
 
 export type ProfileSetupStep3ScreenProps = {
   onNext?: (selectedOptions?: string[]) => void;
   onBack?: () => void;
+  onSkip?: () => void;
 };
 
 export const CATEGORY_GROUPS = [
@@ -76,6 +79,8 @@ const profileStep3Schema = Yup.object().shape({
 export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (props) => {
   const minSelect = MIN_CATEGORIES;
   const { onNext, onBack } = props;
+  const { onSkip } = props;
+  const dispatch = useAppDispatch();
   const profileData = useAppSelector((s) => s.auth.profileData);
   const { t } = useTranslation();
   const { theme } = useTheme();
@@ -84,6 +89,10 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
     return {
       header: {
         paddingHorizontal: theme.spacing[4],
+        paddingVertical: theme.spacing[2],
+      },
+      skipButton: {
+        alignSelf: 'flex-end' as const,
         paddingVertical: theme.spacing[2],
       },
       groupTitle: {
@@ -149,25 +158,36 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
           progressBarBgColor={theme.colors.border}
           containerStyle={styles.header}
         >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('common.back', { defaultValue: 'Back' })}
-            onPress={onBack || (() => {})}
+          <View
             style={{
-              width: 35,
-              height: 35,
-              borderRadius: theme.radius.md,
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
               alignItems: 'center',
-              justifyContent: 'center',
-              backgroundColor: theme.colors.background,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              marginBottom: theme.spacing[2],
-              alignSelf: 'flex-start',
             }}
           >
-            <ArrowLeft size={18} color={theme.colors.text.primary} />
-          </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('common.back', { defaultValue: 'Back' })}
+              onPress={onBack || (() => {})}
+              style={{
+                width: 35,
+                height: 35,
+                borderRadius: theme.radius.md,
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: theme.colors.background,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                marginBottom: theme.spacing[2],
+                alignSelf: 'flex-start',
+              }}
+            >
+              <ArrowLeft size={18} color={theme.colors.text.primary} />
+            </Pressable>
+
+            <SkipButton onSkip={onSkip} style={styles.skipButton} />
+          </View>
         </ProcessHeader>
         <View
           style={{

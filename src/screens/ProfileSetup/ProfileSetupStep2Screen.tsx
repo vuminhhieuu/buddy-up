@@ -1,24 +1,27 @@
 import React, { useMemo, useState } from 'react';
 import { View, Pressable, Dimensions } from 'react-native';
 import { ScreenContainer, Text, Button, Spacer } from '../../components/ui';
+import { SkipButton } from '../../components/ui/SkipButton/SkipButton';
 import { ProcessHeader } from '../../components/ui';
 import { useTheme } from '../../styles';
 import { useTranslation } from 'react-i18next';
 import { Formik } from 'formik';
 import { profileStep2Schema } from '../../utils/validation';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { setProfileData } from '../../store/slices/authSlice';
+import { setProfileData, setProfileSetupInProgress } from '../../store/slices/authSlice';
 import { Sun, CloudSun, Moon, PartyPopper, Zap, ArrowLeft } from 'lucide-react-native';
 import { BASE_HORIZONTAL_PADDING } from '../../constants/layout';
 
 export type ProfileSetupStep2ScreenProps = {
   onNext?: () => void;
   onBack?: () => void;
+  onSkip?: () => void;
 };
 
 export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = ({
   onNext,
   onBack,
+  onSkip,
 }) => {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -122,6 +125,10 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
       footer: {
         paddingBottom: theme.spacing[4],
       },
+      skipButton: {
+        alignSelf: 'flex-end' as const,
+        paddingVertical: theme.spacing[2],
+      },
     };
   }, [theme]);
 
@@ -178,14 +185,25 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
           progressBarBgColor={theme.colors.border}
           containerStyle={styles.header}
         >
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('common.back')}
-            onPress={onBack || (() => {})}
-            style={styles.backButton}
+          <View
+            style={{
+              width: '100%',
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
           >
-            <ArrowLeft size={18} color={theme.colors.text.primary} />
-          </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t('common.back')}
+              onPress={onBack || (() => {})}
+              style={styles.backButton}
+            >
+              <ArrowLeft size={18} color={theme.colors.text.primary} />
+            </Pressable>
+
+            <SkipButton onSkip={onSkip} style={styles.skipButton} />
+          </View>
         </ProcessHeader>
 
         <View
