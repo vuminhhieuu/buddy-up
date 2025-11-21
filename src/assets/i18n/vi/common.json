@@ -241,6 +241,7 @@
     },
     "request": {
       "sent": "Đã gửi lời mời",
+      "sending": "Đang gửi lời mời...",
       "sentSuccess": "Đã gửi lời mời kết nối thành công",
       "sentError": "Không thể gửi lời mời. Vui lòng thử lại.",
       "alreadySent": "Bạn đã gửi lời mời kết nối đến người này rồi",

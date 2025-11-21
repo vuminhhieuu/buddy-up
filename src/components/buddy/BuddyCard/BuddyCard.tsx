@@ -28,6 +28,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
 }) => {
   const { t } = useTranslation();
   const { theme } = useTheme();
+  const requestStatus = data.requestStatus ?? 'idle';
   const hasInterests = data.interests && data.interests.length > 0;
   const hasTimes = data.availableTimes && data.availableTimes.length > 0;
   const sectionTitleStyle = {
@@ -52,6 +53,55 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
       </Text>
     </View>
   );
+
+  const renderRequestStatus = () => {
+    if (requestStatus === 'idle') return null;
+
+    const statusStyles = {
+      pending: {
+        backgroundColor: theme.colors.semantic.warning + '20',
+        borderColor: theme.colors.semantic.warning,
+        textColor: theme.colors.semantic.warning,
+        label: t('buddy.request.sending'),
+      },
+      sent: {
+        backgroundColor: theme.colors.semantic.success + '20',
+        borderColor: theme.colors.semantic.success,
+        textColor: theme.colors.semantic.success,
+        label: t('buddy.request.sent'),
+      },
+      error: {
+        backgroundColor: theme.colors.semantic.error + '20',
+        borderColor: theme.colors.semantic.error,
+        textColor: theme.colors.semantic.error,
+        label: t('buddy.request.sentError'),
+      },
+    } as const;
+
+    const config = statusStyles[requestStatus as keyof typeof statusStyles] ?? statusStyles.sent;
+
+    return (
+      <View
+        style={{
+          paddingHorizontal: theme.spacing[4],
+          paddingVertical: theme.spacing[1],
+          borderRadius: theme.radius.full,
+          borderWidth: 1.5,
+          borderColor: config.borderColor,
+          backgroundColor: config.backgroundColor,
+          alignSelf: 'flex-start',
+        }}
+      >
+        <Text
+          variant="bodySmall"
+          color="primary"
+          style={{ color: config.textColor, fontWeight: '600' }}
+        >
+          {config.label}
+        </Text>
+      </View>
+    );
+  };
 
   const cardContent = (
     <Card
@@ -123,6 +173,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
         </LinearGradient>
 
         <View style={{ flexGrow: 1, gap: theme.spacing[5] }}>
+          {renderRequestStatus()}
           {/* Main Goal Badge */}
           <View
             style={{

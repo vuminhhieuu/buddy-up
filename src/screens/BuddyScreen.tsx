@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '../components/ui/Text/Text';
 import { Spacer } from '../components/ui/Spacer/Spacer';
 import { ScreenContainer } from '../components/ui/ScreenContainer/ScreenContainer';
-import { Toast } from '../components/ui/Toast/Toast';
 import { BuddyBackground } from '../components/buddy/BuddyBackground/BuddyBackground';
 import { BuddyHero } from '../components/buddy/BuddyHero/BuddyHero';
 import { SwipeHint } from '../components/buddy/SwipeHint/SwipeHint';
@@ -20,49 +19,69 @@ import {
   setFilters,
   resetFilters,
   setCurrentStackIndex,
+  sendBuddyRequestAsync,
 } from '../store/slices/buddySlice';
 import { profileToCardData, countActiveFilters } from '../utils/buddy';
 import { getCurrentUserId } from '../utils/buddy';
 import { useTheme } from '../styles';
-import type { BuddyFilters } from '../types/buddy';
+import type { BuddyFilters, BuddyCardData } from '../types/buddy';
+import { DEFAULT_BUDDY_FILTERS } from '../types/buddy';
+import { showSuccessToast, showErrorToast, showInfoToast } from '../utils/toast';
+
+import {
+  SWIPE_HINT_STORAGE_KEY,
+  SEARCH_DEBOUNCE_MS,
+  SWIPE_HINT_DURATION_MS,
+} from '../constants/buddy';
 
 export const BuddyScreen: React.FC = () => {
   const { t } = useTranslation();
   const { theme } = useTheme();
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
-  const { filters, results, currentStackIndex, loading, error, totalCount } = useAppSelector(
-    (state) => state.buddy,
-  );
+  const {
+    filters,
+    results,
+    currentStackIndex,
+    loading,
+    error,
+    totalCount,
+    requestStatuses = {},
+  } = useAppSelector((state) => state.buddy);
   const currentUserId = useAppSelector(getCurrentUserId);
 
   const [searchQuery, setSearchQuery] = useState(filters.searchQuery || '');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
   const [savedProfiles, setSavedProfiles] = useState<Record<string, boolean>>({});
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastVisible, setToastVisible] = useState(false);
-  const toastTimeout = useRef<NodeJS.Timeout | null>(null);
   const [swipeHintVisible, setSwipeHintVisible] = useState(false);
   const swipeHintTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Convert profiles to card data (memoized to avoid recalculation on every render)
-  const cardData = useMemo(() => results.map(profileToCardData), [results]);
+  const visibleProfiles = useMemo(
+    () =>
+      results.filter((profile) => {
+        const status = requestStatuses?.[profile.user_id];
+        return status !== 'sent';
+      }),
+    [results, requestStatuses],
+  );
 
-  const showToast = useCallback((message: string) => {
-    setToastMessage(message);
-    setToastVisible(true);
-    if (toastTimeout.current) {
-      clearTimeout(toastTimeout.current);
-    }
-    toastTimeout.current = setTimeout(() => setToastVisible(false), 2200);
-  }, []);
+  const cardData = useMemo(
+    () =>
+      visibleProfiles.map((profile) => {
+        const base = profileToCardData(profile);
+        const status = requestStatuses?.[base.userId] ?? 'idle';
+        return {
+          ...base,
+          requestStatus: status,
+        } as BuddyCardData;
+      }),
+    [visibleProfiles, requestStatuses],
+  );
 
   useEffect(() => {
     return () => {
-      if (toastTimeout.current) {
-        clearTimeout(toastTimeout.current);
-      }
       if (swipeHintTimeout.current) {
         clearTimeout(swipeHintTimeout.current);
       }
@@ -70,19 +89,21 @@ export const BuddyScreen: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const SWIPE_HINT_KEY = 'buddy_swipe_hint_seen';
-    async function checkHint() {
+    const checkHint = async () => {
       try {
-        const hasSeen = await AsyncStorage.getItem(SWIPE_HINT_KEY);
+        const hasSeen = await AsyncStorage.getItem(SWIPE_HINT_STORAGE_KEY);
         if (!hasSeen) {
           setSwipeHintVisible(true);
-          swipeHintTimeout.current = setTimeout(() => setSwipeHintVisible(false), 3000);
-          await AsyncStorage.setItem(SWIPE_HINT_KEY, 'true');
+          swipeHintTimeout.current = setTimeout(
+            () => setSwipeHintVisible(false),
+            SWIPE_HINT_DURATION_MS,
+          );
+          await AsyncStorage.setItem(SWIPE_HINT_STORAGE_KEY, 'true');
         }
       } catch {
         setSwipeHintVisible(false);
       }
-    }
+    };
     checkHint();
   }, []);
 
@@ -114,7 +135,7 @@ export const BuddyScreen: React.FC = () => {
 
     const timer = setTimeout(() => {
       performSearch();
-    }, 500); // 500ms debounce
+    }, SEARCH_DEBOUNCE_MS);
 
     setDebounceTimer(timer);
 
@@ -133,51 +154,103 @@ export const BuddyScreen: React.FC = () => {
   }, [currentUserId]);
 
   // Handle filter apply
-  const handleFilterApply = (newFilters: BuddyFilters) => {
-    dispatch(setFilters(newFilters));
-    setFilterModalVisible(false);
-    if (currentUserId) {
-      dispatch(
-        searchBuddiesAsync({
-          filters: newFilters,
-          currentUserId,
-        }),
-      );
-    }
-  };
+  const handleFilterApply = useCallback(
+    (newFilters: BuddyFilters) => {
+      dispatch(setFilters(newFilters));
+      setFilterModalVisible(false);
+      if (currentUserId) {
+        dispatch(
+          searchBuddiesAsync({
+            filters: newFilters,
+            currentUserId,
+          }),
+        );
+      }
+    },
+    [currentUserId, dispatch],
+  );
 
   // Handle filter reset
-  const handleFilterReset = () => {
+  const handleFilterReset = useCallback(() => {
     dispatch(resetFilters());
     setSearchQuery('');
     setFilterModalVisible(false);
     if (currentUserId) {
       dispatch(
         searchBuddiesAsync({
-          filters: { ...filters, searchQuery: undefined },
+          filters: DEFAULT_BUDDY_FILTERS,
           currentUserId,
         }),
       );
     }
-  };
+  }, [currentUserId, dispatch]);
+
+  const getRequestErrorMessage = useCallback(
+    (errorCode?: string) => {
+      switch (errorCode) {
+        case 'SELF_CONNECTION':
+          return t('buddy.request.selfConnection');
+        case 'ALREADY_EXISTS':
+          return t('buddy.request.alreadyExists');
+        case 'INVALID_USER':
+          return t('buddy.request.invalidUser');
+        default:
+          return t('buddy.request.sentError');
+      }
+    },
+    [t],
+  );
 
   // Handle swipe left (skip)
-  const handleSwipeLeft = (card: (typeof cardData)[0]) => {
-    const nextIndex = currentStackIndex + 1;
-    if (nextIndex < cardData.length) {
-      dispatch(setCurrentStackIndex(nextIndex));
-    }
-    showToast(t('buddy.toast.skipped'));
-  };
+  const handleSwipeLeft = useCallback(
+    (card: BuddyCardData) => {
+      const nextIndex = currentStackIndex + 1;
+      if (nextIndex < cardData.length) {
+        dispatch(setCurrentStackIndex(nextIndex));
+      }
+      showInfoToast(t('buddy.toast.skipped'));
+    },
+    [currentStackIndex, cardData.length, dispatch, t],
+  );
 
-  // Handle swipe right (save/connect)
-  const handleSwipeRight = (card: (typeof cardData)[0]) => {
-    const nextIndex = currentStackIndex + 1;
-    if (nextIndex < cardData.length) {
-      dispatch(setCurrentStackIndex(nextIndex));
-    }
-    showToast(t('buddy.toast.connected'));
-  };
+  // Handle swipe right (send connection request)
+  const handleSwipeRight = useCallback(
+    (card: BuddyCardData) => {
+      const nextIndex = currentStackIndex + 1;
+      if (nextIndex < cardData.length) {
+        dispatch(setCurrentStackIndex(nextIndex));
+      }
+
+      if (!currentUserId) {
+        showErrorToast(t('buddy.request.invalidUser'));
+        return;
+      }
+
+      const status = requestStatuses?.[card.userId];
+      if (status === 'pending' || status === 'sent') {
+        showInfoToast(t('buddy.request.alreadySent'));
+        return;
+      }
+
+      dispatch(sendBuddyRequestAsync({ targetUserId: card.userId }))
+        .unwrap()
+        .then(() => {
+          showSuccessToast(t('buddy.request.sentSuccess'));
+        })
+        .catch((error: { errorCode?: string }) => {
+          showErrorToast(getRequestErrorMessage(error.errorCode));
+        });
+    },
+    [
+      currentStackIndex,
+      cardData.length,
+      currentUserId,
+      requestStatuses,
+      dispatch,
+      t,
+      getRequestErrorMessage,
+    ],
+  );
 
   // Handle stack empty
   const handleStackEmpty = () => {
@@ -197,20 +270,24 @@ export const BuddyScreen: React.FC = () => {
   }, []);
 
   const handleToggleSave = useCallback(
-    (card: (typeof cardData)[0]) => {
+    (card: BuddyCardData) => {
+      const alreadySaved = Boolean(savedProfiles[card.userId]);
       setSavedProfiles((prev) => {
         const next = { ...prev };
-        if (next[card.userId]) {
+        if (alreadySaved) {
           delete next[card.userId];
-          showToast(t('buddy.toast.unsaved'));
         } else {
           next[card.userId] = true;
-          showToast(t('buddy.toast.saved'));
         }
         return next;
       });
+      if (alreadySaved) {
+        showInfoToast(t('buddy.toast.unsaved'));
+      } else {
+        showSuccessToast(t('buddy.toast.saved'));
+      }
     },
-    [showToast, t],
+    [savedProfiles, t],
   );
 
   const isSaved = useCallback(
@@ -225,7 +302,6 @@ export const BuddyScreen: React.FC = () => {
       <View style={{ flex: 1 }}>
         <BuddyBackground />
         <SwipeHint visible={swipeHintVisible} message={t('buddy.swipeHint')} />
-        <Toast message={toastMessage ?? ''} visible={toastVisible} />
 
         <View
           style={{ paddingHorizontal: theme.spacing[5], paddingTop: theme.spacing[4], flex: 1 }}
