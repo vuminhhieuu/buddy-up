@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Pressable, Modal } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { ScreenContainer, Text, Button } from '../../components/ui';
 import { ProcessHeader } from '../../components/ui';
 import { useTheme } from '../../styles';
@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { useAppSelector } from '../../store/hooks';
-import { MAX_CATEGORIES, MIN_CATEGORIES } from '../../constants/profileSetup';
+import { MIN_CATEGORIES } from '../../constants/profileSetup';
 
 export type ProfileSetupStep3ScreenProps = {
   onNext?: (selectedOptions?: string[]) => void;
@@ -70,19 +70,16 @@ const profileStep3Schema = Yup.object().shape({
   categories: Yup.array()
     .of(Yup.string())
     .min(MIN_CATEGORIES, 'profileSetup.categoriesRequired')
-    .max(MAX_CATEGORIES, 'profileSetup.categoriesMaxExceeded')
     .required('profileSetup.categoriesRequired'),
 });
 
 export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (props) => {
-  const maxSelect = MAX_CATEGORIES;
   const minSelect = MIN_CATEGORIES;
   const { onNext, onBack } = props;
   const profileData = useAppSelector((s) => s.auth.profileData);
   const { t } = useTranslation();
   const { theme } = useTheme();
   const [submitting, setSubmitting] = useState(false);
-  const [showMaxPopup, setShowMaxPopup] = useState(false);
   const styles = useMemo(() => {
     return {
       header: {
@@ -139,7 +136,7 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
     <ScreenContainer scroll>
       <View style={{ flex: 1 }}>
         <ProcessHeader
-          leftText={t('profileSetup.step', { current: MAX_CATEGORIES })}
+          leftText={t('profileSetup.step', { current: 3 })}
           rightText={t('profileSetup.progress75')}
           leftColor={theme.colors.primary[500]}
           rightColor={theme.colors.text.tertiary}
@@ -147,7 +144,7 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
           rightFontSize={theme.typography.scale.sm}
           leftFontWeight="700"
           rightFontWeight="normal"
-          progress={MAX_CATEGORIES / 4}
+          progress={0.75}
           progressBarColor={theme.colors.primary[500]}
           progressBarBgColor={theme.colors.border}
           containerStyle={styles.header}
@@ -176,7 +173,7 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
           style={{
             flex: 1,
             paddingHorizontal: theme.spacing[4],
-            paddingVertical: theme.spacing[MAX_CATEGORIES],
+            paddingVertical: theme.spacing[4],
           }}
         >
           <Text variant="h5" style={{ fontWeight: '700', marginBottom: theme.spacing[2] }}>
@@ -219,9 +216,9 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
                           {groupIdx === 0 && (
                             <View style={styles.selectedCount}>
                               <Text style={[styles.selectedCountText, { fontWeight: 'bold' }]}>
-                                {t('profileSetup.selectedCount', {
+                                {t('profileSetup.selectedCountSimple', {
                                   count: selectedCount,
-                                  max: maxSelect,
+                                  defaultValue: 'Đã chọn {{count}} môn',
                                 })}
                               </Text>
                             </View>
@@ -244,10 +241,7 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
                                   onPress={() => {
                                     const opt = row[0];
                                     const active = values.categories.includes(opt.key);
-                                    if (!active && selectedCount >= maxSelect) {
-                                      setShowMaxPopup(true);
-                                      return;
-                                    }
+
                                     setFieldValue(
                                       'categories',
                                       active
@@ -281,10 +275,6 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
                                       key={opt.key}
                                       onPress={() => {
                                         const active = values.categories.includes(opt.key);
-                                        if (!active && selectedCount >= maxSelect) {
-                                          setShowMaxPopup(true);
-                                          return;
-                                        }
                                         setFieldValue(
                                           'categories',
                                           active
@@ -312,7 +302,7 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
                       {t(String(errors.categories))}
                     </Text>
                   ) : null}
-                  <View style={{ marginTop: theme.spacing[MAX_CATEGORIES] }}>
+                  <View style={{ marginTop: theme.spacing[4] }}>
                     <Button
                       label={t('profileSetup.nextButton')}
                       onPress={handleSubmit}
@@ -326,75 +316,7 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
                       }}
                     />
                   </View>
-                  {/* Custom green popup modal with rounded corners and gray button */}
-                  <Modal
-                    visible={showMaxPopup}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setShowMaxPopup(false)}
-                  >
-                    <View
-                      style={{
-                        flex: 1,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: theme.colors.background + 'CC',
-                      }}
-                    >
-                      <View
-                        style={{
-                          backgroundColor: theme.colors.primary[500],
-                          borderRadius: theme.radius.lg,
-                          padding: theme.spacing[6],
-                          minWidth: 260,
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Text
-                          style={{
-                            color: theme.colors.text.inverse,
-                            fontWeight: '700',
-                            fontSize: 18,
-                            marginBottom: 8,
-                          }}
-                        >
-                          {t('common.maxSelectedTitle', { defaultValue: 'Đã chọn tối đa' })}
-                        </Text>
-                        <Text
-                          style={{
-                            color: theme.colors.text.inverse,
-                            fontSize: 15,
-                            marginBottom: 16,
-                            textAlign: 'center',
-                          }}
-                        >
-                          {t('common.maxSelectedMessage', {
-                            defaultValue: `Bạn chỉ được chọn tối đa ${maxSelect} môn.`,
-                            max: maxSelect,
-                          })}
-                        </Text>
-                        <Pressable
-                          onPress={() => setShowMaxPopup(false)}
-                          style={{
-                            backgroundColor: theme.colors.surface,
-                            borderRadius: 8,
-                            paddingVertical: 8,
-                            paddingHorizontal: 32,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              color: theme.colors.primary[500],
-                              fontWeight: '700',
-                              fontSize: 16,
-                            }}
-                          >
-                            OK
-                          </Text>
-                        </Pressable>
-                      </View>
-                    </View>
-                  </Modal>
+                  {/* removed max-selected popup (no maximum) */}
                 </>
               );
             }}
