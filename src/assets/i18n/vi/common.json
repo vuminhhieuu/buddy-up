@@ -3,14 +3,10 @@
   "appName": "Buddy Up",
   "login": "Đăng nhập",
   "register": "Đăng ký",
-  "home": "Trang chủ",
-  "chat": "Trò chuyện",
-  "profile": "Hồ sơ",
-  "buddy": "Bạn học",
   "navigation": {
     "home": "Trang chủ",
     "buddy": "Bạn học",
-    "chat": "Tin nhắn",
+    "chat": "Trò chuyện",
     "profile": "Cá nhân"
   },
   "auth": {
@@ -348,5 +344,21 @@
       "progress": "Tiến độ: {{value}}%"
     },
     "pullToRefresh": "Kéo để làm mới"
+  },
+  "languageScreen": {
+    "title": "Ngôn ngữ",
+    "currentLanguage": "Ngôn ngữ hiện tại",
+    "closeLanguageSelection": "Đóng chọn ngôn ngữ",
+    "selectLanguage": "Chọn ngôn ngữ",
+    "languages": {
+      "vi": "Tiếng Việt",
+      "en": "English"
+    },
+    "languageNames": {
+      "vi": "Vietnamese",
+      "en": "English"
+    },
+    "changeSuccess": "Đã thay đổi ngôn ngữ thành công",
+    "changeError": "Có lỗi xảy ra khi thay đổi ngôn ngữ"
   }
 }
