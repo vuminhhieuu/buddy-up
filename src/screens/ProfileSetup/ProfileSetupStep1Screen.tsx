@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Pressable, Alert, Dimensions } from 'react-native';
+import { View, Alert, Dimensions } from 'react-native';
 import { Formik } from 'formik';
 import { useTranslation } from 'react-i18next';
 import {
@@ -10,6 +10,7 @@ import {
   Input,
   AvatarPickerSection,
 } from '../../components/ui';
+import { SkipButton } from '../../components/ui/SkipButton/SkipButton';
 import { useTheme } from '../../styles';
 import { profileStep1Schema } from '../../utils/validation';
 import { uploadAvatarToStorage, updateProfileStep1 } from '../../services/profile';
@@ -37,7 +38,6 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
 
   const [avatarUri, setAvatarUri] = useState<string | undefined>(avatarUrl);
   const [submitting, setSubmitting] = useState(false);
-  const [skipPressed, setSkipPressed] = useState(false);
 
   const handleAvatarSelected = async (uri: string) => {
     setAvatarUri(uri);
@@ -92,16 +92,7 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
         {/* Header */}
         <View style={styles.header}>
           {/* Skip Button */}
-          <Pressable
-            style={[styles.skipButton, { opacity: skipPressed ? 0.7 : 1 }]}
-            onPress={handleSkip}
-            onPressIn={() => setSkipPressed(true)}
-            onPressOut={() => setSkipPressed(false)}
-          >
-            <Text variant="body" color="tertiary">
-              {t('profileSetup.skipButton')}
-            </Text>
-          </Pressable>
+          <SkipButton onSkip={handleSkip} style={styles.skipButton} />
 
           {/* Title Row */}
           <View style={styles.titleRow}>
