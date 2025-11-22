@@ -10,14 +10,19 @@ type ShowToastParams = {
 };
 
 export const showToast = ({ type = 'info', message, description }: ShowToastParams) => {
-  Toast.show({
-    type,
-    text1: message,
-    text2: description,
-    position: TOAST_POSITION,
-    bottomOffset: TOAST_BOTTOM_OFFSET,
-    visibilityTime: TOAST_VISIBILITY_TIME,
-  });
+  try {
+    Toast.show({
+      type,
+      text1: message,
+      text2: description,
+      position: TOAST_POSITION,
+      bottomOffset: TOAST_BOTTOM_OFFSET,
+      visibilityTime: TOAST_VISIBILITY_TIME,
+    });
+    console.log('[showToast] Toast.show() called successfully');
+  } catch (error) {
+    console.error('[showToast] Error showing toast:', error);
+  }
 };
 
 export const showSuccessToast = (message: string, description?: string) =>

@@ -235,6 +235,17 @@ export interface ConnectionStatusResult {
   isRequestedByMe: boolean;
 }
 
+/**
+ * Incoming connection request with sender information
+ */
+export interface IncomingRequest {
+  id: string; // connection.id
+  connection: ConnectionRequest;
+  sender: BuddyProfile; // Profile của người gửi request
+  read: boolean;
+  createdAt: string;
+}
+
 // ============================================================================
 // Utility Types
 // ============================================================================

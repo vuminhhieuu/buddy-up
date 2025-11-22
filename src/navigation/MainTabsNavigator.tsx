@@ -2,6 +2,8 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomTabBar } from '../components/navigation';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '../store/hooks';
+import { selectUnreadRequestsCount } from '../store/slices/buddySlice';
 import { HomeScreen } from '../screens/HomeScreen';
 import { BuddyScreen } from '../screens/BuddyScreen';
 import { ChatScreen } from '../screens/ChatScreen';
@@ -17,6 +19,8 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 
 export const MainTabsNavigator: React.FC = () => {
   const { t } = useTranslation();
+  const unreadRequestsCount = useAppSelector(selectUnreadRequestsCount);
+
   return (
     <Tab.Navigator
       screenOptions={{ headerShown: false }}
@@ -36,7 +40,12 @@ export const MainTabsNavigator: React.FC = () => {
           }}
           tabs={[
             { key: 'home', label: t('navigation.home'), icon: 'home' },
-            { key: 'buddy', label: t('navigation.buddy'), icon: 'buddy' },
+            {
+              key: 'buddy',
+              label: t('navigation.buddy'),
+              icon: 'buddy',
+              badge: unreadRequestsCount > 0 ? unreadRequestsCount : undefined,
+            },
             { key: 'chat', label: t('navigation.chat'), icon: 'chat' },
             { key: 'profile', label: t('navigation.profile'), icon: 'profile' },
           ]}
