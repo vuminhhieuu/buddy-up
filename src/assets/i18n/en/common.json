@@ -241,6 +241,7 @@
     },
     "request": {
       "sent": "Request sent",
+      "sending": "Sending request...",
       "sentSuccess": "Connection request sent successfully",
       "sentError": "Failed to send connection request. Please try again.",
       "alreadySent": "You have already sent a connection request to this user",

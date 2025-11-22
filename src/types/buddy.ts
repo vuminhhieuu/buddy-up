@@ -166,6 +166,8 @@ export interface BuddyCardData {
   learningStyle: string;
   /** Bio text */
   bio: string | null;
+  /** Connection request status for UI */
+  requestStatus?: 'idle' | 'pending' | 'sent' | 'error';
 }
 
 // ============================================================================

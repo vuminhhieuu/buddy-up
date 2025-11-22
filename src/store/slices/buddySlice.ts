@@ -1,5 +1,10 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import type { BuddyFilters, BuddyProfile, BuddySearchResult } from '../../types/buddy';
+import type {
+  BuddyFilters,
+  BuddyProfile,
+  BuddySearchResult,
+  ConnectionRequest,
+} from '../../types/buddy';
 import { DEFAULT_BUDDY_FILTERS } from '../../types/buddy';
 import * as buddyService from '../../services/buddy';
 import type { RootState } from '../index';
@@ -13,6 +18,7 @@ export interface BuddyState {
   hasMore: boolean;
   totalCount: number;
   currentPage: number;
+  requestStatuses: Record<string, 'idle' | 'pending' | 'sent' | 'error'>;
 }
 
 const initialState: BuddyState = {
@@ -24,6 +30,7 @@ const initialState: BuddyState = {
   hasMore: false,
   totalCount: 0,
   currentPage: 1,
+  requestStatuses: {},
 };
 
 /**
@@ -75,6 +82,58 @@ export const loadMoreBuddiesAsync = createAsyncThunk<BuddySearchResult, void, { 
   },
 );
 
+type SendBuddyRequestPayload = {
+  targetUserId: string;
+  connection: ConnectionRequest;
+};
+
+type SendBuddyRequestError = {
+  targetUserId: string;
+  error: string;
+  errorCode?: string;
+};
+
+export const sendBuddyRequestAsync = createAsyncThunk<
+  SendBuddyRequestPayload,
+  { targetUserId: string },
+  { state: RootState }
+>('buddy/sendBuddyRequest', async ({ targetUserId }, { getState, rejectWithValue }) => {
+  try {
+    const state = getState();
+    const currentUserId = state.auth.userId;
+
+    if (!currentUserId) {
+      return rejectWithValue({
+        targetUserId,
+        error: 'User not authenticated',
+        errorCode: 'INVALID_USER',
+      } as SendBuddyRequestError);
+    }
+
+    const response = await buddyService.sendBuddyRequest(currentUserId, targetUserId);
+
+    if (!response.success || !response.connection) {
+      return rejectWithValue({
+        targetUserId,
+        error: response.error || 'Failed to send request',
+        errorCode: response.errorCode,
+      } as SendBuddyRequestError);
+    }
+
+    return {
+      targetUserId,
+      connection: response.connection,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to send request';
+    return rejectWithValue({
+      targetUserId,
+      error: message,
+      errorCode: 'NETWORK_ERROR',
+    } as SendBuddyRequestError);
+  }
+});
+
 const buddySlice = createSlice({
   name: 'buddy',
   initialState,
@@ -90,6 +149,7 @@ const buddySlice = createSlice({
       state.hasMore = false;
       state.totalCount = 0;
       state.error = null;
+      state.requestStatuses = {};
     },
     setCurrentStackIndex(state, action: PayloadAction<number>) {
       state.currentStackIndex = action.payload;
@@ -101,6 +161,7 @@ const buddySlice = createSlice({
       state.hasMore = false;
       state.totalCount = 0;
       state.error = null;
+      state.requestStatuses = {};
     },
   },
   extraReducers: (builder) => {
@@ -141,6 +202,19 @@ const buddySlice = createSlice({
       .addCase(loadMoreBuddiesAsync.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      });
+
+    builder
+      .addCase(sendBuddyRequestAsync.pending, (state, action) => {
+        state.requestStatuses[action.meta.arg.targetUserId] = 'pending';
+      })
+      .addCase(sendBuddyRequestAsync.fulfilled, (state, action) => {
+        state.requestStatuses[action.payload.targetUserId] = 'sent';
+      })
+      .addCase(sendBuddyRequestAsync.rejected, (state, action) => {
+        const payload = action.payload as SendBuddyRequestError | undefined;
+        const targetUserId = payload?.targetUserId ?? action.meta.arg.targetUserId;
+        state.requestStatuses[targetUserId] = 'error';
       });
   },
 });

@@ -3,6 +3,7 @@ import { ActivityIndicator } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useEffect } from 'react';
+import Toast from 'react-native-toast-message';
 import './src/config/i18n';
 import {
   useFonts,
@@ -21,6 +22,8 @@ import { AppNavigator } from './src/navigation/AppNavigator';
 import { store } from './src/store';
 import { useAuthSession } from './src/hooks/useAuthSession';
 import { initializeLanguage } from './src/services/language';
+import { buddyToastConfig } from './src/components/ui/BuddyToast/config';
+import { TOAST_POSITION, TOAST_BOTTOM_OFFSET, TOAST_VISIBILITY_TIME } from './src/constants/toast';
 
 const AppContent = () => {
   const { initialized } = useAuthSession();
@@ -42,6 +45,7 @@ const AppContent = () => {
     <SafeAreaProvider>
       <AppNavigator />
       <StatusBar style="auto" />
+      <Toast config={buddyToastConfig} position={TOAST_POSITION} bottomOffset={TOAST_BOTTOM_OFFSET} visibilityTime={TOAST_VISIBILITY_TIME} />
     </SafeAreaProvider>
   );
 };
