@@ -8,7 +8,8 @@ import { ArrowLeft } from 'lucide-react-native';
 import { Globe, Laptop, Pencil, BookOpen } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { setProfileSetupInProgress } from '../../store/slices/authSlice';
+import { saveStepForUser } from '../../lib/supabaseHelpers';
+import { setProfileData } from '../../store/slices/authSlice';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { MIN_CATEGORIES } from '../../constants/profileSetup';
@@ -81,7 +82,7 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
   const { onNext, onBack } = props;
   const { onSkip } = props;
   const dispatch = useAppDispatch();
-  const profileData = useAppSelector((s) => s.auth.profileData);
+  const { profileData, userId } = useAppSelector((s) => s.auth);
   const { t } = useTranslation();
   const { theme } = useTheme();
   const [submitting, setSubmitting] = useState(false);
@@ -186,7 +187,27 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
               <ArrowLeft size={18} color={theme.colors.text.primary} />
             </Pressable>
 
-            <SkipButton onSkip={onSkip} style={styles.skipButton} />
+            <SkipButton
+              onSkip={onSkip}
+              style={styles.skipButton}
+              beforeSkip={async () => {
+                try {
+                  if (!userId) return;
+                  // save step 1 and step 2 before skipping step 3
+                  await saveStepForUser(userId, 1, {
+                    displayName: profileData.displayName,
+                    studyGoal: profileData.studyGoal,
+                    avatarUrl: profileData.avatarUrl,
+                  });
+                  await saveStepForUser(userId, 2, {
+                    availableTimes: profileData.availableTimes,
+                    learningStyle: profileData.learningStyle,
+                  });
+                } catch (err) {
+                  // ignore errors for now
+                }
+              }}
+            />
           </View>
         </ProcessHeader>
         <View
@@ -209,8 +230,16 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
             validationSchema={profileStep3Schema}
             onSubmit={async (values) => {
               setSubmitting(true);
-              onNext?.(values.categories);
-              setSubmitting(false);
+              try {
+                if (userId) {
+                  // persist step 3 (categories) before moving on
+                  await saveStepForUser(userId, 3, { categories: values.categories });
+                  dispatch(setProfileData({ categories: values.categories }));
+                }
+                onNext?.(values.categories);
+              } finally {
+                setSubmitting(false);
+              }
             }}
           >
             {({ values, setFieldValue, handleSubmit, errors, touched }) => {

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Pressable, Image } from 'react-native';
 import { useAppSelector, useAppDispatch } from '../../store/hooks';
+import { finalizeProfileSetup } from '../../lib/supabaseHelpers';
 import { useNavigation, CommonActions, CompositeNavigationProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
@@ -66,7 +67,27 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
     },
   };
   const dispatch = useAppDispatch();
-  const profileData = useAppSelector((state) => state.auth.profileData);
+  const { profileData, userId } = useAppSelector((state) => state.auth);
+  const [finalizing, setFinalizing] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    const run = async () => {
+      if (!userId) return;
+      try {
+        setFinalizing(true);
+        await finalizeProfileSetup(userId);
+      } catch (err) {
+        // swallow errors for now
+      } finally {
+        if (mounted) setFinalizing(false);
+      }
+    };
+    run();
+    return () => {
+      mounted = false;
+    };
+  }, [userId]);
   const user = {
     name: profileData.displayName || t('profileSetup.noNameSet'),
     avatar: profileData.avatarUrl || '',

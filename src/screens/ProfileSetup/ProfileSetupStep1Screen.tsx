@@ -15,11 +15,7 @@ import { useTheme } from '../../styles';
 import { profileStep1Schema } from '../../utils/validation';
 import { uploadAvatarToStorage, updateProfileStep1 } from '../../services/profile';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import {
-  setProfileData,
-  setCurrentProfileStep,
-  setProfileSetupInProgress,
-} from '../../store/slices/authSlice';
+import { setProfileData, setCurrentProfileStep } from '../../store/slices/authSlice';
 
 export type ProfileSetupStep1ScreenProps = {
   onNext?: (stepData: { displayName: string; studyGoal: string; avatarUri?: string }) => void;
@@ -82,7 +78,6 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
   }, [theme]);
 
   const handleSkip = () => {
-    dispatch(setProfileSetupInProgress(false));
     onSkip?.();
   };
 

@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { Formik } from 'formik';
 import { profileStep2Schema } from '../../utils/validation';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { setProfileData, setProfileSetupInProgress } from '../../store/slices/authSlice';
+import { saveStepForUser } from '../../lib/supabaseHelpers';
+import { setProfileData } from '../../store/slices/authSlice';
 import { Sun, CloudSun, Moon, PartyPopper, Zap, ArrowLeft } from 'lucide-react-native';
 import { BASE_HORIZONTAL_PADDING } from '../../constants/layout';
 
@@ -26,7 +27,7 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
   const { theme } = useTheme();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { profileData } = useAppSelector((s) => s.auth);
+  const { profileData, userId } = useAppSelector((s) => s.auth);
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -202,7 +203,23 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
               <ArrowLeft size={18} color={theme.colors.text.primary} />
             </Pressable>
 
-            <SkipButton onSkip={onSkip} style={styles.skipButton} />
+            <SkipButton
+              onSkip={onSkip}
+              style={styles.skipButton}
+              beforeSkip={async () => {
+                try {
+                  if (!userId) return;
+                  // save step 1 (basic info) before skipping step 2
+                  await saveStepForUser(userId, 1, {
+                    displayName: profileData.displayName,
+                    studyGoal: profileData.studyGoal,
+                    avatarUrl: profileData.avatarUrl,
+                  });
+                } catch (err) {
+                  // ignore errors here; Skip should still proceed but you may want to surface errors
+                }
+              }}
+            />
           </View>
         </ProcessHeader>
 
@@ -230,12 +247,27 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
             onSubmit={async (values) => {
               setSubmitting(true);
               try {
+                // update local redux state first
                 dispatch(
                   setProfileData({
                     availableTimes: values.availableTimes,
                     learningStyle: values.learningStyle as any,
                   }),
                 );
+
+                // persist step 2 to Supabase (per-field upsert via RPC)
+                try {
+                  if (userId) {
+                    await saveStepForUser(userId, 2, {
+                      availableTimes: values.availableTimes,
+                      learningStyle: values.learningStyle,
+                    });
+                  }
+                } catch (err) {
+                  // don't block navigation on save failure, but you may log/report the error
+                  // console.warn('Failed to save step 2 to Supabase', err);
+                }
+
                 onNext?.();
               } finally {
                 setSubmitting(false);
