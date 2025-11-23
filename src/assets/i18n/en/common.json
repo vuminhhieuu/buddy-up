@@ -261,6 +261,11 @@
       "unsaved": "Removed from saved",
       "connected": "Invitation sent! 💚",
       "skipped": "Profile dismissed"
+    },
+    "notifications": {
+      "newRequestTitle": "New Connection Request",
+      "newRequestMessage": "{{name}} wants to connect with you",
+      "error": "Failed to load notifications"
     }
   },
   "home": {

@@ -261,6 +261,11 @@
       "unsaved": "Đã bỏ lưu",
       "connected": "Đã gửi lời mời kết nối! 💚",
       "skipped": "Đã bỏ qua"
+    },
+    "notifications": {
+      "newRequestTitle": "Lời mời kết nối mới",
+      "newRequestMessage": "{{name}} muốn kết nối với bạn",
+      "error": "Không thể tải thông báo"
     }
   },
   "home": {

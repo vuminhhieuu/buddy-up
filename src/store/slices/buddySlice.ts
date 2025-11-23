@@ -4,10 +4,12 @@ import type {
   BuddyProfile,
   BuddySearchResult,
   ConnectionRequest,
+  IncomingRequest,
 } from '../../types/buddy';
 import { DEFAULT_BUDDY_FILTERS } from '../../types/buddy';
 import * as buddyService from '../../services/buddy';
 import type { RootState } from '../index';
+import { signOutState } from './authSlice';
 
 export interface BuddyState {
   filters: BuddyFilters;
@@ -19,6 +21,8 @@ export interface BuddyState {
   totalCount: number;
   currentPage: number;
   requestStatuses: Record<string, 'idle' | 'pending' | 'sent' | 'error'>;
+  incomingRequests: IncomingRequest[];
+  unreadRequestsCount: number;
 }
 
 const initialState: BuddyState = {
@@ -31,6 +35,8 @@ const initialState: BuddyState = {
   totalCount: 0,
   currentPage: 1,
   requestStatuses: {},
+  incomingRequests: [],
+  unreadRequestsCount: 0,
 };
 
 /**
@@ -163,6 +169,28 @@ const buddySlice = createSlice({
       state.error = null;
       state.requestStatuses = {};
     },
+    addIncomingRequest(state, action: PayloadAction<Omit<IncomingRequest, 'read'>>) {
+      // Check if request already exists (idempotency)
+      const existingIndex = state.incomingRequests.findIndex((req) => req.id === action.payload.id);
+      if (existingIndex === -1) {
+        state.incomingRequests.push({
+          ...action.payload,
+          read: false,
+        });
+        state.unreadRequestsCount += 1;
+      }
+    },
+    markRequestAsRead(state, action: PayloadAction<string>) {
+      const index = state.incomingRequests.findIndex((req) => req.id === action.payload);
+      if (index !== -1 && !state.incomingRequests[index].read) {
+        state.incomingRequests[index].read = true;
+        state.unreadRequestsCount = Math.max(0, state.unreadRequestsCount - 1);
+      }
+    },
+    clearIncomingRequests(state) {
+      state.incomingRequests = [];
+      state.unreadRequestsCount = 0;
+    },
   },
   extraReducers: (builder) => {
     // searchBuddiesAsync
@@ -216,8 +244,36 @@ const buddySlice = createSlice({
         const targetUserId = payload?.targetUserId ?? action.meta.arg.targetUserId;
         state.requestStatuses[targetUserId] = 'error';
       });
+
+    // Clear buddy state when user signs out
+    builder.addCase(signOutState, (state) => {
+      state.incomingRequests = [];
+      state.unreadRequestsCount = 0;
+      state.results = [];
+      state.requestStatuses = {};
+      state.currentStackIndex = 0;
+      state.currentPage = 1;
+      state.hasMore = false;
+      state.totalCount = 0;
+      state.error = null;
+    });
   },
 });
 
-export const { setFilters, resetFilters, setCurrentStackIndex, clearResults } = buddySlice.actions;
+export const {
+  setFilters,
+  resetFilters,
+  setCurrentStackIndex,
+  clearResults,
+  addIncomingRequest,
+  markRequestAsRead,
+  clearIncomingRequests,
+} = buddySlice.actions;
+
+// Selectors
+export const selectUnreadRequestsCount = (state: RootState) => state.buddy.unreadRequestsCount;
+export const selectIncomingRequests = (state: RootState) => state.buddy.incomingRequests;
+export const selectUnreadRequests = (state: RootState) =>
+  state.buddy.incomingRequests.filter((req) => !req.read);
+
 export default buddySlice.reducer;

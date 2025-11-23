@@ -21,12 +21,18 @@ import { ThemeProvider } from './src/styles';
 import { AppNavigator } from './src/navigation/AppNavigator';
 import { store } from './src/store';
 import { useAuthSession } from './src/hooks/useAuthSession';
+import { useBuddyRequests } from './src/hooks/useBuddyRequests';
 import { initializeLanguage } from './src/services/language';
 import { buddyToastConfig } from './src/components/ui/BuddyToast/config';
 import { TOAST_POSITION, TOAST_BOTTOM_OFFSET, TOAST_VISIBILITY_TIME } from './src/constants/toast';
+import { useAppSelector } from './src/store/hooks';
 
 const AppContent = () => {
   const { initialized } = useAuthSession();
+  const userId = useAppSelector((state) => state.auth.userId);
+  
+  // Listen for incoming connection requests via Realtime
+  useBuddyRequests(userId);
 
   useEffect(() => {
     // Initialize language from storage when app starts
@@ -45,7 +51,12 @@ const AppContent = () => {
     <SafeAreaProvider>
       <AppNavigator />
       <StatusBar style="auto" />
-      <Toast config={buddyToastConfig} position={TOAST_POSITION} bottomOffset={TOAST_BOTTOM_OFFSET} visibilityTime={TOAST_VISIBILITY_TIME} />
+      <Toast
+        config={buddyToastConfig}
+        position={TOAST_POSITION}
+        bottomOffset={TOAST_BOTTOM_OFFSET}
+        visibilityTime={TOAST_VISIBILITY_TIME}
+      />
     </SafeAreaProvider>
   );
 };
