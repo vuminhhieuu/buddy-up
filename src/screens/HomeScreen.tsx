@@ -138,7 +138,12 @@ export const HomeScreen: React.FC = () => {
   };
 
   const handleCreateSessionPress = () => {
-    console.log('Create session pressed');
+    const parent = (navigation as any).getParent?.();
+    if (parent) {
+      parent.navigate('CreateSession');
+    } else {
+      console.log('Create session pressed');
+    }
   };
 
   const handleFindBuddyPress = () => {

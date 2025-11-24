@@ -376,5 +376,28 @@
     },
     "changeSuccess": "Language changed successfully",
     "changeError": "An error occurred while changing the language"
+  },
+  "createSession": {
+    "title": "Create Shared Session",
+    "nameLabel": "Session name",
+    "namePlaceholder": "Enter session name",
+    "subjectLabel": "Subject/Topic",
+    "subjectPlaceholder": "Select subject or topic",
+    "timeDateTitle": "Date & Time",
+    "datePlaceholder": "22/11/2025",
+    "timePlaceholder": "10:40",
+    "durationTitle": "Duration",
+    "durationPlaceholder": "90",
+    "durationUnit": "minutes",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Add description or goals for the session...",
+    "locationTitle": "Location",
+    "online": "Online",
+    "offline": "Offline",
+    "linkLabel": "Room link",
+    "linkPlaceholder": "https://meet.google.com/abc-xyz-123",
+    "buddiesTitle": "Buddies",
+    "noBuddies": "You have no buddies to choose from",
+    "createButton": "Create Session"
   }
 }
