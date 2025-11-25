@@ -119,7 +119,6 @@ export const BuddyHero: React.FC<BuddyHeroProps> = ({
               }}
             />
           </View>
-
           <Pressable
             onPress={onFilterPress}
             style={{
