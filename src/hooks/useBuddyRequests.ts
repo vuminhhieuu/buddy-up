@@ -32,6 +32,31 @@ const isValidConnectionRequest = (data: unknown): data is ConnectionRequest => {
   );
 };
 
+/**
+ * Minimal fields required for status updates (UPDATE events)
+ */
+const hasStatusUpdateFields = (
+  data: unknown,
+): data is {
+  id: string;
+  status: string;
+  requested_by: string;
+  user_id_1: string;
+  user_id_2: string;
+} => {
+  if (!data || typeof data !== 'object') {
+    return false;
+  }
+  const conn = data as Record<string, unknown>;
+  return (
+    typeof conn.id === 'string' &&
+    typeof conn.status === 'string' &&
+    typeof conn.requested_by === 'string' &&
+    typeof conn.user_id_1 === 'string' &&
+    typeof conn.user_id_2 === 'string'
+  );
+};
+
 export const useBuddyRequests = (userId: string | null) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
@@ -185,35 +210,33 @@ export const useBuddyRequests = (userId: string | null) => {
           });
 
           try {
-            // Validate payload structure
-            if (!payload.new || !payload.old) {
-              console.error('[useBuddyRequests] Missing payload.new or payload.old');
-              return;
-            }
-
-            // Type guard validation
-            if (!isValidConnectionRequest(payload.new) || !isValidConnectionRequest(payload.old)) {
-              console.error('[useBuddyRequests] Invalid connection request payload:', payload.new);
-              return;
-            }
-
-            const oldConnection = payload.old;
-            const newConnection = payload.new;
-
-            // Only process if status changed from pending to accepted/rejected
-            if (oldConnection.status !== 'pending') {
-              console.log(
-                '[useBuddyRequests] Skipping non-pending status change:',
-                oldConnection.status,
+            // Validate payload structure (only minimal fields required)
+            if (!payload.new || !hasStatusUpdateFields(payload.new)) {
+              console.error(
+                '[useBuddyRequests] Missing minimal fields for status update:',
+                payload.new,
               );
               return;
             }
 
+            const newConnection = payload.new;
+            const previousStatus =
+              payload.old && typeof payload.old === 'object'
+                ? (payload.old as { status?: string }).status
+                : undefined;
+
+            // Only process if status is accepted/rejected
             if (newConnection.status !== 'accepted' && newConnection.status !== 'rejected') {
               console.log(
                 '[useBuddyRequests] Status changed to non-accepted/rejected:',
                 newConnection.status,
               );
+              return;
+            }
+
+            // If we have previous status info, skip duplicate updates unless it was pending
+            if (previousStatus && previousStatus !== 'pending') {
+              console.log('[useBuddyRequests] Skipping status update from:', previousStatus);
               return;
             }
 

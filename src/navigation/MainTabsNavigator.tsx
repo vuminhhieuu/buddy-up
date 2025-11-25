@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../store/hooks';
 import { selectUnreadRequestsCount } from '../store/slices/buddySlice';
 import { HomeScreen } from '../screens/HomeScreen';
-import { BuddyScreen } from '../screens/BuddyScreen';
 import { ChatScreen } from '../screens/ChatScreen';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
+import { BuddyStackNavigator } from './BuddyStackNavigator';
 export type MainTabParamList = {
   Home: undefined;
   Buddy: undefined;
@@ -44,7 +44,12 @@ export const MainTabsNavigator: React.FC = () => {
               key: 'buddy',
               label: t('navigation.buddy'),
               icon: 'buddy',
-              badge: unreadRequestsCount > 0 ? unreadRequestsCount : undefined,
+              badge:
+                state.routeNames[state.index].toLowerCase() === 'buddy'
+                  ? undefined
+                  : unreadRequestsCount > 0
+                    ? unreadRequestsCount
+                    : undefined,
             },
             { key: 'chat', label: t('navigation.chat'), icon: 'chat' },
             { key: 'profile', label: t('navigation.profile'), icon: 'profile' },
@@ -53,7 +58,7 @@ export const MainTabsNavigator: React.FC = () => {
       )}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Buddy" component={BuddyScreen} />
+      <Tab.Screen name="Buddy" component={BuddyStackNavigator} />
       <Tab.Screen name="Chat" component={ChatScreen} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>

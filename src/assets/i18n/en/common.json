@@ -248,7 +248,24 @@
       "alreadyExists": "Connection request already exists",
       "selfConnection": "Cannot send connection request to yourself",
       "invalidUser": "User not found",
-      "networkError": "Network error. Please try again."
+      "networkError": "Network error. Please try again.",
+      "accepted": "Request accepted",
+      "rejected": "Request rejected",
+      "acceptError": "Failed to accept request. Please try again.",
+      "rejectError": "Failed to reject request. Please try again.",
+      "invalidRequest": "Invalid request"
+    },
+    "requests": {
+      "title": "Connection Requests",
+      "subtitle": "Swipe right to accept, swipe left to reject",
+      "helperDescription": "Review each profile carefully before deciding.",
+      "loading": "Loading requests...",
+      "noRequests": "No requests",
+      "noRequestsMessage": "You don't have any pending connection requests",
+      "noSearchResults": "No requests matched \"{{keyword}}\"",
+      "goBack": "Go back",
+      "bannerLabel": "{{count}} pending requests",
+      "filterComingSoon": "Filtering for requests is coming soon!"
     },
     "actions": {
       "skip": "Skip",

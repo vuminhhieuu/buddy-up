@@ -248,7 +248,24 @@
       "alreadyExists": "Lời mời kết nối đã tồn tại",
       "selfConnection": "Không thể gửi lời mời cho chính mình",
       "invalidUser": "Người dùng không tồn tại",
-      "networkError": "Lỗi kết nối mạng. Vui lòng thử lại."
+      "networkError": "Lỗi kết nối mạng. Vui lòng thử lại.",
+      "accepted": "Đã chấp nhận lời mời",
+      "rejected": "Đã từ chối lời mời",
+      "acceptError": "Không thể chấp nhận lời mời. Vui lòng thử lại.",
+      "rejectError": "Không thể từ chối lời mời. Vui lòng thử lại.",
+      "invalidRequest": "Lời mời không hợp lệ"
+    },
+    "requests": {
+      "title": "Lời mời kết nối",
+      "subtitle": "Vuốt phải để chấp nhận, vuốt trái để từ chối",
+      "helperDescription": "Hãy xem kỹ hồ sơ trước khi quyết định nhé!",
+      "loading": "Đang tải lời mời...",
+      "noRequests": "Chưa có lời mời",
+      "noRequestsMessage": "Bạn chưa có lời mời kết nối nào đang chờ",
+      "noSearchResults": "Không tìm thấy lời mời khớp với \"{{keyword}}\"",
+      "goBack": "Quay lại",
+      "bannerLabel": "{{count}} lời mời đang chờ",
+      "filterComingSoon": "Tính năng lọc cho lời mời sẽ sớm ra mắt nhé!"
     },
     "actions": {
       "skip": "Bỏ qua",

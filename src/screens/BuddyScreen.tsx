@@ -1,7 +1,10 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
-import { View, Keyboard } from 'react-native';
+import { View, Keyboard, Pressable } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { BuddyStackParamList } from '../navigation/BuddyStackNavigator';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { useTranslation } from 'react-i18next';
 import { Text } from '../components/ui/Text/Text';
@@ -20,6 +23,9 @@ import {
   resetFilters,
   setCurrentStackIndex,
   sendBuddyRequestAsync,
+  selectUnreadRequestsCount,
+  fetchIncomingRequestsAsync,
+  selectIncomingRequests,
 } from '../store/slices/buddySlice';
 import { profileToCardData, countActiveFilters } from '../utils/buddy';
 import { getCurrentUserId } from '../utils/buddy';
@@ -27,6 +33,7 @@ import { useTheme } from '../styles';
 import type { BuddyFilters, BuddyCardData } from '../types/buddy';
 import { DEFAULT_BUDDY_FILTERS } from '../types/buddy';
 import { showSuccessToast, showErrorToast, showInfoToast } from '../utils/toast';
+import { ArrowRight } from 'lucide-react-native';
 
 import {
   SWIPE_HINT_STORAGE_KEY,
@@ -34,10 +41,12 @@ import {
   SWIPE_HINT_DURATION_MS,
 } from '../constants/buddy';
 
+type NavigationProp = NativeStackNavigationProp<BuddyStackParamList, 'BuddyMain'>;
+
 export const BuddyScreen: React.FC = () => {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const dispatch = useAppDispatch();
   const {
     filters,
@@ -48,6 +57,8 @@ export const BuddyScreen: React.FC = () => {
     totalCount,
     requestStatuses = {},
   } = useAppSelector((state) => state.buddy);
+  const unreadRequestsCount = useAppSelector(selectUnreadRequestsCount);
+  const pendingRequests = useAppSelector(selectIncomingRequests);
   const currentUserId = useAppSelector(getCurrentUserId);
 
   const [searchQuery, setSearchQuery] = useState(filters.searchQuery || '');
@@ -56,6 +67,9 @@ export const BuddyScreen: React.FC = () => {
   const [savedProfiles, setSavedProfiles] = useState<Record<string, boolean>>({});
   const [swipeHintVisible, setSwipeHintVisible] = useState(false);
   const swipeHintTimeout = useRef<NodeJS.Timeout | null>(null);
+  const pendingRequestsCount = pendingRequests.length;
+  const hasPendingRequests = pendingRequestsCount > 0;
+  const hasFetchedRequests = useRef(false);
 
   // Convert profiles to card data (memoized to avoid recalculation on every render)
   const visibleProfiles = useMemo(
@@ -153,6 +167,14 @@ export const BuddyScreen: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentUserId]);
 
+  // Fetch pending requests once to populate badge when launching screen
+  useEffect(() => {
+    if (currentUserId && !hasFetchedRequests.current) {
+      dispatch(fetchIncomingRequestsAsync());
+      hasFetchedRequests.current = true;
+    }
+  }, [currentUserId, dispatch]);
+
   // Handle filter apply
   const handleFilterApply = useCallback(
     (newFilters: BuddyFilters) => {
@@ -169,6 +191,10 @@ export const BuddyScreen: React.FC = () => {
     },
     [currentUserId, dispatch],
   );
+
+  const handleOpenRequests = useCallback(() => {
+    navigation.navigate('BuddyRequests');
+  }, [navigation]);
 
   // Handle filter reset
   const handleFilterReset = useCallback(() => {
@@ -318,6 +344,39 @@ export const BuddyScreen: React.FC = () => {
             onFilterPress={() => setFilterModalVisible(true)}
             activeFiltersCount={activeFiltersCount}
           />
+
+          {hasPendingRequests ? (
+            <Pressable
+              onPress={handleOpenRequests}
+              accessibilityRole="button"
+              accessibilityLabel={t('buddy.requests.bannerLabel', { count: pendingRequestsCount })}
+              style={{ marginBottom: theme.spacing[4] }}
+            >
+              <LinearGradient
+                colors={[theme.colors.primary[500], theme.colors.primary[600]]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={{
+                  borderRadius: theme.radius.full,
+                  paddingVertical: theme.spacing[3],
+                  paddingHorizontal: theme.spacing[4],
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  shadowColor: theme.colors.primary[500],
+                  shadowOpacity: 0.35,
+                  shadowRadius: 12,
+                  shadowOffset: { width: 0, height: 6 },
+                  elevation: 4,
+                }}
+              >
+                <Text variant="h6" color="inverse" style={{ fontWeight: '600' }}>
+                  {t('buddy.requests.bannerLabel', { count: pendingRequestsCount })}
+                </Text>
+                <ArrowRight color={theme.colors.surface} size={20} />
+              </LinearGradient>
+            </Pressable>
+          ) : null}
 
           <View style={{ flex: 1 }}>
             {loading && results.length === 0 ? (

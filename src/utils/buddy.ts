@@ -6,6 +6,7 @@ import type {
   BuddyCardData,
   AvailableTime,
   LearningStyle,
+  IncomingRequest,
 } from '../types/buddy';
 import { DEFAULT_BUDDY_FILTERS } from '../types/buddy';
 import i18n from '../config/i18n';
@@ -175,4 +176,11 @@ export function profileToCardData(profile: BuddyProfile): BuddyCardData {
     learningStyle,
     bio: profile.bio,
   };
+}
+
+/**
+ * Convert IncomingRequest to BuddyCardData
+ */
+export function incomingRequestToCardData(request: IncomingRequest): BuddyCardData {
+  return profileToCardData(request.sender);
 }
