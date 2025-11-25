@@ -265,6 +265,10 @@
     "notifications": {
       "newRequestTitle": "Lời mời kết nối mới",
       "newRequestMessage": "{{name}} muốn kết nối với bạn",
+      "requestAccepted": "Lời mời kết nối đã được chấp nhận",
+      "requestAcceptedMessage": "{{name}} đã chấp nhận lời mời kết nối của bạn",
+      "requestRejected": "Lời mời kết nối đã bị từ chối",
+      "requestRejectedMessage": "{{name}} đã từ chối lời mời kết nối của bạn",
       "error": "Không thể tải thông báo"
     }
   },

@@ -10,6 +10,7 @@ import { DEFAULT_BUDDY_FILTERS } from '../../types/buddy';
 import * as buddyService from '../../services/buddy';
 import type { RootState } from '../index';
 import { signOutState } from './authSlice';
+import type { RespondToBuddyRequestResponse } from '../../services/buddy';
 
 export interface BuddyState {
   filters: BuddyFilters;
@@ -140,6 +141,95 @@ export const sendBuddyRequestAsync = createAsyncThunk<
   }
 });
 
+/**
+ * Async thunk to fetch incoming connection requests
+ */
+export const fetchIncomingRequestsAsync = createAsyncThunk<
+  IncomingRequest[],
+  void,
+  { state: RootState }
+>('buddy/fetchIncomingRequests', async (_, { getState, rejectWithValue }) => {
+  try {
+    const state = getState();
+    const currentUserId = state.auth.userId;
+
+    if (!currentUserId) {
+      return rejectWithValue('User not authenticated');
+    }
+
+    const requests = await buddyService.fetchIncomingRequests(currentUserId);
+    return requests;
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : 'Failed to fetch incoming requests';
+    return rejectWithValue(errorMessage);
+  }
+});
+
+type RespondToBuddyRequestPayload = {
+  connectionId: string;
+  connection: ConnectionRequest;
+  action: 'accept' | 'reject';
+};
+
+type RespondToBuddyRequestError = {
+  connectionId: string;
+  error: string;
+  errorCode?: string;
+};
+
+/**
+ * Async thunk to respond to a buddy request (accept or reject)
+ */
+export const respondToBuddyRequestAsync = createAsyncThunk<
+  RespondToBuddyRequestPayload,
+  { connectionId: string; action: 'accept' | 'reject' },
+  { state: RootState }
+>(
+  'buddy/respondToBuddyRequest',
+  async ({ connectionId, action }, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const currentUserId = state.auth.userId;
+
+      if (!currentUserId) {
+        return rejectWithValue({
+          connectionId,
+          error: 'User not authenticated',
+          errorCode: 'UNAUTHORIZED',
+        } as RespondToBuddyRequestError);
+      }
+
+      const response = await buddyService.respondToBuddyRequest(
+        connectionId,
+        currentUserId,
+        action,
+      );
+
+      if (!response.success || !response.connection) {
+        return rejectWithValue({
+          connectionId,
+          error: response.error || 'Failed to respond to request',
+          errorCode: response.errorCode,
+        } as RespondToBuddyRequestError);
+      }
+
+      return {
+        connectionId,
+        connection: response.connection,
+        action,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to respond to request';
+      return rejectWithValue({
+        connectionId,
+        error: message,
+        errorCode: 'NETWORK_ERROR',
+      } as RespondToBuddyRequestError);
+    }
+  },
+);
+
 const buddySlice = createSlice({
   name: 'buddy',
   initialState,
@@ -190,6 +280,17 @@ const buddySlice = createSlice({
     clearIncomingRequests(state) {
       state.incomingRequests = [];
       state.unreadRequestsCount = 0;
+    },
+    removeIncomingRequest(state, action: PayloadAction<string>) {
+      const index = state.incomingRequests.findIndex((req) => req.id === action.payload);
+      if (index !== -1) {
+        const request = state.incomingRequests[index];
+        // Decrease unread count if request was unread
+        if (!request.read) {
+          state.unreadRequestsCount = Math.max(0, state.unreadRequestsCount - 1);
+        }
+        state.incomingRequests.splice(index, 1);
+      }
     },
   },
   extraReducers: (builder) => {
@@ -245,6 +346,56 @@ const buddySlice = createSlice({
         state.requestStatuses[targetUserId] = 'error';
       });
 
+    // fetchIncomingRequestsAsync
+    builder
+      .addCase(fetchIncomingRequestsAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchIncomingRequestsAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        // Merge with existing requests (avoid duplicates)
+        const existingIds = new Set(state.incomingRequests.map((req) => req.id));
+        const newRequests = action.payload.filter((req) => !existingIds.has(req.id));
+        state.incomingRequests = [...state.incomingRequests, ...newRequests];
+        // Update unread count based on new requests
+        const newUnreadCount = newRequests.filter((req) => !req.read).length;
+        state.unreadRequestsCount += newUnreadCount;
+        state.error = null;
+      })
+      .addCase(fetchIncomingRequestsAsync.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // respondToBuddyRequestAsync
+    builder
+      .addCase(respondToBuddyRequestAsync.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(respondToBuddyRequestAsync.fulfilled, (state, action) => {
+        state.loading = false;
+        // Remove the request from incoming requests
+        const index = state.incomingRequests.findIndex(
+          (req) => req.id === action.payload.connectionId,
+        );
+        if (index !== -1) {
+          const request = state.incomingRequests[index];
+          // Decrease unread count if request was unread
+          if (!request.read) {
+            state.unreadRequestsCount = Math.max(0, state.unreadRequestsCount - 1);
+          }
+          state.incomingRequests.splice(index, 1);
+        }
+        state.error = null;
+      })
+      .addCase(respondToBuddyRequestAsync.rejected, (state, action) => {
+        state.loading = false;
+        const payload = action.payload as RespondToBuddyRequestError | undefined;
+        state.error = payload?.error || 'Failed to respond to request';
+      });
+
     // Clear buddy state when user signs out
     builder.addCase(signOutState, (state) => {
       state.incomingRequests = [];
@@ -268,6 +419,7 @@ export const {
   addIncomingRequest,
   markRequestAsRead,
   clearIncomingRequests,
+  removeIncomingRequest,
 } = buddySlice.actions;
 
 // Selectors

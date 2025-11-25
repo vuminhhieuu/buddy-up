@@ -7,7 +7,7 @@ import { supabase } from '../config/supabase';
 import { useAppDispatch } from '../store/hooks';
 import { addIncomingRequest } from '../store/slices/buddySlice';
 import type { ConnectionRequest, BuddyProfile } from '../types/buddy';
-import { showSuccessToast } from '../utils/toast';
+import { showSuccessToast, showInfoToast } from '../utils/toast';
 import { useTranslation } from 'react-i18next';
 
 /**
@@ -49,6 +49,7 @@ export const useBuddyRequests = (userId: string | null) => {
     const channelName = `connections:${userId}`;
     const channel = supabase
       .channel(channelName)
+      // Listen for INSERT events: new requests sent TO this user (receiver)
       .on(
         'postgres_changes',
         {
@@ -162,6 +163,102 @@ export const useBuddyRequests = (userId: string | null) => {
             console.log('[useBuddyRequests] Toast notification shown');
           } catch (error) {
             console.error('[useBuddyRequests] Error processing incoming request:', error);
+          }
+        },
+      )
+      // Listen for UPDATE events: when requests sent BY this user are accepted/rejected
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'connections',
+          // Only listen for requests sent BY this user (sender)
+          filter: `requested_by=eq.${userId}`,
+        },
+        async (payload) => {
+          console.log('[useBuddyRequests] Received UPDATE event:', {
+            connectionId: payload.new?.id,
+            oldStatus: payload.old?.status,
+            newStatus: payload.new?.status,
+            requested_by: payload.new?.requested_by,
+          });
+
+          try {
+            // Validate payload structure
+            if (!payload.new || !payload.old) {
+              console.error('[useBuddyRequests] Missing payload.new or payload.old');
+              return;
+            }
+
+            // Type guard validation
+            if (!isValidConnectionRequest(payload.new) || !isValidConnectionRequest(payload.old)) {
+              console.error('[useBuddyRequests] Invalid connection request payload:', payload.new);
+              return;
+            }
+
+            const oldConnection = payload.old;
+            const newConnection = payload.new;
+
+            // Only process if status changed from pending to accepted/rejected
+            if (oldConnection.status !== 'pending') {
+              console.log(
+                '[useBuddyRequests] Skipping non-pending status change:',
+                oldConnection.status,
+              );
+              return;
+            }
+
+            if (newConnection.status !== 'accepted' && newConnection.status !== 'rejected') {
+              console.log(
+                '[useBuddyRequests] Status changed to non-accepted/rejected:',
+                newConnection.status,
+              );
+              return;
+            }
+
+            // Fetch receiver profile to show in toast
+            const receiverId =
+              newConnection.user_id_1 === userId
+                ? newConnection.user_id_2
+                : newConnection.user_id_1;
+
+            const { data: receiverProfile, error: profileError } = await supabase
+              .from('profiles')
+              .select('display_name')
+              .eq('user_id', receiverId)
+              .is('deleted_at', null)
+              .single();
+
+            if (profileError || !receiverProfile) {
+              console.error('[useBuddyRequests] Error fetching receiver profile:', profileError);
+              // Still show toast without name
+              if (newConnection.status === 'accepted') {
+                showSuccessToast(t('buddy.notifications.requestAccepted'));
+              } else {
+                showInfoToast(t('buddy.notifications.requestRejected'));
+              }
+              return;
+            }
+
+            // Show toast notification
+            if (newConnection.status === 'accepted') {
+              showSuccessToast(
+                t('buddy.notifications.requestAcceptedMessage', {
+                  name: receiverProfile.display_name,
+                }),
+              );
+            } else {
+              showInfoToast(
+                t('buddy.notifications.requestRejectedMessage', {
+                  name: receiverProfile.display_name,
+                }),
+              );
+            }
+
+            console.log('[useBuddyRequests] Toast notification shown for status update');
+          } catch (error) {
+            console.error('[useBuddyRequests] Error processing status update:', error);
           }
         },
       )

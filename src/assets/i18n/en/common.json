@@ -265,6 +265,10 @@
     "notifications": {
       "newRequestTitle": "New Connection Request",
       "newRequestMessage": "{{name}} wants to connect with you",
+      "requestAccepted": "Connection request accepted",
+      "requestAcceptedMessage": "{{name}} has accepted your connection request",
+      "requestRejected": "Connection request rejected",
+      "requestRejectedMessage": "{{name}} has rejected your connection request",
       "error": "Failed to load notifications"
     }
   },
