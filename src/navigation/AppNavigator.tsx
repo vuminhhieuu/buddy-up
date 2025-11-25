@@ -3,11 +3,13 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { MainTabsNavigator } from './MainTabsNavigator';
 import { AuthNavigator } from './AuthNavigator';
+import { CreateSessionScreen } from '../screens/CreateSessionScreen';
 import { useAppSelector } from '../store/hooks';
 
 export type RootStackParamList = {
   Auth: { profileSetupInProgress: boolean };
   MainTabs: undefined;
+  CreateSession: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -19,7 +21,10 @@ export const AppNavigator: React.FC = () => {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {userId && !profileSetupInProgress ? (
-          <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
+          <>
+            <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
+            <Stack.Screen name="CreateSession" component={CreateSessionScreen} />
+          </>
         ) : (
           <Stack.Screen
             name="Auth"
