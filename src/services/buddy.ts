@@ -8,6 +8,7 @@ import type {
   SendBuddyRequestResponse,
   ConnectionStatusResult,
   ConnectionStatus,
+  IncomingRequest,
 } from '../types/buddy';
 
 /**
@@ -305,5 +306,168 @@ export async function searchBuddies(
   } catch (error) {
     console.error('Error in searchBuddies:', error);
     throw error;
+  }
+}
+
+/**
+ * Response from responding to a buddy request
+ */
+export interface RespondToBuddyRequestResponse {
+  success: boolean;
+  connection?: ConnectionRequest;
+  error?: string;
+  errorCode?: 'INVALID_CONNECTION' | 'UNAUTHORIZED' | 'NETWORK_ERROR';
+}
+
+/**
+ * Fetch incoming connection requests for a user
+ * @param userId - Current user ID (receiver)
+ * @returns Array of incoming requests with sender profiles
+ */
+export async function fetchIncomingRequests(userId: string): Promise<IncomingRequest[]> {
+  try {
+    // Fetch all pending connections where user is the receiver (user_id_2)
+    const { data: connections, error: connectionsError } = await supabase
+      .from('connections')
+      .select('*')
+      .eq('user_id_2', userId)
+      .eq('status', 'pending')
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+
+    if (connectionsError) {
+      console.error('Error fetching incoming requests:', connectionsError);
+      return [];
+    }
+
+    if (!connections || connections.length === 0) {
+      return [];
+    }
+
+    // Fetch sender profiles for all requests
+    const senderIds = connections.map((conn) => conn.requested_by);
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('user_id', senderIds)
+      .is('deleted_at', null);
+
+    if (profilesError) {
+      console.error('Error fetching sender profiles:', profilesError);
+      return [];
+    }
+
+    // Create a map of user_id to profile for quick lookup
+    const profileMap = new Map<string, BuddyProfile>();
+    profiles?.forEach((profile) => {
+      profileMap.set(profile.user_id, profile as BuddyProfile);
+    });
+
+    // Combine connections with sender profiles
+    const incomingRequests: IncomingRequest[] = connections
+      .map((connection) => {
+        const sender = profileMap.get(connection.requested_by);
+        if (!sender) {
+          console.warn(`Sender profile not found for user: ${connection.requested_by}`);
+          return null;
+        }
+
+        return {
+          id: connection.id,
+          connection: connection as ConnectionRequest,
+          sender,
+          read: false, // Default to unread, will be updated by Redux
+          createdAt: connection.created_at,
+        };
+      })
+      .filter((req): req is IncomingRequest => req !== null);
+
+    return incomingRequests;
+  } catch (error) {
+    console.error('Error in fetchIncomingRequests:', error);
+    return [];
+  }
+}
+
+/**
+ * Respond to a buddy connection request (accept or reject)
+ * @param connectionId - Connection request ID
+ * @param currentUserId - Current user ID (receiver)
+ * @param action - 'accept' or 'reject'
+ * @returns Response with updated connection or error
+ */
+export async function respondToBuddyRequest(
+  connectionId: string,
+  currentUserId: string,
+  action: 'accept' | 'reject',
+): Promise<RespondToBuddyRequestResponse> {
+  try {
+    // First, verify the connection exists and user is authorized
+    // Only select required fields for authorization check
+    const { data: connection, error: fetchError } = await supabase
+      .from('connections')
+      .select('id, user_id_1, user_id_2, status')
+      .eq('id', connectionId)
+      .is('deleted_at', null)
+      .single();
+
+    if (fetchError || !connection) {
+      return {
+        success: false,
+        error: 'Connection request not found',
+        errorCode: 'INVALID_CONNECTION',
+      };
+    }
+
+    // Verify user is the receiver (user_id_2)
+    if (connection.user_id_2 !== currentUserId) {
+      return {
+        success: false,
+        error: 'Unauthorized: You are not the receiver of this request',
+        errorCode: 'UNAUTHORIZED',
+      };
+    }
+
+    // Verify request is still pending
+    if (connection.status !== 'pending') {
+      return {
+        success: false,
+        error: `Connection request is already ${connection.status}`,
+        errorCode: 'INVALID_CONNECTION',
+      };
+    }
+
+    // Update connection status
+    const newStatus: ConnectionStatus = action === 'accept' ? 'accepted' : 'rejected';
+    const { data: updatedConnection, error: updateError } = await supabase
+      .from('connections')
+      .update({
+        status: newStatus,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', connectionId)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('Error updating connection status:', updateError);
+      return {
+        success: false,
+        error: updateError.message || 'Failed to update connection status',
+        errorCode: 'NETWORK_ERROR',
+      };
+    }
+
+    return {
+      success: true,
+      connection: updatedConnection as ConnectionRequest,
+    };
+  } catch (error) {
+    console.error('Error in respondToBuddyRequest:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+      errorCode: 'NETWORK_ERROR',
+    };
   }
 }
