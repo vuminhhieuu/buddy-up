@@ -268,6 +268,12 @@ const buddySlice = createSlice({
           read: false,
         });
         state.unreadRequestsCount += 1;
+        console.log(
+          '[buddySlice] Added new incoming request, unread count:',
+          state.unreadRequestsCount,
+        );
+      } else {
+        console.log('[buddySlice] Request already exists, skipping:', action.payload.id);
       }
     },
     markRequestAsRead(state, action: PayloadAction<string>) {
@@ -354,13 +360,34 @@ const buddySlice = createSlice({
       })
       .addCase(fetchIncomingRequestsAsync.fulfilled, (state, action) => {
         state.loading = false;
-        // Merge with existing requests (avoid duplicates)
-        const existingIds = new Set(state.incomingRequests.map((req) => req.id));
-        const newRequests = action.payload.filter((req) => !existingIds.has(req.id));
-        state.incomingRequests = [...state.incomingRequests, ...newRequests];
-        // Update unread count based on new requests
-        const newUnreadCount = newRequests.filter((req) => !req.read).length;
-        state.unreadRequestsCount += newUnreadCount;
+        // Merge with existing requests (avoid duplicates and preserve read status)
+        const existingMap = new Map(state.incomingRequests.map((req) => [req.id, req]));
+        const mergedRequests: IncomingRequest[] = [];
+        let newUnreadCount = 0;
+
+        action.payload.forEach((req) => {
+          const existing = existingMap.get(req.id);
+          if (existing) {
+            // Preserve existing read status
+            mergedRequests.push(existing);
+          } else {
+            // New request - add it and count if unread
+            mergedRequests.push(req);
+            if (!req.read) {
+              newUnreadCount += 1;
+            }
+          }
+        });
+
+        state.incomingRequests = mergedRequests;
+        // Recalculate unread count from all merged requests to ensure accuracy
+        const calculatedUnreadCount = mergedRequests.filter((req) => !req.read).length;
+        state.unreadRequestsCount = calculatedUnreadCount;
+        console.log('[buddySlice] Fetched incoming requests:', {
+          totalRequests: mergedRequests.length,
+          unreadCount: calculatedUnreadCount,
+          newRequests: newUnreadCount,
+        });
         state.error = null;
       })
       .addCase(fetchIncomingRequestsAsync.rejected, (state, action) => {

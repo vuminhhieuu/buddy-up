@@ -176,16 +176,18 @@ export const useBuddyRequests = (userId: string | null) => {
               }),
             );
 
-            console.log('[useBuddyRequests] Added request to Redux state');
+            console.log('[useBuddyRequests] Added request to Redux state:', {
+              connectionId: connection.id,
+              senderName: sender.display_name,
+            });
 
             // Show toast notification
-            showSuccessToast(
-              t('buddy.notifications.newRequestMessage', {
-                name: sender.display_name,
-              }),
-            );
-
-            console.log('[useBuddyRequests] Toast notification shown');
+            const toastMessage = t('buddy.notifications.newRequestMessage', {
+              name: sender.display_name,
+            });
+            console.log('[useBuddyRequests] Showing toast with message:', toastMessage);
+            showSuccessToast(toastMessage);
+            console.log('[useBuddyRequests] Toast.show() called');
           } catch (error) {
             console.error('[useBuddyRequests] Error processing incoming request:', error);
           }

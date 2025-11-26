@@ -55,7 +55,7 @@ export interface CreateDirectChatResponse {
   success: boolean;
   chat?: ChatRoom;
   error?: string;
-  errorCode?: 'ALREADY_EXISTS' | 'INVALID_USERS' | 'NETWORK_ERROR';
+  errorCode?: 'ALREADY_EXISTS' | 'INVALID_USERS' | 'NETWORK_ERROR' | 'PERMISSION_DENIED';
 }
 
 /**
@@ -65,8 +65,18 @@ export interface SendMessageResponse {
   success: boolean;
   message?: Message;
   error?: string;
-  errorCode?: 'INVALID_CHAT' | 'UNAUTHORIZED' | 'NETWORK_ERROR';
+  errorCode?: 'INVALID_CHAT' | 'UNAUTHORIZED' | 'NETWORK_ERROR' | 'PERMISSION_DENIED';
 }
+
+const isRlsError = (error: { code?: string; message?: string } | null | undefined) => {
+  if (!error) return false;
+  return error.code === '42501' || error.message?.includes('row-level security');
+};
+
+const isPolicyRecursion = (error: { code?: string; message?: string } | null | undefined) => {
+  if (!error) return false;
+  return error.code === '42P17' || error.message?.includes('infinite recursion');
+};
 
 /**
  * Create a direct chat room between two users
@@ -103,10 +113,23 @@ export async function createDirectChat(
       .select('chat_id')
       .eq('user_id', userId2);
 
+    const skipExistingCheck =
+      isPolicyRecursion(user1Error) ||
+      isPolicyRecursion(user2Error) ||
+      isRlsError(user1Error) ||
+      isRlsError(user2Error);
+
     if (user1Error || user2Error) {
-      console.error('Error checking existing chats:', user1Error || user2Error);
-      // Continue to create new chat
-    } else if (user1Chats && user2Chats && user1Chats.length > 0 && user2Chats.length > 0) {
+      if (!skipExistingCheck) {
+        console.error('Error checking existing chats:', user1Error || user2Error);
+      }
+    } else if (
+      !skipExistingCheck &&
+      user1Chats &&
+      user2Chats &&
+      user1Chats.length > 0 &&
+      user2Chats.length > 0
+    ) {
       // Find common chat IDs
       const user1ChatIds = new Set(user1Chats.map((c) => c.chat_id));
       const commonChatIds = user2Chats
@@ -154,6 +177,13 @@ export async function createDirectChat(
       .single();
 
     if (createError) {
+      if (isRlsError(createError)) {
+        return {
+          success: false,
+          error: 'RLS_VIOLATION',
+          errorCode: 'PERMISSION_DENIED',
+        };
+      }
       console.error('Error creating chat:', createError);
       // Check if it's a duplicate (race condition)
       if (createError.code === '23505' && retryCount < 3) {
@@ -184,6 +214,13 @@ export async function createDirectChat(
     ]);
 
     if (participantsError) {
+      if (isRlsError(participantsError)) {
+        return {
+          success: false,
+          error: 'RLS_VIOLATION',
+          errorCode: 'PERMISSION_DENIED',
+        };
+      }
       console.error('Error adding participants:', participantsError);
       // Try to clean up the chat if participants failed
       await supabase.from('chats').delete().eq('id', newChat.id);
@@ -229,6 +266,13 @@ export async function sendQuickMessage(
       .eq('user_id', senderId);
 
     if (participantsError || !participants || participants.length === 0) {
+      if (isRlsError(participantsError)) {
+        return {
+          success: false,
+          error: 'RLS_VIOLATION',
+          errorCode: 'PERMISSION_DENIED',
+        };
+      }
       return {
         success: false,
         error: 'You are not a participant in this chat',
@@ -265,6 +309,13 @@ export async function sendQuickMessage(
       .single();
 
     if (messageError) {
+      if (isRlsError(messageError)) {
+        return {
+          success: false,
+          error: 'RLS_VIOLATION',
+          errorCode: 'PERMISSION_DENIED',
+        };
+      }
       console.error('Error sending message:', messageError);
       return {
         success: false,

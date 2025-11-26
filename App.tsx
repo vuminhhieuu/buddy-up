@@ -25,11 +25,13 @@ import { useBuddyRequests } from './src/hooks/useBuddyRequests';
 import { initializeLanguage } from './src/services/language';
 import { buddyToastConfig } from './src/components/ui/BuddyToast/config';
 import { TOAST_POSITION, TOAST_BOTTOM_OFFSET, TOAST_VISIBILITY_TIME } from './src/constants/toast';
-import { useAppSelector } from './src/store/hooks';
+import { useAppSelector, useAppDispatch } from './src/store/hooks';
+import { fetchIncomingRequestsAsync } from './src/store/slices/buddySlice';
 
 const AppContent = () => {
   const { initialized } = useAuthSession();
   const userId = useAppSelector((state) => state.auth.userId);
+  const dispatch = useAppDispatch();
   
   // Listen for incoming connection requests via Realtime
   useBuddyRequests(userId);
@@ -38,6 +40,14 @@ const AppContent = () => {
     // Initialize language from storage when app starts
     initializeLanguage();
   }, []);
+
+  // Fetch incoming requests when user is authenticated to populate badge
+  useEffect(() => {
+    if (initialized && userId) {
+      console.log('[AppContent] Fetching incoming requests for badge');
+      dispatch(fetchIncomingRequestsAsync());
+    }
+  }, [initialized, userId, dispatch]);
 
   if (!initialized) {
     return (
