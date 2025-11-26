@@ -1,17 +1,16 @@
 import { supabase } from '../config/supabase';
-import type { PostgrestError } from '@supabase/supabase-js';
 import {
-  WEEKLY_STREAK_GOAL,
-  HOURS_FALLBACK,
   MS_PER_HOUR,
   MONDAY_OFFSET,
   WEEK_END_OFFSET,
   UPCOMING_DAYS_AHEAD,
-  RECENT_SESSIONS_LIMIT,
   UPCOMING_SESSIONS_DISPLAY_LIMIT,
+  WEEKLY_STREAK_GOAL,
+  HOURS_FALLBACK,
+  RECENT_SESSIONS_LIMIT,
 } from '../constants/profile';
 import { logger } from '../utils/logger';
-import { safeMaybeSingle, safeList, type MaybeSingleResult, type ListResult } from './helpers';
+import { safeList, safeMaybeSingle, type MaybeSingleResult, type ListResult } from './helpers';
 
 type SupabaseSession = {
   id: string;
@@ -53,8 +52,22 @@ export type HomeDashboardData = {
   weeklyStudyHours: number;
   completedSessions: number;
   weeklyGoalDays: number;
+  weeklyActiveDays: number;
   sessionGoal: number;
   sessions: HomeSession[];
+};
+
+const STREAK_LOOKBACK_DAYS = 30;
+const MS_PER_DAY = 86_400_000;
+const loggedWarningScopes = new Set<string>();
+
+const logWarning = (scope: string, error: { message: string }) => {
+  if (error.message?.toLowerCase().includes('infinite recursion detected')) {
+    return;
+  }
+  if (loggedWarningScopes.has(scope)) return;
+  loggedWarningScopes.add(scope);
+  console.warn(`[HomeDashboard] ${scope}: ${error.message}`);
 };
 
 function startOfWeek(date: Date) {
@@ -82,6 +95,135 @@ function calculateDurationHours(session: SupabaseSession) {
   }
   return HOURS_FALLBACK;
 }
+
+const getDateKey = (date: Date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getSessionDateKey = (isoDate: string | null | undefined) => {
+  if (!isoDate) return null;
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return null;
+  date.setHours(0, 0, 0, 0);
+  return getDateKey(date);
+};
+
+const calculateStreakFromSessions = (sessions: SupabaseSession[], now: Date) => {
+  if (!sessions.length) return 0;
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const activityDays = new Set<string>();
+
+  sessions.forEach((session) => {
+    if (session.status === 'canceled') return;
+    const dateKey = getSessionDateKey(session.scheduled_start);
+    if (dateKey) {
+      activityDays.add(dateKey);
+    }
+  });
+
+  let streak = 0;
+  const cursor = new Date(today);
+  while (activityDays.has(getDateKey(cursor))) {
+    streak += 1;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+  return streak;
+};
+
+const toStartOfDay = (date: Date) => {
+  const normalized = new Date(date);
+  normalized.setHours(0, 0, 0, 0);
+  return normalized;
+};
+
+const ensureDailyLoginStreak = async (
+  userId: string,
+  progressRow: ProgressRow | null,
+  now: Date,
+  lastSignInAt?: string | null,
+): Promise<ProgressRow | null> => {
+  const today = toStartOfDay(now);
+  const todayKey = today.getTime();
+
+  const resolveLastLogin = () => {
+    if (progressRow?.last_login_at) {
+      const parsed = toStartOfDay(new Date(progressRow.last_login_at));
+      if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+    if (lastSignInAt) {
+      const parsed = toStartOfDay(new Date(lastSignInAt));
+      if (!Number.isNaN(parsed.getTime())) return parsed;
+    }
+    return null;
+  };
+
+  const lastLoginDate = resolveLastLogin();
+  const currentStreak = progressRow?.streak ?? 0;
+  let nextStreak = currentStreak > 0 ? currentStreak : 1;
+
+  if (lastLoginDate) {
+    const diffDays = Math.floor((today.getTime() - lastLoginDate.getTime()) / MS_PER_DAY);
+    if (diffDays <= 0) {
+      nextStreak = currentStreak > 0 ? currentStreak : 1;
+    } else if (diffDays === 1) {
+      nextStreak = currentStreak > 0 ? currentStreak + 1 : Math.max(currentStreak, 1) + 1;
+    } else {
+      nextStreak = 1;
+    }
+  } else {
+    nextStreak = currentStreak > 0 ? currentStreak : 1;
+  }
+
+  if (!progressRow) {
+    const { data, error } = await supabase
+      .from('user_progress')
+      .insert({ user_id: userId, streak: nextStreak, last_login_at: now.toISOString() })
+      .select('streak, xp, updated_at, last_login_at')
+      .single();
+
+    if (error) {
+      if (error.code !== '23505') {
+        logWarning('progressInsert', error);
+        return null;
+      }
+      const { data: fallback } = await supabase
+        .from('user_progress')
+        .select('streak, xp, updated_at, last_login_at')
+        .eq('user_id', userId)
+        .maybeSingle();
+      return (fallback as ProgressRow | null) ?? null;
+    }
+
+    return data as ProgressRow;
+  }
+
+  const lastLoginMatchesToday =
+    progressRow.last_login_at &&
+    toStartOfDay(new Date(progressRow.last_login_at)).getTime() === todayKey;
+  const requiresUpdate = progressRow.streak !== nextStreak || !lastLoginMatchesToday;
+
+  if (!requiresUpdate) {
+    return progressRow;
+  }
+
+  const { data, error } = await supabase
+    .from('user_progress')
+    .update({ streak: nextStreak, last_login_at: now.toISOString() })
+    .eq('user_id', userId)
+    .select('streak, xp, updated_at, last_login_at')
+    .single();
+
+  if (error) {
+    logWarning('progressUpdate', error);
+    return progressRow;
+  }
+
+  return data as ProgressRow;
+};
 
 const isRelevantSession = (
   session: SupabaseSession,
@@ -118,39 +260,51 @@ type ProfileRow = {
 type ProgressRow = {
   streak: number;
   xp: number;
+  updated_at?: string | null;
+  last_login_at?: string | null;
 };
 
 export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardData> {
   const now = new Date();
+  const streakWindowStart = new Date(now);
+  streakWindowStart.setDate(streakWindowStart.getDate() - STREAK_LOOKBACK_DAYS);
   const weekStart = startOfWeek(now);
   const weekEnd = endOfWeek(now);
   const upcomingEnd = new Date(now);
   upcomingEnd.setDate(upcomingEnd.getDate() + UPCOMING_DAYS_AHEAD);
 
-  // Using shared helpers from services/helpers/queryHelpers.ts
-
-  const [profileResult, progressResult, weekSessionsResult, upcomingSessionsResult] =
-    await Promise.all([
-      supabase
-        .from('profiles')
-        .select('display_name, avatar_url')
-        .eq('user_id', userId)
-        .maybeSingle(),
-      supabase.from('user_progress').select('streak, xp').eq('user_id', userId).maybeSingle(),
-      supabase
-        .from('study_sessions')
-        .select('id, title, subject, scheduled_start, scheduled_end, status, creator_id')
-        .gte('scheduled_start', weekStart.toISOString())
-        .lte('scheduled_start', weekEnd.toISOString())
-        .order('scheduled_start', { ascending: true }),
-      supabase
-        .from('study_sessions')
-        .select('id, title, subject, scheduled_start, scheduled_end, status, creator_id')
-        .gte('scheduled_start', now.toISOString())
-        .lte('scheduled_start', upcomingEnd.toISOString())
-        .order('scheduled_start', { ascending: true })
-        .limit(RECENT_SESSIONS_LIMIT),
-    ]);
+  const [
+    profileResult,
+    progressResult,
+    recentSessionsResult,
+    upcomingSessionsResult,
+    authUserResult,
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('display_name, avatar_url')
+      .eq('user_id', userId)
+      .maybeSingle(),
+    supabase
+      .from('user_progress')
+      .select('streak, xp, updated_at, last_login_at')
+      .eq('user_id', userId)
+      .maybeSingle(),
+    supabase
+      .from('study_sessions')
+      .select('id, title, subject, scheduled_start, scheduled_end, status, creator_id')
+      .gte('scheduled_start', streakWindowStart.toISOString())
+      .lte('scheduled_start', now.toISOString())
+      .order('scheduled_start', { ascending: true }),
+    supabase
+      .from('study_sessions')
+      .select('id, title, subject, scheduled_start, scheduled_end, status, creator_id')
+      .gte('scheduled_start', now.toISOString())
+      .lte('scheduled_start', upcomingEnd.toISOString())
+      .order('scheduled_start', { ascending: true })
+      .limit(RECENT_SESSIONS_LIMIT),
+    supabase.auth.getUser(),
+  ]);
 
   const profileData = safeMaybeSingle<ProfileRow>(
     profileResult as MaybeSingleResult<ProfileRow>,
@@ -160,16 +314,25 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     progressResult as MaybeSingleResult<ProgressRow>,
     'progress',
   );
-  const weekSessionsAll = safeList<SupabaseSession>(
-    weekSessionsResult as ListResult<SupabaseSession>,
-    'weekSessions',
+  const recentSessionsAll = safeList<SupabaseSession>(
+    recentSessionsResult as ListResult<SupabaseSession>,
+    'recentSessions',
   );
   const upcomingSessionsAll = safeList<SupabaseSession>(
     upcomingSessionsResult as ListResult<SupabaseSession>,
     'upcomingSessions',
   );
 
-  const combinedSessions = [...weekSessionsAll, ...upcomingSessionsAll] as SupabaseSession[];
+  const authUserData = (authUserResult as Awaited<ReturnType<typeof supabase.auth.getUser>>).data;
+  const lastSignInAt =
+    authUserData?.user?.last_sign_in_at ??
+    // @ts-expect-error Supabase SDK might expose camelCase in some versions
+    authUserData?.user?.lastSignInAt ??
+    null;
+
+  const syncedProgress = await ensureDailyLoginStreak(userId, progressData, now, lastSignInAt);
+
+  const combinedSessions = [...recentSessionsAll, ...upcomingSessionsAll] as SupabaseSession[];
 
   const uniqueSessions = new Map<string, SupabaseSession>();
   combinedSessions.forEach((session) => {
@@ -196,9 +359,21 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     });
   }
 
-  const userWeekSessions = weekSessionsAll.filter((session) =>
+  const userRecentSessions = recentSessionsAll.filter((session) =>
     isRelevantSession(session as SupabaseSession, participantsMap, userId),
   ) as SupabaseSession[];
+
+  const userWeekSessions = userRecentSessions.filter((session) => {
+    if (!session.scheduled_start) return false;
+    const sessionDate = new Date(session.scheduled_start);
+    if (Number.isNaN(sessionDate.getTime())) return false;
+    return (
+      sessionDate.getTime() >= weekStart.getTime() && sessionDate.getTime() <= weekEnd.getTime()
+    );
+  });
+
+  const calculatedStreak = calculateStreakFromSessions(userRecentSessions, now);
+  const resolvedStreak = Math.max(syncedProgress?.streak ?? 0, calculatedStreak);
 
   const userUpcomingSessions = upcomingSessionsAll
     .filter((session) => isRelevantSession(session as SupabaseSession, participantsMap, userId))
@@ -261,14 +436,23 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
   ).length;
   const sessionGoal = userUpcomingSessions.length;
 
+  const normalizedWeekStart = toStartOfDay(weekStart);
+  const normalizedNow = toStartOfDay(now);
+  const daysIntoWeek = Math.min(
+    WEEKLY_STREAK_GOAL,
+    Math.floor((normalizedNow.getTime() - normalizedWeekStart.getTime()) / MS_PER_DAY) + 1,
+  );
+  const weeklyActiveDays = Math.min(resolvedStreak, daysIntoWeek);
+
   return {
     profileName: profileData?.display_name ?? '',
     avatarUrl: profileData?.avatar_url ?? undefined,
-    streak: progressData?.streak ?? 0,
-    xp: progressData?.xp ?? 0,
+    streak: resolvedStreak,
+    xp: syncedProgress?.xp ?? 0,
     weeklyStudyHours,
     completedSessions,
     weeklyGoalDays: WEEKLY_STREAK_GOAL,
+    weeklyActiveDays,
     sessionGoal,
     sessions: userUpcomingSessions.slice(0, UPCOMING_SESSIONS_DISPLAY_LIMIT).map(toHomeSession),
   };

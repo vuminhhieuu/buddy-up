@@ -106,9 +106,9 @@ export const HomeScreen: React.FC = () => {
   }, [dashboard, t]);
 
   const streakGoal = dashboard?.weeklyGoalDays ?? 7;
-  const streakDays = Math.min(dashboard?.streak ?? 0, streakGoal);
+  const weeklyCompleted = Math.min(dashboard?.weeklyActiveDays ?? 0, streakGoal);
   const weeklyProgress = {
-    completed: streakDays,
+    completed: weeklyCompleted,
     total: streakGoal || 1,
   };
 
