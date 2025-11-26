@@ -49,7 +49,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
   onSaveToggle,
   isSaved,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('buddy');
   const { theme } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(0);
   const translateX = useSharedValue(0);
@@ -176,7 +176,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
       <View
         style={[{ height: CARD_HEIGHT, justifyContent: 'center', alignItems: 'center' }, style]}
       >
-        <Loading message={t('buddy.loading')} />
+        <Loading message={t('loading')} />
       </View>
     );
   }
@@ -184,10 +184,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
   if (cards.length === 0) {
     return (
       <View style={[{ height: CARD_HEIGHT }, style]}>
-        <EmptyState
-          title={t('buddy.stack.noMoreResults')}
-          description={t('buddy.stack.adjustFilters')}
-        />
+        <EmptyState title={t('stack.noMoreResults')} description={t('stack.adjustFilters')} />
       </View>
     );
   }
@@ -195,10 +192,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
   if (!currentCard) {
     return (
       <View style={[{ height: CARD_HEIGHT }, style]}>
-        <EmptyState
-          title={t('buddy.stack.allViewed')}
-          description={t('buddy.stack.adjustFilters')}
-        />
+        <EmptyState title={t('stack.allViewed')} description={t('stack.adjustFilters')} />
       </View>
     );
   }
@@ -263,7 +257,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
           }}
         >
           <Pressable
-            accessibilityLabel={t('buddy.actions.skip')}
+            accessibilityLabel={t('actions.skip')}
             onPress={() => triggerSwipe('left')}
             style={{
               width: 64,
@@ -285,7 +279,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
           </Pressable>
 
           <Pressable
-            accessibilityLabel={t('buddy.actions.save')}
+            accessibilityLabel={t('actions.save')}
             onPress={() => currentCard && onSaveToggle?.(currentCard)}
             style={{
               width: 56,
@@ -309,7 +303,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
           </Pressable>
 
           <Pressable
-            accessibilityLabel={t('buddy.actions.connect')}
+            accessibilityLabel={t('actions.connect')}
             onPress={() => triggerSwipe('right')}
             style={{
               width: 64,

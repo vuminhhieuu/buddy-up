@@ -15,7 +15,7 @@ export type QuickStatsSectionProps = {
 
 const QuickStatsSectionComponent: React.FC<QuickStatsSectionProps> = ({ stats, style }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('profile');
   const animatedValues = useRef([0, 1, 2].map(() => new Animated.Value(0))).current;
 
   useEffect(() => {
@@ -35,20 +35,20 @@ const QuickStatsSectionComponent: React.FC<QuickStatsSectionProps> = ({ stats, s
     () => [
       {
         id: 'streak',
-        value: t('profileScreen.quickStats.days', { count: stats.streak }),
-        label: t('profileScreen.quickStats.streak'),
+        value: t('quickStats.days', { count: stats.streak }),
+        label: t('quickStats.streak'),
         emoji: '🔥',
       },
       {
         id: 'time',
-        value: t('profileScreen.quickStats.hours', { count: stats.totalTime }),
-        label: t('profileScreen.quickStats.totalTime'),
+        value: t('quickStats.hours', { count: stats.totalTime }),
+        label: t('quickStats.totalTime'),
         emoji: '📚',
       },
       {
         id: 'xp',
-        value: t('profileScreen.quickStats.xpValue', { count: stats.xp }),
-        label: t('profileScreen.quickStats.xpLabel'),
+        value: t('quickStats.xpValue', { count: stats.xp }),
+        label: t('quickStats.xpLabel'),
         emoji: '⭐',
       },
     ],

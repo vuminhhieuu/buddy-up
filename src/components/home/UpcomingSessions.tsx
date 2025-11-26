@@ -6,6 +6,7 @@ import { Text } from '../ui/Text/Text';
 import { Avatar } from '../ui';
 import { Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { MS_PER_HOUR } from '../../constants/profile';
 
 export type Session = {
   id: string;
@@ -48,17 +49,17 @@ const formatTimeRange = (startIso: string, endIso: string | null | undefined, lo
 
 const formatCountdown = (startIso: string, t: (key: string, opts?: any) => string) => {
   const diffMs = new Date(startIso).getTime() - Date.now();
-  if (diffMs <= 0) return t('home.sessions.startingSoon');
-  const minutes = Math.round(diffMs / 60000);
+  if (diffMs <= 0) return t('sessions.startingSoon');
+  const minutes = Math.round(diffMs / (MS_PER_HOUR / 60));
   if (minutes < 60) {
-    return t('home.sessions.countdownMinutes', { count: Math.max(1, minutes) });
+    return t('sessions.countdownMinutes', { count: Math.max(1, minutes) });
   }
-  const hours = Math.round(diffMs / 3_600_000);
+  const hours = Math.round(diffMs / MS_PER_HOUR);
   if (hours < 24) {
-    return t('home.sessions.countdownHours', { count: Math.max(1, hours) });
+    return t('sessions.countdownHours', { count: Math.max(1, hours) });
   }
-  const days = Math.round(diffMs / 86_400_000);
-  return t('home.sessions.countdownDays', { count: Math.max(1, days) });
+  const days = Math.round(diffMs / (MS_PER_HOUR * 24));
+  return t('sessions.countdownDays', { count: Math.max(1, days) });
 };
 
 export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
@@ -67,7 +68,7 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
   onViewAllPress,
 }) => {
   const { theme } = useTheme();
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('home');
   const locale = i18n.language || 'vi';
 
   return (
@@ -76,17 +77,17 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
         <View style={styles.headerLeft}>
           <Calendar size={18} color={theme.colors.secondary[500]} strokeWidth={2} />
           <Text variant="h5" style={styles.sectionTitle}>
-            {t('home.sessions.title')}
+            {t('sessions.title')}
           </Text>
         </View>
         {onViewAllPress && (
           <Pressable
             onPress={onViewAllPress}
             accessibilityRole="button"
-            accessibilityLabel={t('home.sessions.viewAll')}
+            accessibilityLabel={t('sessions.viewAll')}
           >
             <Text variant="bodySmall" color="info" style={styles.viewAll}>
-              {t('home.sessions.viewAll')}
+              {t('sessions.viewAll')}
             </Text>
           </Pressable>
         )}
@@ -95,10 +96,10 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
       {sessions.length === 0 ? (
         <View style={styles.emptyState}>
           <Text variant="body" style={styles.emptyTitle}>
-            {t('home.sessions.emptyTitle')}
+            {t('sessions.emptyTitle')}
           </Text>
           <Text variant="bodySmall" color="secondary" style={styles.emptySubtitle}>
-            {t('home.sessions.emptySubtitle')}
+            {t('sessions.emptySubtitle')}
           </Text>
         </View>
       ) : (
@@ -109,7 +110,7 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
               onPress={() => onSessionPress?.(session.id)}
               style={styles.sessionWrapper}
               accessibilityRole="button"
-              accessibilityLabel={t('home.sessions.accessibilityLabel', {
+              accessibilityLabel={t('sessions.accessibilityLabel', {
                 name: session.buddyName || session.title || '',
                 time: new Date(session.scheduledStart).toLocaleString(),
               })}
@@ -160,8 +161,8 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
                   />
                   <View style={styles.sessionInfo}>
                     <Text variant="body" style={styles.buddyName}>
-                      {t('home.sessions.studyWith', {
-                        name: session.buddyName || t('home.sessions.defaultBuddyName'),
+                      {t('sessions.studyWith', {
+                        name: session.buddyName || t('sessions.defaultBuddyName'),
                       })}
                     </Text>
                     <View
@@ -182,7 +183,7 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
                           },
                         ]}
                       >
-                        {session.subject || session.title || t('home.sessions.unknownSubject')}
+                        {session.subject || session.title || t('sessions.unknownSubject')}
                       </Text>
                     </View>
                   </View>

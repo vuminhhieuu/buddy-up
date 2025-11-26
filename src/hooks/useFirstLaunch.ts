@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { STORAGE_KEYS } from '../constants/storage';
+import { logger } from '../utils/logger';
 
-const FIRST_LAUNCH_KEY = '@buddy_up:has_seen_onboarding';
+const LOGGER_SCOPE = 'useFirstLaunch';
 
 export const useFirstLaunch = () => {
   const [isFirstLaunch, setIsFirstLaunch] = useState<boolean>(false);
@@ -9,10 +11,10 @@ export const useFirstLaunch = () => {
 
   const checkFirstLaunch = useCallback(async () => {
     try {
-      const hasSeenOnboarding = await AsyncStorage.getItem(FIRST_LAUNCH_KEY);
+      const hasSeenOnboarding = await AsyncStorage.getItem(STORAGE_KEYS.onboardingStatus);
       setIsFirstLaunch(hasSeenOnboarding === null);
     } catch (error) {
-      console.error('Error checking first launch:', error);
+      logger.error(LOGGER_SCOPE, 'Failed to check onboarding status', error);
       setIsFirstLaunch(false);
     } finally {
       setIsLoading(false);
@@ -23,14 +25,14 @@ export const useFirstLaunch = () => {
     checkFirstLaunch();
   }, [checkFirstLaunch]);
 
-  const completeOnboarding = async () => {
+  const completeOnboarding = useCallback(async () => {
     try {
-      await AsyncStorage.setItem(FIRST_LAUNCH_KEY, 'true');
+      await AsyncStorage.setItem(STORAGE_KEYS.onboardingStatus, 'true');
       setIsFirstLaunch(false);
     } catch (error) {
-      console.error('Error saving onboarding completion:', error);
+      logger.error(LOGGER_SCOPE, 'Failed to persist onboarding completion', error);
     }
-  };
+  }, []);
 
   return {
     isFirstLaunch,

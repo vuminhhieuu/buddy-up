@@ -1,0 +1,16 @@
+{
+  "title": "Ngôn ngữ",
+  "currentLanguage": "Ngôn ngữ hiện tại",
+  "closeLanguageSelection": "Đóng chọn ngôn ngữ",
+  "selectLanguage": "Chọn ngôn ngữ",
+  "languages": {
+    "vi": "Tiếng Việt",
+    "en": "English"
+  },
+  "languageNames": {
+    "vi": "Vietnamese",
+    "en": "English"
+  },
+  "changeSuccess": "Đã thay đổi ngôn ngữ thành công",
+  "changeError": "Có lỗi xảy ra khi thay đổi ngôn ngữ"
+}

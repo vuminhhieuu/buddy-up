@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import type { SUBJECT_COLORS } from '../constants/profile';
 
 /**
  * Profile-related types and interfaces
@@ -26,10 +27,16 @@ export type Achievement = {
   completedAt?: Date;
 };
 
+/**
+ * Subject badge color type
+ * Derived from SUBJECT_COLORS constant
+ */
+export type SubjectBadgeColor = (typeof SUBJECT_COLORS)[number];
+
 export type Subject = {
   id: string;
   name: string;
-  badgeColor: 'blue' | 'orange' | 'green';
+  badgeColor: SubjectBadgeColor;
   progress: number;
   totalHours: number;
 };

@@ -1,4 +1,5 @@
 import { AuthError } from '@supabase/supabase-js';
+import { AUTH_ERROR_CODES, ERROR_MESSAGE_PATTERNS } from '../constants/errors';
 
 export function translateAuthError(
   error: AuthError | Error | null | undefined,
@@ -6,62 +7,69 @@ export function translateAuthError(
   context: 'login' | 'register' = 'login',
 ): string {
   if (!error) {
-    return context === 'register' ? t('auth.registerFailed') : t('auth.loginFailed');
+    return context === 'register' ? t('registerFailed') : t('loginFailed');
   }
 
   const errorMessage = error.message || '';
   const errorCode = 'code' in error ? (error as AuthError).code : null;
 
   switch (errorCode) {
-    case 'invalid_credentials':
-      return t('auth.invalidCredentials');
-    case 'email_not_confirmed':
-      return t('auth.emailNotConfirmed');
-    case 'user_not_found':
-      return t('auth.userNotFound');
-    case 'wrong_password':
-      return t('auth.wrongPassword');
-    case 'too_many_requests':
-      return t('auth.tooManyRequests');
-    case 'network_error':
-    case 'network_request_failed':
-      return t('auth.networkError');
+    case AUTH_ERROR_CODES.INVALID_CREDENTIALS:
+      return t('invalidCredentials');
+    case AUTH_ERROR_CODES.EMAIL_NOT_CONFIRMED:
+      return t('emailNotConfirmed');
+    case AUTH_ERROR_CODES.USER_NOT_FOUND:
+      return t('userNotFound');
+    case AUTH_ERROR_CODES.WRONG_PASSWORD:
+      return t('wrongPassword');
+    case AUTH_ERROR_CODES.TOO_MANY_REQUESTS:
+      return t('tooManyRequests');
+    case AUTH_ERROR_CODES.NETWORK_ERROR:
+    case AUTH_ERROR_CODES.NETWORK_REQUEST_FAILED:
+      return t('networkError');
     default: {
       const lowerMessage = errorMessage.toLowerCase();
 
+      // Check for email already exists patterns
       if (
-        lowerMessage.includes('user already registered') ||
-        lowerMessage.includes('email already registered') ||
-        lowerMessage.includes('email already exists') ||
-        lowerMessage.includes('user already exists') ||
-        lowerMessage.includes('already registered') ||
-        errorCode === 'signup_disabled'
+        ERROR_MESSAGE_PATTERNS.EMAIL_ALREADY_EXISTS.some((pattern) =>
+          lowerMessage.includes(pattern),
+        ) ||
+        errorCode === AUTH_ERROR_CODES.SIGNUP_DISABLED
       ) {
-        return t('auth.emailAlreadyExists');
+        return t('emailAlreadyExists');
       }
 
+      // Check for invalid credentials patterns
       if (
-        lowerMessage.includes('invalid login credentials') ||
-        lowerMessage.includes('invalid credentials')
+        ERROR_MESSAGE_PATTERNS.INVALID_CREDENTIALS.some((pattern) => lowerMessage.includes(pattern))
       ) {
-        return t('auth.invalidCredentials');
+        return t('invalidCredentials');
       }
+
+      // Check for email not confirmed patterns
       if (
-        lowerMessage.includes('email not confirmed') ||
-        lowerMessage.includes('email_not_confirmed')
+        ERROR_MESSAGE_PATTERNS.EMAIL_NOT_CONFIRMED.some((pattern) => lowerMessage.includes(pattern))
       ) {
-        return t('auth.emailNotConfirmed');
+        return t('emailNotConfirmed');
       }
-      if (lowerMessage.includes('user not found')) {
-        return t('auth.userNotFound');
+
+      // Check for user not found patterns
+      if (ERROR_MESSAGE_PATTERNS.USER_NOT_FOUND.some((pattern) => lowerMessage.includes(pattern))) {
+        return t('userNotFound');
       }
-      if (lowerMessage.includes('wrong password') || lowerMessage.includes('incorrect password')) {
-        return t('auth.wrongPassword');
+
+      // Check for wrong password patterns
+      if (ERROR_MESSAGE_PATTERNS.WRONG_PASSWORD.some((pattern) => lowerMessage.includes(pattern))) {
+        return t('wrongPassword');
       }
-      if (lowerMessage.includes('network') || lowerMessage.includes('connection')) {
-        return t('auth.networkError');
+
+      // Check for network error patterns
+      if (ERROR_MESSAGE_PATTERNS.NETWORK_ERROR.some((pattern) => lowerMessage.includes(pattern))) {
+        return t('networkError');
       }
-      return context === 'register' ? t('auth.registerFailed') : t('auth.loginFailed');
+
+      return context === 'register' ? t('registerFailed') : t('loginFailed');
     }
   }
 }

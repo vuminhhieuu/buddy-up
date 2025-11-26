@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, View, StyleSheet, ViewStyle } from 'react-native';
 import { useTheme } from '../../../styles';
+import { PROGRESS_MAX_PERCENTAGE } from '../../../constants/profile';
 
 export type ProgressBarVariant = 'primary' | 'secondary' | 'blue' | 'orange' | 'green';
 
@@ -20,7 +21,7 @@ export const ProgressBar: React.FC<ProgressBarProps> = ({
   showBackground = true,
 }) => {
   const { theme } = useTheme();
-  const clampedProgress = Math.max(0, Math.min(100, progress));
+  const clampedProgress = Math.max(0, Math.min(PROGRESS_MAX_PERCENTAGE, progress));
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {

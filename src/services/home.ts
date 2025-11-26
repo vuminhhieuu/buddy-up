@@ -1,5 +1,17 @@
 import { supabase } from '../config/supabase';
 import type { PostgrestError } from '@supabase/supabase-js';
+import {
+  WEEKLY_STREAK_GOAL,
+  HOURS_FALLBACK,
+  MS_PER_HOUR,
+  MONDAY_OFFSET,
+  WEEK_END_OFFSET,
+  UPCOMING_DAYS_AHEAD,
+  RECENT_SESSIONS_LIMIT,
+  UPCOMING_SESSIONS_DISPLAY_LIMIT,
+} from '../constants/profile';
+import { logger } from '../utils/logger';
+import { safeMaybeSingle, safeList, type MaybeSingleResult, type ListResult } from './helpers';
 
 type SupabaseSession = {
   id: string;
@@ -45,15 +57,10 @@ export type HomeDashboardData = {
   sessions: HomeSession[];
 };
 
-const WEEKLY_STREAK_GOAL = 7;
-const loggedWarningScopes = new Set<string>();
-
-const HOURS_FALLBACK = 1;
-
 function startOfWeek(date: Date) {
   const d = new Date(date);
   const day = d.getDay();
-  const diff = (day + 6) % 7; // Monday = start
+  const diff = (day + MONDAY_OFFSET) % 7; // Monday = start
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() - diff);
   return d;
@@ -62,7 +69,7 @@ function startOfWeek(date: Date) {
 function endOfWeek(date: Date) {
   const start = startOfWeek(date);
   const end = new Date(start);
-  end.setDate(end.getDate() + 6);
+  end.setDate(end.getDate() + WEEK_END_OFFSET);
   end.setHours(23, 59, 59, 999);
   return end;
 }
@@ -71,7 +78,7 @@ function calculateDurationHours(session: SupabaseSession) {
   const start = new Date(session.scheduled_start).getTime();
   const end = session.scheduled_end ? new Date(session.scheduled_end).getTime() : NaN;
   if (!Number.isNaN(end) && end > start) {
-    return (end - start) / 3_600_000;
+    return (end - start) / MS_PER_HOUR;
   }
   return HOURS_FALLBACK;
 }
@@ -103,16 +110,6 @@ const selectBuddyUserId = (
   return anyParticipant?.user_id;
 };
 
-type MaybeSingleResult<T> = {
-  data: T | null;
-  error: PostgrestError | null;
-};
-
-type ListResult<T> = {
-  data: T[] | null;
-  error: PostgrestError | null;
-};
-
 type ProfileRow = {
   display_name: string | null;
   avatar_url: string | null;
@@ -128,35 +125,9 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
   const weekStart = startOfWeek(now);
   const weekEnd = endOfWeek(now);
   const upcomingEnd = new Date(now);
-  upcomingEnd.setDate(upcomingEnd.getDate() + 7);
+  upcomingEnd.setDate(upcomingEnd.getDate() + UPCOMING_DAYS_AHEAD);
 
-  const logWarning = (scope: string, error: { message: string }) => {
-    if (error.message?.toLowerCase().includes('infinite recursion detected')) {
-      return;
-    }
-    if (loggedWarningScopes.has(scope)) return;
-    loggedWarningScopes.add(scope);
-    console.warn(`[HomeDashboard] ${scope}: ${error.message}`);
-  };
-
-  const safeMaybeSingle = <T>(result: MaybeSingleResult<T>, scope: string): T | null => {
-    const { data, error } = result;
-    if (error) {
-      if (error.code !== 'PGRST116') {
-        logWarning(scope, error);
-      }
-      return null;
-    }
-    return data;
-  };
-
-  const safeList = <T>(result: ListResult<T>, scope: string): T[] => {
-    if (result.error) {
-      logWarning(scope, result.error);
-      return [];
-    }
-    return (result.data || []) as T[];
-  };
+  // Using shared helpers from services/helpers/queryHelpers.ts
 
   const [profileResult, progressResult, weekSessionsResult, upcomingSessionsResult] =
     await Promise.all([
@@ -178,7 +149,7 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
         .gte('scheduled_start', now.toISOString())
         .lte('scheduled_start', upcomingEnd.toISOString())
         .order('scheduled_start', { ascending: true })
-        .limit(10),
+        .limit(RECENT_SESSIONS_LIMIT),
     ]);
 
   const profileData = safeMaybeSingle<ProfileRow>(
@@ -215,7 +186,7 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
       .in('session_id', sessionIds);
 
     if (participantsError) {
-      logWarning('participants', participantsError);
+      logger.warn('participants', participantsError.message, participantsError);
     }
 
     participantsData?.forEach((participant) => {
@@ -258,7 +229,7 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
       .in('user_id', Array.from(buddyUserIds));
 
     if (buddyProfilesError) {
-      logWarning('buddyProfiles', buddyProfilesError);
+      logger.warn('buddyProfiles', buddyProfilesError.message, buddyProfilesError);
     }
 
     buddyProfilesData?.forEach((profile) => {
@@ -299,6 +270,6 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     completedSessions,
     weeklyGoalDays: WEEKLY_STREAK_GOAL,
     sessionGoal,
-    sessions: userUpcomingSessions.slice(0, 3).map(toHomeSession),
+    sessions: userUpcomingSessions.slice(0, UPCOMING_SESSIONS_DISPLAY_LIMIT).map(toHomeSession),
   };
 }

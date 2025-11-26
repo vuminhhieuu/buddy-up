@@ -8,7 +8,7 @@ import type {
   LearningStyle,
   IncomingRequest,
 } from '../types/buddy';
-import { DEFAULT_BUDDY_FILTERS } from '../types/buddy';
+import { DEFAULT_BUDDY_FILTERS } from '../constants/buddy';
 import i18n from '../config/i18n';
 
 /**
@@ -136,9 +136,9 @@ function formatLocationAge(location: string | null, age: number | null): string 
     parts.push(`📍 ${location}`);
   }
   if (age) {
-    parts.push(i18n.t('buddy.card.age', { age }));
+    parts.push(i18n.t('card.age', { ns: 'buddy', age }));
   }
-  return parts.join(' • ') || i18n.t('buddy.card.notUpdated');
+  return parts.join(' • ') || i18n.t('card.notUpdated', { ns: 'buddy' });
 }
 
 /**
@@ -150,7 +150,9 @@ export function profileToCardData(profile: BuddyProfile): BuddyCardData {
 
   // Format main goal
   const mainGoal =
-    profile.main_learning_goal || profile.learning_goals[0] || i18n.t('buddy.card.notUpdated');
+    profile.main_learning_goal ||
+    profile.learning_goals[0] ||
+    i18n.t('card.notUpdated', { ns: 'buddy' });
 
   // Format available times with icons
   const availableTimes = profile.available_times.map((time, index) => ({

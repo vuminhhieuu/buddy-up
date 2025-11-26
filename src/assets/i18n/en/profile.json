@@ -1,0 +1,47 @@
+{
+  "headerSubtitleDefault": "Dedicated learner",
+  "quickStats": {
+    "streak": "Streak",
+    "days": "{{count}} days",
+    "totalTime": "Total time",
+    "hours": "{{count}} hrs",
+    "xpLabel": "XP",
+    "xpValue": "{{count}} XP"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "viewAll": "View all",
+    "empty": "You haven't earned any achievements yet"
+  },
+  "studyStats": {
+    "title": "Study stats",
+    "sessions": "Sessions completed",
+    "average": "Avg/day"
+  },
+  "subjects": {
+    "title": "Active subjects",
+    "empty": "You're not following any subjects yet"
+  },
+  "settings": {
+    "title": "Settings",
+    "editProfile": "Edit profile",
+    "friends": "Manage friends",
+    "notifications": "Notifications",
+    "security": "Security",
+    "language": "Language",
+    "help": "Help",
+    "logout": "Sign out",
+    "confirmLogout": "Are you sure you want to sign out?",
+    "placeholder": "This section will be expanded in upcoming versions."
+  },
+  "errors": {
+    "loadFailed": "Unable to load profile data",
+    "retry": "Try again"
+  },
+  "subjectDetail": {
+    "title": "Subject details",
+    "hours": "{{count}} hours studied",
+    "progress": "Progress: {{value}}%"
+  },
+  "pullToRefresh": "Pull to refresh"
+}

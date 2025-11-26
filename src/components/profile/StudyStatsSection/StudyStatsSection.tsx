@@ -15,7 +15,7 @@ export type StudyStatsSectionProps = {
 
 const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, style }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('profile');
 
   const maxValue = Math.max(...stats.weeklyActivity.map((a) => a.value), 1);
 
@@ -35,7 +35,7 @@ const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, s
               },
             ]}
           >
-            {t('profileScreen.studyStats.title')}
+            {t('studyStats.title')}
           </Text>
         </View>
       </View>
@@ -87,7 +87,7 @@ const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, s
               {stats.completedSessions}
             </Text>
             <Text variant="bodySmall" color="secondary" style={styles.statLabel}>
-              {t('profileScreen.studyStats.sessions')}
+              {t('studyStats.sessions')}
             </Text>
           </View>
           <View style={styles.statItem}>
@@ -105,7 +105,7 @@ const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, s
               {stats.averagePerDay}
             </Text>
             <Text variant="bodySmall" color="secondary" style={styles.statLabel}>
-              {t('profileScreen.studyStats.average')}
+              {t('studyStats.average')}
             </Text>
           </View>
         </View>

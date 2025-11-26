@@ -12,10 +12,14 @@ import { setUser } from '../../store/slices/authSlice';
 import { translateAuthError } from '../../utils/authErrors';
 import { supabase } from '../../config/supabase';
 import { AuthError } from '@supabase/supabase-js';
+import { logger } from '../../utils/logger';
+import { VALIDATION_MESSAGES } from '../../constants/validation';
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().email('auth.invalidEmail').required('auth.required'),
-  password: Yup.string().required('auth.required'),
+  email: Yup.string()
+    .email(VALIDATION_MESSAGES.invalidEmail)
+    .required(VALIDATION_MESSAGES.required),
+  password: Yup.string().required(VALIDATION_MESSAGES.required),
 });
 
 type LoginFormProps = {
@@ -24,7 +28,7 @@ type LoginFormProps = {
 
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
   const dispatch = useAppDispatch();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -62,7 +66,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const handleForgotPassword = () => {};
 
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
-    console.log(`Social login with ${provider}`);
+    logger.debug('LoginForm', `Social login with ${provider}`);
   };
 
   return (
@@ -101,7 +105,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           const errorMessage = translateAuthError(err as AuthError, t);
           setStatus(errorMessage);
           setTimeout(() => {
-            Alert.alert(t('auth.loginFailedTitle'), errorMessage, [{ text: t('auth.ok') }], {
+            Alert.alert(t('loginFailedTitle'), errorMessage, [{ text: t('ok') }], {
               cancelable: true,
             });
           }, 100);
@@ -114,8 +118,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
         <View>
           {/* Email */}
           <Input
-            label={t('auth.email')}
-            placeholder={t('auth.emailPlaceholder')}
+            label={t('email')}
+            placeholder={t('emailPlaceholder')}
             value={values.email}
             onChangeText={handleChange('email')}
             onBlur={handleBlur('email')}
@@ -130,8 +134,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
 
           {/* Password */}
           <Input
-            label={t('auth.password')}
-            placeholder={t('auth.passwordPlaceholderLogin')}
+            label={t('password')}
+            placeholder={t('passwordPlaceholderLogin')}
             value={values.password}
             onChangeText={handleChange('password')}
             onBlur={handleBlur('password')}
@@ -165,7 +169,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           {/* Forgot Password Link */}
           <Pressable style={styles.forgotPasswordLink} onPress={handleForgotPassword}>
             <Text variant="caption" color="primary" style={{ fontWeight: '500' as const }}>
-              {t('auth.forgotPassword')}
+              {t('forgotPassword')}
             </Text>
           </Pressable>
 
@@ -186,7 +190,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
             <Text variant="caption" color="tertiary" style={{ marginHorizontal: theme.spacing[3] }}>
-              {t('auth.or')}
+              {t('or')}
             </Text>
             <View style={styles.dividerLine} />
           </View>
@@ -202,11 +206,11 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
           {/* Footer */}
           <View style={styles.footer}>
             <Text variant="body" color="tertiary">
-              {t('auth.noAccount')}{' '}
+              {t('noAccount')}{' '}
             </Text>
             <Pressable style={{ marginLeft: theme.spacing[1] }} onPress={onSwitchToRegister}>
               <Text variant="body" color="primary" style={{ fontWeight: '600' as const }}>
-                {t('auth.registerNow')}
+                {t('registerNow')}
               </Text>
             </Pressable>
           </View>

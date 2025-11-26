@@ -1,0 +1,47 @@
+{
+  "headerSubtitleDefault": "Học viên tận tâm",
+  "quickStats": {
+    "streak": "Chuỗi ngày",
+    "days": "{{count}} ngày",
+    "totalTime": "Tổng thời gian",
+    "hours": "{{count}} giờ",
+    "xpLabel": "Điểm XP",
+    "xpValue": "{{count}} XP"
+  },
+  "achievements": {
+    "title": "Thành tích",
+    "viewAll": "Xem tất cả",
+    "empty": "Chưa có thành tích nào"
+  },
+  "studyStats": {
+    "title": "Thống kê học tập",
+    "sessions": "Buổi học hoàn thành",
+    "average": "Trung bình/ngày"
+  },
+  "subjects": {
+    "title": "Môn học đang theo",
+    "empty": "Bạn chưa theo dõi môn học nào"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "editProfile": "Chỉnh sửa hồ sơ",
+    "friends": "Quản lý bạn bè",
+    "notifications": "Thông báo",
+    "security": "Bảo mật",
+    "language": "Ngôn ngữ",
+    "help": "Trợ giúp",
+    "logout": "Đăng xuất",
+    "confirmLogout": "Bạn có chắc chắn muốn đăng xuất?",
+    "placeholder": "Mục này sẽ được cập nhật trong các phiên bản tiếp theo."
+  },
+  "errors": {
+    "loadFailed": "Không thể tải dữ liệu hồ sơ",
+    "retry": "Thử lại"
+  },
+  "subjectDetail": {
+    "title": "Chi tiết môn học",
+    "hours": "{{count}} giờ đã học",
+    "progress": "Tiến độ: {{value}}%"
+  },
+  "pullToRefresh": "Kéo để làm mới"
+}

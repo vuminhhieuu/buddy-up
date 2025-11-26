@@ -4,10 +4,11 @@ import { BottomTabBar } from '../components/navigation';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../store/hooks';
 import { selectUnreadRequestsCount } from '../store/slices/buddySlice';
-import { HomeScreen } from '../screens/HomeScreen';
-import { ChatScreen } from '../screens/ChatScreen';
+import { HomeScreen } from '../screens/home/HomeScreen';
+import { ChatScreen } from '../screens/chat/ChatScreen';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 import { BuddyStackNavigator } from './BuddyStackNavigator';
+import { logger } from '../utils/logger';
 export type MainTabParamList = {
   Home: undefined;
   Buddy: undefined;
@@ -23,7 +24,7 @@ export const MainTabsNavigator: React.FC = () => {
 
   // Debug log
   if (__DEV__) {
-    console.log('[MainTabsNavigator] Unread requests count:', unreadRequestsCount);
+    logger.debug('MainTabsNavigator', 'Unread requests count:', unreadRequestsCount);
   }
 
   return (

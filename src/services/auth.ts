@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabase';
+import { logger } from '../utils/logger';
 
 export async function signInWithEmail(params: { email: string; password: string }) {
   const { data, error } = await supabase.auth.signInWithPassword(params);
@@ -29,7 +30,7 @@ export async function signUpWithEmail(params: {
     });
 
     if (profileError) {
-      console.error('Failed to create profile:', profileError);
+      logger.error('createProfile', 'Failed to create profile:', profileError);
     }
   }
 

@@ -1,5 +1,6 @@
 import Toast from 'react-native-toast-message';
 import { TOAST_POSITION, TOAST_BOTTOM_OFFSET, TOAST_VISIBILITY_TIME } from '../constants/toast';
+import { logger } from './logger';
 
 type ToastType = 'success' | 'error' | 'info';
 
@@ -19,9 +20,9 @@ export const showToast = ({ type = 'info', message, description }: ShowToastPara
       bottomOffset: TOAST_BOTTOM_OFFSET,
       visibilityTime: TOAST_VISIBILITY_TIME,
     });
-    console.log('[showToast] Toast.show() called successfully');
+    logger.debug('showToast', 'Toast.show() called successfully');
   } catch (error) {
-    console.error('[showToast] Error showing toast:', error);
+    logger.error('showToast', 'Error showing toast:', error);
   }
 };
 

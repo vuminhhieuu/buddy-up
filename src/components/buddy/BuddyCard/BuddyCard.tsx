@@ -26,7 +26,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
   style,
   fullHeight = false,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('buddy');
   const { theme } = useTheme();
   const requestStatus = data.requestStatus ?? 'idle';
   const hasInterests = data.interests && data.interests.length > 0;
@@ -62,19 +62,19 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
         backgroundColor: theme.colors.semantic.warning + '20',
         borderColor: theme.colors.semantic.warning,
         textColor: theme.colors.semantic.warning,
-        label: t('buddy.request.sending'),
+        label: t('request.sending'),
       },
       sent: {
         backgroundColor: theme.colors.semantic.success + '20',
         borderColor: theme.colors.semantic.success,
         textColor: theme.colors.semantic.success,
-        label: t('buddy.request.sent'),
+        label: t('request.sent'),
       },
       error: {
         backgroundColor: theme.colors.semantic.error + '20',
         borderColor: theme.colors.semantic.error,
         textColor: theme.colors.semantic.error,
-        label: t('buddy.request.sentError'),
+        label: t('request.sentError'),
       },
     } as const;
 
@@ -200,7 +200,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
           {/* Learning Interests */}
           <View>
             <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
-              {t('buddy.card.learningInterests')}
+              {t('card.learningInterests')}
             </Text>
             <View
               style={{
@@ -227,14 +227,14 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
                       </Text>
                     </View>
                   ))
-                : placeholderPill(t('buddy.card.noInterests'))}
+                : placeholderPill(t('card.noInterests'))}
             </View>
           </View>
 
           {/* Available Times */}
           <View>
             <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
-              {t('buddy.card.availableTimes')}
+              {t('card.availableTimes')}
             </Text>
             {hasTimes ? (
               <View style={{ gap: theme.spacing[2] }}>
@@ -258,14 +258,14 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
                 ))}
               </View>
             ) : (
-              placeholderPill(t('buddy.card.noAvailableTimes'))
+              placeholderPill(t('card.noAvailableTimes'))
             )}
           </View>
 
           {/* Learning Style */}
           <View>
             <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
-              {t('buddy.card.learningStyleTitle')}
+              {t('card.learningStyleTitle')}
             </Text>
             <View
               style={{
@@ -285,7 +285,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
                   color="warning"
                   style={{ fontWeight: '600' as const, flex: 1 }}
                 >
-                  {data.learningStyle || t('buddy.card.notUpdated')}
+                  {data.learningStyle || t('card.notUpdated')}
                 </Text>
               </View>
             </View>
@@ -295,7 +295,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
           {data.bio && (
             <View>
               <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
-                {t('buddy.card.bio')}
+                {t('card.bio')}
               </Text>
               <Text
                 variant="bodySmall"
@@ -321,7 +321,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
           }}
         >
           <Text variant="caption" color="primary" style={{ textAlign: 'center' }}>
-            {t('buddy.card.viewDetailsHint')}
+            {t('card.viewDetailsHint')}
           </Text>
         </View>
       </View>

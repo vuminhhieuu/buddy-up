@@ -22,7 +22,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
   onAvatarPress,
 }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('home');
   const [greetingKey, setGreetingKey] = useState<'morning' | 'afternoon' | 'evening'>(() => {
     const hour = new Date().getHours();
     if (hour < 12) return 'morning';
@@ -32,7 +32,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
 
   const firstName = useMemo(() => {
     const trimmed = (name || '').trim();
-    if (!trimmed) return t('home.header.defaultName');
+    if (!trimmed) return t('header.defaultName');
     return trimmed.split(/\s+/)[0];
   }, [name, t]);
 
@@ -60,15 +60,15 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         onPress={onAvatarPress}
         style={styles.leftSection}
         accessibilityRole="button"
-        accessibilityLabel={t('home.header.openProfile')}
+        accessibilityLabel={t('header.openProfile')}
       >
         <Avatar size="md" name={firstName} uri={avatarUrl || undefined} />
         <View style={styles.greetingContainer}>
           <Text variant="h5" style={styles.greetingMain}>
-            {t(`home.header.greeting.${greetingKey}`, { name: firstName })}
+            {t(`header.greeting.${greetingKey}`, { name: firstName })}
           </Text>
           <Text variant="bodySmall" color="secondary">
-            {t('home.header.subtitle')}
+            {t('header.subtitle')}
           </Text>
         </View>
       </Pressable>
@@ -83,7 +83,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
           },
         ]}
         accessibilityRole="button"
-        accessibilityLabel={t('home.header.notifications')}
+        accessibilityLabel={t('header.notifications')}
       >
         <Bell size={20} color={theme.colors.text.secondary} strokeWidth={2} />
         {notificationsCount > 0 ? (

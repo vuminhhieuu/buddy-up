@@ -1,0 +1,23 @@
+{
+  "title": "Tạo Buổi Học Chung",
+  "nameLabel": "Tên buổi học",
+  "namePlaceholder": "Nhập tên buổi học",
+  "subjectLabel": "Môn học/Chủ đề",
+  "subjectPlaceholder": "Chọn môn học hoặc chủ đề",
+  "timeDateTitle": "Thời gian & Ngày",
+  "datePlaceholder": "22/11/2025",
+  "timePlaceholder": "10:40",
+  "durationTitle": "Thời lượng",
+  "durationPlaceholder": "90",
+  "durationUnit": "phút",
+  "descriptionLabel": "Mô tả",
+  "descriptionPlaceholder": "Thêm mô tả hoặc mục tiêu buổi học...",
+  "locationTitle": "Địa điểm",
+  "online": "Trực tuyến",
+  "offline": "Trực tiếp",
+  "linkLabel": "Link phòng học",
+  "linkPlaceholder": "https://meet.google.com/abc-xyz-123",
+  "buddiesTitle": "Bạn học chung",
+  "noBuddies": "Bạn chưa có bạn học để chọn",
+  "createButton": "Tạo Buổi Học"
+}

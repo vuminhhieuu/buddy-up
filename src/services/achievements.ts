@@ -4,6 +4,15 @@
  */
 
 import { supabase } from '../config/supabase';
+import { POSTGRES_ERROR_CODES } from '../constants/errors';
+import { logger } from '../utils/logger';
+import {
+  isPgrst116Error,
+  isRlsError,
+  formatErrorMessage,
+  handleSupabaseError,
+  handleUnknownError,
+} from './helpers';
 
 /**
  * Response from checking/awarding achievement
@@ -12,7 +21,22 @@ export interface AchievementResponse {
   success: boolean;
   awarded: boolean; // Whether badge was newly awarded (false if already had it)
   error?: string;
-  errorCode?: 'NETWORK_ERROR' | 'BADGE_NOT_FOUND';
+  errorCode?: 'NETWORK_ERROR' | 'BADGE_NOT_FOUND' | 'PERMISSION_DENIED' | 'RLS_VIOLATION';
+}
+
+/**
+ * Map ServiceErrorCode to AchievementResponse errorCode
+ */
+function mapToAchievementErrorCode(
+  errorCode: import('./helpers').ServiceErrorCode,
+): AchievementResponse['errorCode'] {
+  if (errorCode === 'PERMISSION_DENIED' || errorCode === 'RLS_VIOLATION') {
+    return 'PERMISSION_DENIED';
+  }
+  if (errorCode === 'BADGE_NOT_FOUND') {
+    return 'BADGE_NOT_FOUND';
+  }
+  return 'NETWORK_ERROR';
 }
 
 /**
@@ -35,13 +59,14 @@ export async function checkAndAwardFirstMatch(userId: string): Promise<Achieveme
       .eq('badge_id', FIRST_MATCH_BADGE_ID)
       .maybeSingle();
 
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Error checking existing badge:', checkError);
+    if (checkError && !isPgrst116Error(checkError)) {
+      logger.error('checkAndAwardFirstMatch', 'Error checking existing badge:', checkError);
+      const errorResponse = handleSupabaseError(checkError, 'Failed to check existing badge');
       return {
         success: false,
         awarded: false,
-        error: checkError.message || 'Failed to check existing badge',
-        errorCode: 'NETWORK_ERROR',
+        error: errorResponse.error,
+        errorCode: mapToAchievementErrorCode(errorResponse.errorCode),
       };
     }
 
@@ -63,12 +88,13 @@ export async function checkAndAwardFirstMatch(userId: string): Promise<Achieveme
       .limit(1);
 
     if (connectionsError) {
-      console.error('Error checking connections:', connectionsError);
+      logger.error('checkAndAwardFirstMatch', 'Error checking connections:', connectionsError);
+      const errorResponse = handleSupabaseError(connectionsError, 'Failed to check connections');
       return {
         success: false,
         awarded: false,
-        error: connectionsError.message || 'Failed to check connections',
-        errorCode: 'NETWORK_ERROR',
+        error: errorResponse.error,
+        errorCode: mapToAchievementErrorCode(errorResponse.errorCode),
       };
     }
 
@@ -87,19 +113,21 @@ export async function checkAndAwardFirstMatch(userId: string): Promise<Achieveme
       .eq('id', FIRST_MATCH_BADGE_ID)
       .maybeSingle();
 
-    if (badgeError && badgeError.code !== 'PGRST116') {
-      console.error('Error checking badge:', badgeError);
+    if (badgeError && !isPgrst116Error(badgeError)) {
+      logger.error('checkAndAwardFirstMatch', 'Error checking badge:', badgeError);
+      const errorResponse = handleSupabaseError(badgeError, 'Failed to check badge');
       return {
         success: false,
         awarded: false,
-        error: badgeError.message || 'Failed to check badge',
-        errorCode: 'NETWORK_ERROR',
+        error: errorResponse.error,
+        errorCode: mapToAchievementErrorCode(errorResponse.errorCode),
       };
     }
 
     if (!badge) {
-      console.warn(
-        '[checkAndAwardFirstMatch] Badge not seeded or not accessible. Skipping award attempt.',
+      logger.warn(
+        'checkAndAwardFirstMatch',
+        'Badge not seeded or not accessible. Skipping award attempt.',
       );
       return {
         success: false,
@@ -118,7 +146,7 @@ export async function checkAndAwardFirstMatch(userId: string): Promise<Achieveme
 
     if (awardError) {
       // Check if it's a duplicate (race condition)
-      if (awardError.code === '23505') {
+      if (awardError.code === POSTGRES_ERROR_CODES.UNIQUE_CONSTRAINT_VIOLATION) {
         // Unique constraint violation - badge was already awarded
         return {
           success: true,
@@ -126,20 +154,21 @@ export async function checkAndAwardFirstMatch(userId: string): Promise<Achieveme
         };
       }
 
-      console.error('Error awarding badge:', awardError);
-      if (awardError.code === '42501') {
+      logger.error('checkAndAwardFirstMatch', 'Error awarding badge:', awardError);
+      if (isRlsError(awardError)) {
         return {
           success: false,
           awarded: false,
-          error: 'PERMISSION_DENIED',
-          errorCode: 'NETWORK_ERROR',
+          error: 'Permission denied',
+          errorCode: 'PERMISSION_DENIED',
         };
       }
+      const errorResponse = handleSupabaseError(awardError, 'Failed to award badge');
       return {
         success: false,
         awarded: false,
-        error: awardError.message || 'Failed to award badge',
-        errorCode: 'NETWORK_ERROR',
+        error: errorResponse.error,
+        errorCode: mapToAchievementErrorCode(errorResponse.errorCode),
       };
     }
 
@@ -148,12 +177,13 @@ export async function checkAndAwardFirstMatch(userId: string): Promise<Achieveme
       awarded: true,
     };
   } catch (error) {
-    console.error('Error in checkAndAwardFirstMatch:', error);
+    logger.error('checkAndAwardFirstMatch', 'Error in checkAndAwardFirstMatch:', error);
+    const errorResponse = handleUnknownError(error, 'Failed to check and award achievement');
     return {
       success: false,
       awarded: false,
-      error: error instanceof Error ? error.message : 'Unknown error occurred',
-      errorCode: 'NETWORK_ERROR',
+      error: errorResponse.error,
+      errorCode: mapToAchievementErrorCode(errorResponse.errorCode),
     };
   }
 }

@@ -5,7 +5,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { MainTabsNavigator } from './MainTabsNavigator';
 import { AuthNavigator } from './AuthNavigator';
 import { OnboardingNavigator } from './OnboardingNavigator';
-import { CreateSessionScreen } from '../screens/CreateSessionScreen';
+import { CreateSessionScreen } from '../screens/session/CreateSessionScreen';
 import { useAppSelector } from '../store/hooks';
 import { useFirstLaunch } from '../hooks/useFirstLaunch';
 import { useTheme } from '../styles';
@@ -24,14 +24,14 @@ export const AppNavigator: React.FC = () => {
   const { userId, profileSetupInProgress } = useAppSelector((state) => state.auth);
   const { isFirstLaunch, isLoading, completeOnboarding } = useFirstLaunch();
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
 
   if (isLoading) {
     return (
       <View
         style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
         accessibilityRole="progressbar"
-        accessibilityLabel={t('common.loading', { defaultValue: 'Loading' })}
+        accessibilityLabel={t('loading')}
       >
         <ActivityIndicator size="large" color={theme.colors.primary[500]} />
       </View>

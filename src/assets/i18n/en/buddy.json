@@ -1,0 +1,186 @@
+{
+  "searchPlaceholder": "Search by name...",
+  "searching": "Searching...",
+  "errorTitle": "Search Error",
+  "retry": "Retry",
+  "noResultsTitle": "No Results Found",
+  "noResultsMessage": "No study buddies match your search criteria. Try adjusting your filters.",
+  "resetFilters": "Reset Filters",
+  "pendingCard": {
+    "title": "{{count}} matches waiting",
+    "subtitle": "Check your invites so you don’t miss a chance to study together",
+    "action": "View all"
+  },
+  "header": {
+    "matchCount": "{{count}} matches ready",
+    "noMatches": "No matches yet – try broadening your filters",
+    "filterHint": "Tweak keywords or filters to discover more study buddies"
+  },
+  "quickFilters": {
+    "all": "All",
+    "programming": "Programming",
+    "japanese": "Japanese",
+    "english": "English",
+    "toeic": "TOEIC",
+    "more": "+ More"
+  },
+  "filter": {
+    "title": "Filters",
+    "appliedCount": "{{count}} filters applied",
+    "appliedCount_one": "1 filter applied",
+    "appliedCount_other": "{{count}} filters applied",
+    "apply": "Apply",
+    "learningGoals": "Learning Goals",
+    "searchGoalPlaceholder": "Search goal...",
+    "availableTimes": "Available Time",
+    "availableTime": {
+      "morning": "☀️ Morning",
+      "afternoon": "🌤️ Afternoon",
+      "evening": "🌙 Evening",
+      "lateNight": "🌃 Late night",
+      "weekend": "🎉 Weekend",
+      "flexible": "⚡ Flexible"
+    },
+    "learningStyle": "Learning Style",
+    "learningStyleOptions": {
+      "serious": "📋 Serious, with clear plan",
+      "relaxed": "😊 Relaxed, not too stressful",
+      "balanced": "🎯 Study and play, balanced",
+      "notImportant": "💫 Not important"
+    },
+    "onlineStatus": "Online Status",
+    "onlyOnline": "Only show people online now",
+    "level": "Level",
+    "levelOptions": {
+      "beginner": "🌱 Beginner",
+      "intermediate": "🌿 Intermediate",
+      "advanced": "🌳 Advanced"
+    },
+    "activeFilters": "Active Filters",
+    "clearAll": "Clear All",
+    "advancedOptions": "Advanced Options",
+    "onlyVerified": "Only show verified profiles ✓",
+    "hideRejected": "Hide people who previously rejected",
+    "prioritizeFreeSchedule": "Prioritize people with free schedule"
+  },
+  "card": {
+    "learningInterests": "Learning Interests",
+    "availableTimes": "Available Time",
+    "bio": "Bio",
+    "age": "{{age}} years old",
+    "notUpdated": "Not updated",
+    "noInterests": "No learning interests yet",
+    "noAvailableTimes": "No schedule shared",
+    "learningStyleTitle": "Learning Style",
+    "viewDetailsHint": "Swipe right to connect and view full profile"
+  },
+  "loading": "Loading...",
+  "stack": {
+    "noMoreResults": "No more results",
+    "allViewed": "All viewed",
+    "adjustFilters": "Try adjusting your filters to find more study buddies",
+    "overlay": {
+      "like": "Connect",
+      "pass": "Pass"
+    }
+  },
+  "request": {
+    "sent": "Request sent",
+    "sending": "Sending request...",
+    "sentSuccess": "Connection request sent successfully",
+    "sentError": "Failed to send connection request. Please try again.",
+    "alreadySent": "You have already sent a connection request to this user",
+    "alreadyExists": "Connection request already exists",
+    "selfConnection": "Cannot send connection request to yourself",
+    "invalidUser": "User not found",
+    "networkError": "Network error. Please try again.",
+    "accepted": "Request accepted",
+    "rejected": "Request rejected",
+    "acceptError": "Failed to accept request. Please try again.",
+    "rejectError": "Failed to reject request. Please try again.",
+    "invalidRequest": "Invalid request"
+  },
+  "requests": {
+    "title": "Connection Requests",
+    "subtitle": "Swipe right to accept, swipe left to reject",
+    "helperDescription": "Review each profile carefully before deciding.",
+    "loading": "Loading requests...",
+    "noRequests": "No requests",
+    "noRequestsMessage": "You don't have any pending connection requests",
+    "noSearchResults": "No requests matched \"{{keyword}}\"",
+    "goBack": "Go back",
+    "bannerLabel": "{{count}} pending requests",
+    "filterComingSoon": "Filtering for requests is coming soon!"
+  },
+  "connectionSuccess": {
+    "headerTitle": "You • {{name}}",
+    "title": "Great match! 🎉",
+    "subtitle": "You and {{name}} have successfully connected!",
+    "matchBadge": "{{percentage}}% match",
+    "commonPoints": "Common points between you two",
+    "noCommonPoints": "You'll complement each other really well!",
+    "quickActions": {
+      "title": "How to start?",
+      "sayHi": {
+        "title": "Say hello",
+        "options": {
+          "option1": "Hi {{name}}!",
+          "option2": "Let's study together!",
+          "option3": "When are you free?"
+        }
+      },
+      "createStudySession": {
+        "title": "Create first study session",
+        "description": "Schedule a study session right away"
+      },
+      "shareMaterial": {
+        "title": "Share materials",
+        "description": "Send useful study materials"
+      },
+      "comingSoon": "This action will be available soon!",
+      "sent": "Message sent!",
+      "templates": {
+        "sayHi1": "Hi {{name}}!",
+        "sayHi2": "Let's study together!",
+        "sayHi3": "When are you free?",
+        "studyTogether": "Shall we plan our first study session, {{name}}?",
+        "shareMaterial": "I have some great materials to share, {{name}}!"
+      }
+    },
+    "actions": {
+      "chat": "Chat with {{name}}",
+      "chatReady": "Chat is ready!",
+      "keepDiscovering": "Continue discovering"
+    },
+    "errors": {
+      "missingUser": "Cannot identify current user.",
+      "chatFailed": "Unable to start the chat. Please try again.",
+      "chatPermission": "Chat requires elevated permissions. Please contact support."
+    },
+    "achievement": {
+      "firstMatch": "Achievement: First Match!"
+    },
+    "me": "You"
+  },
+  "actions": {
+    "skip": "Skip",
+    "save": "Save",
+    "connect": "Connect"
+  },
+  "swipeHint": "Swipe left to pass, right to connect ↔️",
+  "toast": {
+    "saved": "Profile saved",
+    "unsaved": "Removed from saved",
+    "connected": "Invitation sent! 💚",
+    "skipped": "Profile dismissed"
+  },
+  "notifications": {
+    "newRequestTitle": "New Connection Request",
+    "newRequestMessage": "{{name}} wants to connect with you",
+    "requestAccepted": "Connection request accepted",
+    "requestAcceptedMessage": "{{name}} has accepted your connection request",
+    "requestRejected": "Connection request rejected",
+    "requestRejectedMessage": "{{name}} has rejected your connection request",
+    "error": "Failed to load notifications"
+  }
+}

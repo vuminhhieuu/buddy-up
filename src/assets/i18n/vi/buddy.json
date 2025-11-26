@@ -1,0 +1,186 @@
+{
+  "searchPlaceholder": "Tìm kiếm theo tên...",
+  "searching": "Đang tìm kiếm...",
+  "errorTitle": "Lỗi tìm kiếm",
+  "retry": "Thử lại",
+  "noResultsTitle": "Không tìm thấy kết quả",
+  "noResultsMessage": "Không có bạn học nào phù hợp với tiêu chí tìm kiếm của bạn. Hãy thử điều chỉnh bộ lọc.",
+  "resetFilters": "Đặt lại bộ lọc",
+  "pendingCard": {
+    "title": "{{count}} đề xuất đang chờ",
+    "subtitle": "Xem lời mời kết nối để không bỏ lỡ cơ hội học cùng nhau",
+    "action": "Xem tất cả"
+  },
+  "header": {
+    "matchCount": "{{count}} bạn học phù hợp",
+    "noMatches": "Chưa có gợi ý nào, thử đổi tiêu chí nhé",
+    "filterHint": "Điều chỉnh từ khóa hoặc mở rộng bộ lọc để thấy nhiều kết quả hơn"
+  },
+  "quickFilters": {
+    "all": "Tất cả",
+    "programming": "Lập trình",
+    "japanese": "Tiếng Nhật",
+    "english": "Tiếng Anh",
+    "toeic": "TOEIC",
+    "more": "+ Thêm"
+  },
+  "filter": {
+    "title": "Bộ lọc",
+    "appliedCount": "{{count}} bộ lọc đang áp dụng",
+    "appliedCount_one": "1 bộ lọc đang áp dụng",
+    "appliedCount_other": "{{count}} bộ lọc đang áp dụng",
+    "apply": "Áp dụng",
+    "learningGoals": "Mục tiêu học tập",
+    "searchGoalPlaceholder": "Tìm mục tiêu...",
+    "availableTimes": "Thời gian rảnh",
+    "availableTime": {
+      "morning": "☀️ Buổi sáng",
+      "afternoon": "🌤️ Buổi trưa",
+      "evening": "🌙 Buổi tối",
+      "lateNight": "🌃 Đêm muộn",
+      "weekend": "🎉 Cuối tuần",
+      "flexible": "⚡ Linh hoạt"
+    },
+    "learningStyle": "Phong cách học",
+    "learningStyleOptions": {
+      "serious": "📋 Nghiêm túc, có kế hoạch rõ ràng",
+      "relaxed": "😊 Thoải mái, không quá căng thẳng",
+      "balanced": "🎯 Vừa học vừa chơi, cân bằng",
+      "notImportant": "💫 Không quan trọng"
+    },
+    "onlineStatus": "Trạng thái online",
+    "onlyOnline": "Chỉ hiện người online ngay",
+    "level": "Trình độ",
+    "levelOptions": {
+      "beginner": "🌱 Mới bắt đầu",
+      "intermediate": "🌿 Trung bình",
+      "advanced": "🌳 Nâng cao"
+    },
+    "activeFilters": "Bộ lọc đang chọn",
+    "clearAll": "Xóa tất cả",
+    "advancedOptions": "Tùy chọn nâng cao",
+    "onlyVerified": "Chỉ hiện hồ sơ đã xác thực ✓",
+    "hideRejected": "Ẩn người đã từ chối trước đó",
+    "prioritizeFreeSchedule": "Ưu tiên người có lịch trống"
+  },
+  "card": {
+    "learningInterests": "Sở thích học tập",
+    "availableTimes": "Thời gian rảnh",
+    "bio": "Giới thiệu",
+    "age": "{{age}} tuổi",
+    "notUpdated": "Chưa cập nhật",
+    "noInterests": "Chưa thêm sở thích học tập",
+    "noAvailableTimes": "Chưa chia sẻ thời gian rảnh",
+    "learningStyleTitle": "Phong cách học",
+    "viewDetailsHint": "Vuốt phải để kết nối hoặc xem chi tiết đầy đủ"
+  },
+  "loading": "Đang tải...",
+  "stack": {
+    "noMoreResults": "Không còn kết quả",
+    "allViewed": "Đã xem hết",
+    "adjustFilters": "Hãy thử điều chỉnh bộ lọc để tìm thêm bạn học",
+    "overlay": {
+      "like": "Kết nối",
+      "pass": "Bỏ qua"
+    }
+  },
+  "request": {
+    "sent": "Đã gửi lời mời",
+    "sending": "Đang gửi lời mời...",
+    "sentSuccess": "Đã gửi lời mời kết nối thành công",
+    "sentError": "Không thể gửi lời mời. Vui lòng thử lại.",
+    "alreadySent": "Bạn đã gửi lời mời kết nối đến người này rồi",
+    "alreadyExists": "Lời mời kết nối đã tồn tại",
+    "selfConnection": "Không thể gửi lời mời cho chính mình",
+    "invalidUser": "Người dùng không tồn tại",
+    "networkError": "Lỗi kết nối mạng. Vui lòng thử lại.",
+    "accepted": "Đã chấp nhận lời mời",
+    "rejected": "Đã từ chối lời mời",
+    "acceptError": "Không thể chấp nhận lời mời. Vui lòng thử lại.",
+    "rejectError": "Không thể từ chối lời mời. Vui lòng thử lại.",
+    "invalidRequest": "Lời mời không hợp lệ"
+  },
+  "requests": {
+    "title": "Lời mời kết nối",
+    "subtitle": "Vuốt phải để chấp nhận, vuốt trái để từ chối",
+    "helperDescription": "Hãy xem kỹ hồ sơ trước khi quyết định nhé!",
+    "loading": "Đang tải lời mời...",
+    "noRequests": "Chưa có lời mời",
+    "noRequestsMessage": "Bạn chưa có lời mời kết nối nào đang chờ",
+    "noSearchResults": "Không tìm thấy lời mời khớp với \"{{keyword}}\"",
+    "goBack": "Quay lại",
+    "bannerLabel": "{{count}} lời mời đang chờ",
+    "filterComingSoon": "Tính năng lọc cho lời mời sẽ sớm ra mắt nhé!"
+  },
+  "connectionSuccess": {
+    "headerTitle": "Bạn • {{name}}",
+    "title": "Tuyệt vời! 🎉",
+    "subtitle": "Bạn và {{name}} đã kết nối thành công!",
+    "matchBadge": "{{percentage}}% phù hợp",
+    "commonPoints": "Điểm chung của hai bạn",
+    "noCommonPoints": "Các bạn sẽ bổ sung cho nhau rất tốt!",
+    "quickActions": {
+      "title": "Bắt đầu thế nào?",
+      "sayHi": {
+        "title": "Gửi lời chào",
+        "options": {
+          "option1": "Chào {{name}}!",
+          "option2": "Cùng học nhé!",
+          "option3": "Khi nào rảnh?"
+        }
+      },
+      "createStudySession": {
+        "title": "Tạo buổi học đầu tiên",
+        "description": "Lên lịch học cùng ngay"
+      },
+      "shareMaterial": {
+        "title": "Chia sẻ tài liệu",
+        "description": "Gửi tài liệu học tập hữu ích"
+      },
+      "comingSoon": "Tính năng này sẽ sớm ra mắt!",
+      "sent": "Đã gửi lời nhắn!",
+      "templates": {
+        "sayHi1": "Chào {{name}}!",
+        "sayHi2": "Cùng học nhé!",
+        "sayHi3": "Khi nào rảnh?",
+        "studyTogether": "Chúng ta sắp xếp buổi học đầu tiên nhé, {{name}}?",
+        "shareMaterial": "Mình có vài tài liệu hay, bạn muốn xem thử không {{name}}?"
+      }
+    },
+    "actions": {
+      "chat": "Nhắn tin với {{name}}",
+      "chatReady": "Sẵn sàng nhắn tin rồi!",
+      "keepDiscovering": "Tiếp tục tìm bạn khác"
+    },
+    "errors": {
+      "missingUser": "Không xác định được người dùng.",
+      "chatFailed": "Không thể khởi tạo cuộc trò chuyện. Vui lòng thử lại.",
+      "chatPermission": "Tính năng chat yêu cầu quyền máy chủ. Vui lòng liên hệ quản trị."
+    },
+    "achievement": {
+      "firstMatch": "Thành tích: First Match!"
+    },
+    "me": "Bạn"
+  },
+  "actions": {
+    "skip": "Bỏ qua",
+    "save": "Lưu",
+    "connect": "Kết nối"
+  },
+  "swipeHint": "Vuốt trái để bỏ qua, vuốt phải để kết nối ↔️",
+  "toast": {
+    "saved": "Đã lưu hồ sơ",
+    "unsaved": "Đã bỏ lưu",
+    "connected": "Đã gửi lời mời kết nối! 💚",
+    "skipped": "Đã bỏ qua"
+  },
+  "notifications": {
+    "newRequestTitle": "Lời mời kết nối mới",
+    "newRequestMessage": "{{name}} muốn kết nối với bạn",
+    "requestAccepted": "Lời mời kết nối đã được chấp nhận",
+    "requestAcceptedMessage": "{{name}} đã chấp nhận lời mời kết nối của bạn",
+    "requestRejected": "Lời mời kết nối đã bị từ chối",
+    "requestRejectedMessage": "{{name}} đã từ chối lời mời kết nối của bạn",
+    "error": "Không thể tải thông báo"
+  }
+}
