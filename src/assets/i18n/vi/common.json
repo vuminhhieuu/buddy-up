@@ -267,6 +267,56 @@
       "bannerLabel": "{{count}} lời mời đang chờ",
       "filterComingSoon": "Tính năng lọc cho lời mời sẽ sớm ra mắt nhé!"
     },
+    "connectionSuccess": {
+      "headerTitle": "Bạn • {{name}}",
+      "title": "Tuyệt vời! 🎉",
+      "subtitle": "Bạn và {{name}} đã kết nối thành công!",
+      "matchBadge": "{{percentage}}% phù hợp",
+      "commonPoints": "Điểm chung của hai bạn",
+      "noCommonPoints": "Các bạn sẽ bổ sung cho nhau rất tốt!",
+      "quickActions": {
+        "title": "Bắt đầu thế nào?",
+        "sayHi": {
+          "title": "Gửi lời chào",
+          "options": {
+            "option1": "Chào {{name}}!",
+            "option2": "Cùng học nhé!",
+            "option3": "Khi nào rảnh?"
+          }
+        },
+        "createStudySession": {
+          "title": "Tạo buổi học đầu tiên",
+          "description": "Lên lịch học cùng ngay"
+        },
+        "shareMaterial": {
+          "title": "Chia sẻ tài liệu",
+          "description": "Gửi tài liệu học tập hữu ích"
+        },
+        "comingSoon": "Tính năng này sẽ sớm ra mắt!",
+        "sent": "Đã gửi lời nhắn!",
+        "templates": {
+          "sayHi1": "Chào {{name}}!",
+          "sayHi2": "Cùng học nhé!",
+          "sayHi3": "Khi nào rảnh?",
+          "studyTogether": "Chúng ta sắp xếp buổi học đầu tiên nhé, {{name}}?",
+          "shareMaterial": "Mình có vài tài liệu hay, bạn muốn xem thử không {{name}}?"
+        }
+      },
+      "actions": {
+        "chat": "Nhắn tin với {{name}}",
+        "chatReady": "Sẵn sàng nhắn tin rồi!",
+        "keepDiscovering": "Tiếp tục tìm bạn khác"
+      },
+      "errors": {
+        "missingUser": "Không xác định được người dùng.",
+        "chatFailed": "Không thể khởi tạo cuộc trò chuyện. Vui lòng thử lại.",
+        "chatPermission": "Tính năng chat yêu cầu quyền máy chủ. Vui lòng liên hệ quản trị."
+      },
+      "achievement": {
+        "firstMatch": "Thành tích: First Match!"
+      },
+      "me": "Bạn"
+    },
     "actions": {
       "skip": "Bỏ qua",
       "save": "Lưu",

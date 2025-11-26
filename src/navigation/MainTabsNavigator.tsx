@@ -21,6 +21,11 @@ export const MainTabsNavigator: React.FC = () => {
   const { t } = useTranslation();
   const unreadRequestsCount = useAppSelector(selectUnreadRequestsCount);
 
+  // Debug log
+  if (__DEV__) {
+    console.log('[MainTabsNavigator] Unread requests count:', unreadRequestsCount);
+  }
+
   return (
     <Tab.Navigator
       screenOptions={{ headerShown: false }}

@@ -267,6 +267,56 @@
       "bannerLabel": "{{count}} pending requests",
       "filterComingSoon": "Filtering for requests is coming soon!"
     },
+    "connectionSuccess": {
+      "headerTitle": "You • {{name}}",
+      "title": "Great match! 🎉",
+      "subtitle": "You and {{name}} have successfully connected!",
+      "matchBadge": "{{percentage}}% match",
+      "commonPoints": "Common points between you two",
+      "noCommonPoints": "You'll complement each other really well!",
+      "quickActions": {
+        "title": "How to start?",
+        "sayHi": {
+          "title": "Say hello",
+          "options": {
+            "option1": "Hi {{name}}!",
+            "option2": "Let's study together!",
+            "option3": "When are you free?"
+          }
+        },
+        "createStudySession": {
+          "title": "Create first study session",
+          "description": "Schedule a study session right away"
+        },
+        "shareMaterial": {
+          "title": "Share materials",
+          "description": "Send useful study materials"
+        },
+        "comingSoon": "This action will be available soon!",
+        "sent": "Message sent!",
+        "templates": {
+          "sayHi1": "Hi {{name}}!",
+          "sayHi2": "Let's study together!",
+          "sayHi3": "When are you free?",
+          "studyTogether": "Shall we plan our first study session, {{name}}?",
+          "shareMaterial": "I have some great materials to share, {{name}}!"
+        }
+      },
+      "actions": {
+        "chat": "Chat with {{name}}",
+        "chatReady": "Chat is ready!",
+        "keepDiscovering": "Continue discovering"
+      },
+      "errors": {
+        "missingUser": "Cannot identify current user.",
+        "chatFailed": "Unable to start the chat. Please try again.",
+        "chatPermission": "Chat requires elevated permissions. Please contact support."
+      },
+      "achievement": {
+        "firstMatch": "Achievement: First Match!"
+      },
+      "me": "You"
+    },
     "actions": {
       "skip": "Skip",
       "save": "Save",

@@ -97,19 +97,16 @@ export async function checkAndAwardFirstMatch(userId: string): Promise<Achieveme
       };
     }
 
-    // Create badge if it doesn't exist
     if (!badge) {
-      const { error: createBadgeError } = await supabase.from('badges').insert({
-        id: FIRST_MATCH_BADGE_ID,
-        name: 'First Match',
-        description: 'Kết nối với bạn học đầu tiên',
-        icon_url: null,
-      });
-
-      if (createBadgeError) {
-        console.error('Error creating badge:', createBadgeError);
-        // Continue anyway - badge might have been created by another request
-      }
+      console.warn(
+        '[checkAndAwardFirstMatch] Badge not seeded or not accessible. Skipping award attempt.',
+      );
+      return {
+        success: false,
+        awarded: false,
+        error: 'Badge not available',
+        errorCode: 'BADGE_NOT_FOUND',
+      };
     }
 
     // Award badge to user
@@ -130,6 +127,14 @@ export async function checkAndAwardFirstMatch(userId: string): Promise<Achieveme
       }
 
       console.error('Error awarding badge:', awardError);
+      if (awardError.code === '42501') {
+        return {
+          success: false,
+          awarded: false,
+          error: 'PERMISSION_DENIED',
+          errorCode: 'NETWORK_ERROR',
+        };
+      }
       return {
         success: false,
         awarded: false,

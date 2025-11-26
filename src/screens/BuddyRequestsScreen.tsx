@@ -21,7 +21,7 @@ import {
 import { incomingRequestToCardData } from '../utils/buddy';
 import { useTheme } from '../styles';
 import type { BuddyCardData } from '../types/buddy';
-import { showSuccessToast, showErrorToast, showInfoToast } from '../utils/toast';
+import { showErrorToast, showInfoToast } from '../utils/toast';
 import type { BuddyStackParamList } from '../navigation/BuddyStackNavigator';
 
 type NavigationProp = NativeStackNavigationProp<BuddyStackParamList, 'BuddyRequests'>;
@@ -98,16 +98,17 @@ export const BuddyRequestsScreen: React.FC = () => {
 
       dispatch(respondToBuddyRequestAsync({ connectionId: request.id, action: 'accept' }))
         .unwrap()
-        .then(() => {
-          showSuccessToast(t('buddy.request.accepted'));
-          // Navigate to connection success screen (will be implemented in PR #4)
-          // For now, just show success toast
+        .then((result) => {
+          navigation.navigate('ConnectionSuccess', {
+            connection: result.connection,
+            sender: request.sender,
+          });
         })
         .catch((error: { error?: string }) => {
           showErrorToast(error.error || t('buddy.request.acceptError'));
         });
     },
-    [dispatch, incomingRequests, t],
+    [dispatch, incomingRequests, navigation, t],
   );
 
   // Handle stack empty
