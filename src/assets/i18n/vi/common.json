@@ -470,5 +470,48 @@
     "buddiesTitle": "Bạn học chung",
     "noBuddies": "Bạn chưa có bạn học để chọn",
     "createButton": "Tạo Buổi Học"
+  },
+  "onboarding": {
+    "welcome": {
+      "tagline": "Nền tảng học tập cộng đồng",
+      "slogan": "Kết nối với những người có mục tiêu học tập giống bạn, cùng nhau tiến bộ mỗi ngày",
+      "sloganHighlight": "mục tiêu học tập giống",
+      "persona1": {
+        "name": "Minh",
+        "goal": "Lập trình",
+        "subject": "React Native"
+      },
+      "persona2": {
+        "name": "Linh",
+        "goal": "Tiếng Nhật",
+        "subject": "JLPT N3"
+      },
+      "features": {
+        "feature1": "Tìm bạn học phù hợp với mục tiêu của bạn",
+        "feature2": "Lên lịch học chung và theo dõi tiến độ",
+        "feature3": "Duy trì động lực với streak và gamification"
+      },
+      "startButton": "Bắt đầu",
+      "stats": {
+        "free": "Miễn phí",
+        "safe": "An toàn",
+        "users": "10K+ người dùng"
+      }
+    },
+    "carousel": {
+      "slide1": {
+        "title": "Tìm bạn học phù hợp",
+        "description": "Kết nối với những người có cùng mục tiêu học tập. Chia sẻ kiến thức, tạo động lực cho nhau."
+      },
+      "slide2": {
+        "title": "Lập kế hoạch học tập",
+        "description": "Tạo lịch học chung với bạn học. Nhận nhắc nhở và theo dõi tiến độ một cách dễ dàng."
+      },
+      "slide3": {
+        "title": "Theo dõi tiến độ",
+        "description": "Ghi nhận mỗi buổi học, xây dựng streak, nhận điểm thưởng và thành tích khi hoàn thành mục tiêu."
+      },
+      "startButton": "Bắt đầu ngay"
+    }
   }
 }

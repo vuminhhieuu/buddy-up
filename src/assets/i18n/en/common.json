@@ -470,5 +470,48 @@
     "buddiesTitle": "Buddies",
     "noBuddies": "You have no buddies to choose from",
     "createButton": "Create Session"
+  },
+  "onboarding": {
+    "welcome": {
+      "tagline": "Community learning platform",
+      "slogan": "Connect with people who have similar learning goals, and grow together every day",
+      "sloganHighlight": "similar learning goals",
+      "persona1": {
+        "name": "Minh",
+        "goal": "Programming",
+        "subject": "React Native"
+      },
+      "persona2": {
+        "name": "Linh",
+        "goal": "Japanese",
+        "subject": "JLPT N3"
+      },
+      "features": {
+        "feature1": "Find study buddies that match your goals",
+        "feature2": "Schedule study sessions and track progress",
+        "feature3": "Stay motivated with streaks and gamification"
+      },
+      "startButton": "Get Started",
+      "stats": {
+        "free": "Free",
+        "safe": "Secure",
+        "users": "10K+ users"
+      }
+    },
+    "carousel": {
+      "slide1": {
+        "title": "Find the perfect buddy",
+        "description": "Connect with people who share your learning goals. Share knowledge and motivate each other."
+      },
+      "slide2": {
+        "title": "Plan your learning",
+        "description": "Create study schedules with your buddy. Get reminders and track progress easily."
+      },
+      "slide3": {
+        "title": "Track your progress",
+        "description": "Record every session, build streaks, earn points and achievements when completing goals."
+      },
+      "startButton": "Start Now"
+    }
   }
 }
