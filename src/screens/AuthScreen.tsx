@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { View, Pressable, KeyboardAvoidingView, Platform } from 'react-native';
-import { ScreenContainer, Text, Spacer } from '../components/ui';
+import { ScreenContainer, Text, Spacer, HandshakeLogo } from '../components/ui';
 import { useTheme } from '../styles';
 import { useTranslation } from 'react-i18next';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -87,9 +87,7 @@ export const AuthScreen: React.FC = () => {
       <ScreenContainer scroll contentContainerStyle={{ paddingBottom: theme.spacing[12] }}>
         {/* Header */}
         <View style={styles.headerContainer}>
-          <View style={styles.headerIcon}>
-            <Text variant="h3">🤝</Text>
-          </View>
+          <HandshakeLogo size="medium" />
           <Spacer size={2} />
           <Text variant="h4" style={{ fontWeight: '700' as const }}>
             {t('appName')}
