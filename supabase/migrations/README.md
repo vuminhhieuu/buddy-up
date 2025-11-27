@@ -31,6 +31,8 @@ Migrations are numbered sequentially and should be applied in order:
 23. **023_create_rls_policies_user_progress.sql** - RLS policies for user_progress
 24. **024_create_rls_policies_user_badges.sql** - RLS policies for user_badges
 25. **025_create_rls_helper_functions.sql** - Helper functions for RLS (optional)
+26. **026_extend_profiles_for_buddy_search.sql** - Extend profiles table for buddy search filters
+27. **027_add_last_login_to_user_progress.sql** - Track latest login timestamps
 
 ## Applying Migrations
 
