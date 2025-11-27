@@ -27,6 +27,12 @@ import type {
   LearningStyle,
   Level,
 } from '../../../types/buddy';
+import {
+  DEFAULT_LEARNING_GOALS,
+  AVAILABLE_TIMES_CONFIG,
+  LEARNING_STYLES_CONFIG,
+  LEVELS_CONFIG,
+} from '../../../constants/buddy';
 
 export type FilterModalProps = {
   visible: boolean;
@@ -37,43 +43,6 @@ export type FilterModalProps = {
   resultCount?: number;
 };
 
-// Default learning goals list
-const DEFAULT_LEARNING_GOALS: LearningGoal[] = [
-  'JLPT N3',
-  'React Native',
-  'TOEIC',
-  'IELTS',
-  'Python',
-  'Data Science',
-  'UI/UX',
-  'Marketing',
-];
-
-// Available times - labels will be translated in component
-const AVAILABLE_TIMES: Array<{ value: AvailableTime; translationKey: string }> = [
-  { value: 'morning', translationKey: 'buddy.filter.availableTime.morning' },
-  { value: 'afternoon', translationKey: 'buddy.filter.availableTime.afternoon' },
-  { value: 'evening', translationKey: 'buddy.filter.availableTime.evening' },
-  { value: 'late_night', translationKey: 'buddy.filter.availableTime.lateNight' },
-  { value: 'weekend', translationKey: 'buddy.filter.availableTime.weekend' },
-  { value: 'flexible', translationKey: 'buddy.filter.availableTime.flexible' },
-];
-
-// Learning styles - labels will be translated in component
-const LEARNING_STYLES: Array<{ value: LearningStyle; translationKey: string }> = [
-  { value: 'serious', translationKey: 'buddy.filter.learningStyleOptions.serious' },
-  { value: 'relaxed', translationKey: 'buddy.filter.learningStyleOptions.relaxed' },
-  { value: 'balanced', translationKey: 'buddy.filter.learningStyleOptions.balanced' },
-  { value: 'not_important', translationKey: 'buddy.filter.learningStyleOptions.notImportant' },
-];
-
-// Levels - labels will be translated in component
-const LEVELS: Array<{ value: Level; translationKey: string }> = [
-  { value: 'beginner', translationKey: 'buddy.filter.levelOptions.beginner' },
-  { value: 'intermediate', translationKey: 'buddy.filter.levelOptions.intermediate' },
-  { value: 'advanced', translationKey: 'buddy.filter.levelOptions.advanced' },
-];
-
 export const FilterModal: React.FC<FilterModalProps> = ({
   visible,
   filters,
@@ -82,7 +51,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
   onReset,
   resultCount,
 }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('buddy');
   const { theme } = useTheme();
   const [localFilters, setLocalFilters] = useState<BuddyFilters>(filters);
   const [goalSearch, setGoalSearch] = useState('');
@@ -191,17 +160,17 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               </Pressable>
               <View style={{ alignItems: 'center', flex: 1 }}>
                 <Text variant="h5" color="primary" style={{ fontWeight: '700' as const }}>
-                  {t('buddy.filter.title')}
+                  {t('filter.title')}
                 </Text>
                 <Text variant="caption" color="tertiary">
-                  {t('buddy.filter.appliedCount', {
+                  {t('filter.appliedCount', {
                     count: countActiveFilters(localFilters).total,
                   })}
                 </Text>
               </View>
               <Pressable onPress={handleApply} style={{ minWidth: 60, alignItems: 'flex-end' }}>
                 <Text variant="body" color="primary" style={{ fontWeight: '700' as const }}>
-                  {t('buddy.filter.apply')}
+                  {t('filter.apply')}
                 </Text>
               </Pressable>
             </View>
@@ -231,7 +200,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     }}
                   >
                     <Text variant="h6" color="primary" style={{ fontWeight: '600' as const }}>
-                      {t('buddy.filter.activeFilters')}
+                      {t('filter.activeFilters')}
                     </Text>
                     <Pressable
                       onPress={handleReset}
@@ -245,7 +214,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                         color="error"
                         style={{ fontWeight: '600' as const }}
                       >
-                        {t('buddy.filter.clearAll')}
+                        {t('filter.clearAll')}
                       </Text>
                     </Pressable>
                   </View>
@@ -316,7 +285,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                           color="info"
                           style={{ fontWeight: '500' as const }}
                         >
-                          {t(`buddy.filter.availableTime.${time}`)}
+                          {t(`filter.availableTime.${time}`)}
                         </Text>
                         <Pressable
                           onPress={() => toggleAvailableTime(time)}
@@ -354,7 +323,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                           color="warning"
                           style={{ fontWeight: '500' as const }}
                         >
-                          {t(`buddy.filter.learningStyleOptions.${localFilters.learningStyle}`)}
+                          {t(`filter.learningStyleOptions.${localFilters.learningStyle}`)}
                         </Text>
                         <Pressable
                           onPress={() =>
@@ -394,7 +363,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                           color="success"
                           style={{ fontWeight: '500' as const }}
                         >
-                          {t(`buddy.filter.levelOptions.${localFilters.level}`)}
+                          {t(`filter.levelOptions.${localFilters.level}`)}
                         </Text>
                         <Pressable
                           onPress={() => setLocalFilters({ ...localFilters, level: undefined })}
@@ -432,7 +401,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                           color="info"
                           style={{ fontWeight: '500' as const }}
                         >
-                          {t('buddy.filter.onlyOnline')}
+                          {t('filter.onlyOnline')}
                         </Text>
                         <Pressable
                           onPress={() => setLocalFilters({ ...localFilters, onlyOnline: false })}
@@ -469,7 +438,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                           color="info"
                           style={{ fontWeight: '500' as const }}
                         >
-                          {t('buddy.filter.onlyVerified')}
+                          {t('filter.onlyVerified')}
                         </Text>
                         <Pressable
                           onPress={() => setLocalFilters({ ...localFilters, onlyVerified: false })}
@@ -494,10 +463,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               {/* Learning Goals */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  {t('buddy.filter.learningGoals')}
+                  {t('filter.learningGoals')}
                 </Text>
                 <Input
-                  placeholder={t('buddy.filter.searchGoalPlaceholder')}
+                  placeholder={t('filter.searchGoalPlaceholder')}
                   value={goalSearch}
                   onChangeText={setGoalSearch}
                   left={
@@ -532,7 +501,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               {/* Available Times */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  {t('buddy.filter.availableTimes')}
+                  {t('filter.availableTimes')}
                 </Text>
                 <View
                   style={{
@@ -541,7 +510,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     gap: theme.spacing[3],
                   }}
                 >
-                  {AVAILABLE_TIMES.map((time) => (
+                  {AVAILABLE_TIMES_CONFIG.map((time) => (
                     <View key={time.value} style={{ width: '47%' }}>
                       <Checkbox
                         checked={(localFilters.availableTimes || []).includes(time.value)}
@@ -556,10 +525,10 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               {/* Learning Style */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  {t('buddy.filter.learningStyle')}
+                  {t('filter.learningStyle')}
                 </Text>
                 <View style={{ gap: theme.spacing[3] }}>
-                  {LEARNING_STYLES.map((style) => (
+                  {LEARNING_STYLES_CONFIG.map((style) => (
                     <RadioButton
                       key={style.value}
                       selected={localFilters.learningStyle === style.value}
@@ -575,29 +544,29 @@ export const FilterModal: React.FC<FilterModalProps> = ({
               {/* Online Status */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  {t('buddy.filter.onlineStatus')}
+                  {t('filter.onlineStatus')}
                 </Text>
                 <ToggleSwitch
                   value={localFilters.onlyOnline || false}
                   onValueChange={(value) => setLocalFilters({ ...localFilters, onlyOnline: value })}
-                  label={t('buddy.filter.onlyOnline')}
+                  label={t('filter.onlyOnline')}
                 />
               </View>
 
               {/* Level */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
-                  {t('buddy.filter.level')}
+                  {t('filter.level')}
                 </Text>
                 <SegmentedControl
-                  segments={LEVELS.map((l) => t(l.translationKey))}
+                  segments={LEVELS_CONFIG.map((l) => t(l.translationKey))}
                   selectedIndex={
                     localFilters.level
-                      ? LEVELS.findIndex((l) => l.value === localFilters.level)
+                      ? LEVELS_CONFIG.findIndex((l) => l.value === localFilters.level)
                       : -1
                   }
                   onChange={(index) =>
-                    setLocalFilters({ ...localFilters, level: LEVELS[index].value })
+                    setLocalFilters({ ...localFilters, level: LEVELS_CONFIG[index].value })
                   }
                 />
               </View>
@@ -617,7 +586,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   }}
                 >
                   <Text variant="h6" color="tertiary" style={{ fontWeight: '600' as const }}>
-                    {t('buddy.filter.advancedOptions')}
+                    {t('filter.advancedOptions')}
                   </Text>
                   <ChevronDown
                     color={theme.colors.text.tertiary}
@@ -634,21 +603,21 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                       onValueChange={(value) =>
                         setLocalFilters({ ...localFilters, onlyVerified: value })
                       }
-                      label={t('buddy.filter.onlyVerified')}
+                      label={t('filter.onlyVerified')}
                     />
                     <ToggleSwitch
                       value={localFilters.hideRejected || false}
                       onValueChange={(value) =>
                         setLocalFilters({ ...localFilters, hideRejected: value })
                       }
-                      label={t('buddy.filter.hideRejected')}
+                      label={t('filter.hideRejected')}
                     />
                     <ToggleSwitch
                       value={localFilters.prioritizeFreeSchedule || false}
                       onValueChange={(value) =>
                         setLocalFilters({ ...localFilters, prioritizeFreeSchedule: value })
                       }
-                      label={t('buddy.filter.prioritizeFreeSchedule')}
+                      label={t('filter.prioritizeFreeSchedule')}
                     />
                   </View>
                 )}

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import i18n from '../config/i18n';
-
-const LANGUAGE_STORAGE_KEY = '@buddy_up:language';
+import { logger } from '../utils/logger';
+import { STORAGE_KEYS } from '../constants/storage';
 
 export type SupportedLanguage = 'vi' | 'en';
 
@@ -11,10 +11,10 @@ export type SupportedLanguage = 'vi' | 'en';
  */
 export async function getStoredLanguage(): Promise<SupportedLanguage | null> {
   try {
-    const language = await AsyncStorage.getItem(LANGUAGE_STORAGE_KEY);
+    const language = await AsyncStorage.getItem(STORAGE_KEYS.language);
     return language as SupportedLanguage | null;
   } catch (error) {
-    console.error('Error getting stored language:', error);
+    logger.error('getStoredLanguage', 'Error getting stored language:', error);
     return null;
   }
 }
@@ -25,10 +25,10 @@ export async function getStoredLanguage(): Promise<SupportedLanguage | null> {
  */
 export async function saveLanguage(language: SupportedLanguage): Promise<void> {
   try {
-    await AsyncStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    await AsyncStorage.setItem(STORAGE_KEYS.language, language);
     await i18n.changeLanguage(language);
   } catch (error) {
-    console.error('Error saving language:', error);
+    logger.error('saveLanguage', 'Error saving language:', error);
     throw error;
   }
 }
@@ -43,6 +43,6 @@ export async function initializeLanguage(): Promise<void> {
       await i18n.changeLanguage(storedLanguage);
     }
   } catch (error) {
-    console.error('Error initializing language:', error);
+    logger.error('initializeLanguage', 'Error initializing language:', error);
   }
 }

@@ -20,7 +20,7 @@ const SubjectsSectionComponent: React.FC<SubjectsSectionProps> = ({
   style,
 }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('profile');
 
   return (
     <View style={[styles.container, { paddingHorizontal: theme.spacing[3] }, style]}>
@@ -38,7 +38,7 @@ const SubjectsSectionComponent: React.FC<SubjectsSectionProps> = ({
               },
             ]}
           >
-            {t('profileScreen.subjects.title')}
+            {t('subjects.title')}
           </Text>
         </View>
       </View>
@@ -47,7 +47,7 @@ const SubjectsSectionComponent: React.FC<SubjectsSectionProps> = ({
 
       {subjects.length === 0 ? (
         <Text variant="bodySmall" color="secondary">
-          {t('profileScreen.subjects.empty')}
+          {t('subjects.empty')}
         </Text>
       ) : (
         <View style={styles.subjectsList}>

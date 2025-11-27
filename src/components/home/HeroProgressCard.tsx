@@ -19,7 +19,7 @@ export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
   encouragementMessage,
 }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('home');
   const safeProgress =
     weeklyProgress.total > 0 ? weeklyProgress.completed / weeklyProgress.total : 0;
   const circumference = 2 * Math.PI * 52;
@@ -98,7 +98,7 @@ export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
           </Animated.Text>
         </View>
         <Text variant="bodySmall" color="secondary" style={styles.streakLabel}>
-          {t('home.hero.streakLabel')}
+          {t('hero.streakLabel')}
         </Text>
       </View>
 
@@ -139,14 +139,14 @@ export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
             {weeklyProgress.completed}/{weeklyProgress.total}
           </Text>
           <Text variant="caption" color="secondary">
-            {t('home.hero.weekLabel')}
+            {t('hero.weekLabel')}
           </Text>
         </View>
       </View>
 
       {/* Encouragement Text */}
       <Text variant="bodySmall" style={styles.encouragement}>
-        {encouragementMessage || t('home.hero.encouragement')}
+        {encouragementMessage || t('hero.encouragement')}
       </Text>
     </View>
   );

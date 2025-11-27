@@ -15,7 +15,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
   onFindBuddyPress,
 }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('home');
 
   return (
     <View style={styles.container}>
@@ -32,7 +32,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           },
         ]}
         accessibilityRole="button"
-        accessibilityLabel={t('home.actions.createSession')}
+        accessibilityLabel={t('actions.createSession')}
       >
         <Plus size={16} color={theme.colors.text.inverse} strokeWidth={2.5} />
         <Text
@@ -46,7 +46,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             },
           ]}
         >
-          {t('home.actions.createSession')}
+          {t('actions.createSession')}
         </Text>
       </Pressable>
 
@@ -65,7 +65,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
           },
         ]}
         accessibilityRole="button"
-        accessibilityLabel={t('home.actions.findBuddy')}
+        accessibilityLabel={t('actions.findBuddy')}
       >
         <Search size={16} color={theme.colors.primary[500]} strokeWidth={2.5} />
         <Text
@@ -79,7 +79,7 @@ export const QuickActions: React.FC<QuickActionsProps> = ({
             },
           ]}
         >
-          {t('home.actions.findBuddy')}
+          {t('actions.findBuddy')}
         </Text>
       </Pressable>
     </View>

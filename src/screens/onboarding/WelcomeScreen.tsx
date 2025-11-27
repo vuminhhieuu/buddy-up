@@ -4,7 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../styles';
-import { HandshakeLogo } from '../../components/ui';
+import { HandshakeLogo, ScreenContainer } from '../../components/ui';
 import { LanguageSelector } from '../../components/onboarding/LanguageSelector';
 
 type OnboardingStackParamList = {
@@ -17,7 +17,7 @@ type WelcomeScreenNavigationProp = NativeStackNavigationProp<OnboardingStackPara
 export const WelcomeScreen: React.FC = () => {
   const navigation = useNavigation<WelcomeScreenNavigationProp>();
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
 
   const handleStart = () => {
     navigation.navigate('FeatureCarousel');
@@ -45,311 +45,316 @@ export const WelcomeScreen: React.FC = () => {
   }, [t]);
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      {/* Language Selector */}
-      <LanguageSelector />
+    <ScreenContainer
+      contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 0 }}
+      style={{ backgroundColor: theme.colors.background }}
+    >
+      <View style={styles.container}>
+        {/* Language Selector */}
+        <LanguageSelector />
 
-      {/* Background Decorations - Fixed position */}
-      {/* Top right gradient decoration */}
-      <View style={[styles.topRightGradient, { backgroundColor: theme.colors.primary[100] }]} />
+        {/* Background Decorations - Fixed position */}
+        {/* Top right gradient decoration */}
+        <View style={[styles.topRightGradient, { backgroundColor: theme.colors.primary[100] }]} />
 
-      {/* Middle wave decoration */}
-      <View
-        style={[styles.middleWaveDecoration, { backgroundColor: theme.colors.secondary[50] }]}
-      />
+        {/* Middle wave decoration */}
+        <View
+          style={[styles.middleWaveDecoration, { backgroundColor: theme.colors.secondary[50] }]}
+        />
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-        bounces={false}
-      >
-        {/* Header tag - Centered */}
-        <View style={[styles.headerTag, { backgroundColor: theme.colors.surface }]}>
-          <View style={[styles.greenDot, { backgroundColor: theme.colors.primary[500] }]} />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+          bounces={false}
+        >
+          {/* Header tag - Centered */}
+          <View style={[styles.headerTag, { backgroundColor: theme.colors.surface }]}>
+            <View style={[styles.greenDot, { backgroundColor: theme.colors.primary[500] }]} />
+            <Text
+              style={[
+                styles.tagline,
+                {
+                  fontFamily: theme.typography.families.body,
+                  color: theme.colors.text.primary,
+                },
+              ]}
+            >
+              {t('onboarding.welcome.tagline')}
+            </Text>
+          </View>
+
+          {/* Logo and Title */}
+          <View style={styles.titleContainer}>
+            <Text
+              style={[
+                styles.titleBlack,
+                {
+                  fontFamily: theme.typography.families.display,
+                  fontWeight: '700',
+                  color: theme.colors.text.primary,
+                },
+              ]}
+            >
+              BUDDY
+            </Text>
+          </View>
+          <View style={styles.titleContainer}>
+            <Text
+              style={[
+                styles.titleGreen,
+                {
+                  fontFamily: theme.typography.families.display,
+                  fontWeight: '700',
+                  color: theme.colors.primary[500],
+                },
+              ]}
+            >
+              UP
+            </Text>
+          </View>
+
+          {/* Slogan */}
           <Text
             style={[
-              styles.tagline,
+              styles.slogan,
               {
                 fontFamily: theme.typography.families.body,
-                color: theme.colors.text.primary,
+                color: theme.colors.text.secondary,
               },
             ]}
           >
-            {t('onboarding.welcome.tagline')}
-          </Text>
-        </View>
-
-        {/* Logo and Title */}
-        <View style={styles.titleContainer}>
-          <Text
-            style={[
-              styles.titleBlack,
-              {
-                fontFamily: theme.typography.families.display,
-                fontWeight: '700',
-                color: theme.colors.text.primary,
-              },
-            ]}
-          >
-            BUDDY
-          </Text>
-        </View>
-        <View style={styles.titleContainer}>
-          <Text
-            style={[
-              styles.titleGreen,
-              {
-                fontFamily: theme.typography.families.display,
-                fontWeight: '700',
-                color: theme.colors.primary[500],
-              },
-            ]}
-          >
-            UP
-          </Text>
-        </View>
-
-        {/* Slogan */}
-        <Text
-          style={[
-            styles.slogan,
-            {
-              fontFamily: theme.typography.families.body,
-              color: theme.colors.text.secondary,
-            },
-          ]}
-        >
-          {sloganParts.before}
-          <Text
-            style={{
-              fontFamily: theme.typography.families.body,
-              fontWeight: '600',
-              color: theme.colors.primary[500],
-            }}
-          >
-            {sloganParts.highlight}
-          </Text>{' '}
-          {sloganParts.after}
-        </Text>
-
-        {/* User Personas */}
-        <View style={styles.personaContainer}>
-          <View style={[styles.persona, { backgroundColor: theme.colors.surface }]}>
-            <Text style={styles.personaIcon}>
-              {t('onboarding.welcome.persona1.icon', { defaultValue: '👨‍💼' })}
-            </Text>
+            {sloganParts.before}
             <Text
-              style={[
-                styles.personaName,
-                {
-                  fontFamily: theme.typography.families.display,
-                  fontWeight: '600',
-                  color: theme.colors.text.primary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.persona1.name')}
-            </Text>
-            <Text
-              style={[
-                styles.personaGoal,
-                {
-                  fontFamily: theme.typography.families.body,
-                  color: theme.colors.text.secondary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.persona1.goal')}
-            </Text>
-            <Text
-              style={[
-                styles.personaSubject,
-                {
-                  fontFamily: theme.typography.families.body,
-                  fontWeight: '500',
-                  color: theme.colors.secondary[500],
-                },
-              ]}
-            >
-              {t('onboarding.welcome.persona1.subject')}
-            </Text>
-          </View>
-
-          <View style={styles.handshakeContainer}>
-            <HandshakeLogo size="small" />
-          </View>
-
-          <View style={[styles.persona, { backgroundColor: theme.colors.surface }]}>
-            <Text style={styles.personaIcon}>
-              {t('onboarding.welcome.persona2.icon', { defaultValue: '👩‍💼' })}
-            </Text>
-            <Text
-              style={[
-                styles.personaName,
-                {
-                  fontFamily: theme.typography.families.display,
-                  fontWeight: '600',
-                  color: theme.colors.text.primary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.persona2.name')}
-            </Text>
-            <Text
-              style={[
-                styles.personaGoal,
-                {
-                  fontFamily: theme.typography.families.body,
-                  color: theme.colors.text.secondary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.persona2.goal')}
-            </Text>
-            <Text
-              style={[
-                styles.personaSubject,
-                {
-                  fontFamily: theme.typography.families.body,
-                  fontWeight: '500',
-                  color: theme.colors.secondary[500],
-                },
-              ]}
-            >
-              {t('onboarding.welcome.persona2.subject')}
-            </Text>
-          </View>
-        </View>
-
-        {/* Bottom wave decoration */}
-        <View style={styles.bottomSpacing} />
-
-        {/* Features List */}
-        <View style={[styles.featuresList, { backgroundColor: theme.colors.surface }]}>
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>🎯</Text>
-            <Text
-              style={[
-                styles.featureText,
-                {
-                  fontFamily: theme.typography.families.body,
-                  color: theme.colors.text.primary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.features.feature1')}
-            </Text>
-          </View>
-
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>📚</Text>
-            <Text
-              style={[
-                styles.featureText,
-                {
-                  fontFamily: theme.typography.families.body,
-                  color: theme.colors.text.primary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.features.feature2')}
-            </Text>
-          </View>
-
-          <View style={styles.featureItem}>
-            <Text style={styles.featureIcon}>🔥</Text>
-            <Text
-              style={[
-                styles.featureText,
-                {
-                  fontFamily: theme.typography.families.body,
-                  color: theme.colors.text.primary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.features.feature3')}
-            </Text>
-          </View>
-        </View>
-
-        {/* CTA Button */}
-        <TouchableOpacity
-          style={[
-            styles.startButton,
-            {
-              backgroundColor: theme.colors.primary[500],
-              ...theme.shadows.lg,
-            },
-          ]}
-          onPress={handleStart}
-          accessibilityRole="button"
-          accessibilityLabel={t('onboarding.welcome.startButton')}
-          accessibilityHint={t('onboarding.welcome.startHint', {
-            defaultValue: 'Start onboarding',
-          })}
-        >
-          <Text
-            style={[
-              styles.startButtonText,
-              {
-                fontFamily: theme.typography.families.display,
+              style={{
+                fontFamily: theme.typography.families.body,
                 fontWeight: '600',
-                color: theme.colors.text.inverse,
+                color: theme.colors.primary[500],
+              }}
+            >
+              {sloganParts.highlight}
+            </Text>{' '}
+            {sloganParts.after}
+          </Text>
+
+          {/* User Personas */}
+          <View style={styles.personaContainer}>
+            <View style={[styles.persona, { backgroundColor: theme.colors.surface }]}>
+              <Text style={styles.personaIcon}>
+                {t('onboarding.welcome.persona1.icon', { defaultValue: '👨‍💼' })}
+              </Text>
+              <Text
+                style={[
+                  styles.personaName,
+                  {
+                    fontFamily: theme.typography.families.display,
+                    fontWeight: '600',
+                    color: theme.colors.text.primary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.persona1.name')}
+              </Text>
+              <Text
+                style={[
+                  styles.personaGoal,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    color: theme.colors.text.secondary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.persona1.goal')}
+              </Text>
+              <Text
+                style={[
+                  styles.personaSubject,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    fontWeight: '500',
+                    color: theme.colors.secondary[500],
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.persona1.subject')}
+              </Text>
+            </View>
+
+            <View style={styles.handshakeContainer}>
+              <HandshakeLogo size="small" />
+            </View>
+
+            <View style={[styles.persona, { backgroundColor: theme.colors.surface }]}>
+              <Text style={styles.personaIcon}>
+                {t('onboarding.welcome.persona2.icon', { defaultValue: '👩‍💼' })}
+              </Text>
+              <Text
+                style={[
+                  styles.personaName,
+                  {
+                    fontFamily: theme.typography.families.display,
+                    fontWeight: '600',
+                    color: theme.colors.text.primary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.persona2.name')}
+              </Text>
+              <Text
+                style={[
+                  styles.personaGoal,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    color: theme.colors.text.secondary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.persona2.goal')}
+              </Text>
+              <Text
+                style={[
+                  styles.personaSubject,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    fontWeight: '500',
+                    color: theme.colors.secondary[500],
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.persona2.subject')}
+              </Text>
+            </View>
+          </View>
+
+          {/* Bottom wave decoration */}
+          <View style={styles.bottomSpacing} />
+
+          {/* Features List */}
+          <View style={[styles.featuresList, { backgroundColor: theme.colors.surface }]}>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>🎯</Text>
+              <Text
+                style={[
+                  styles.featureText,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    color: theme.colors.text.primary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.features.feature1')}
+              </Text>
+            </View>
+
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>📚</Text>
+              <Text
+                style={[
+                  styles.featureText,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    color: theme.colors.text.primary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.features.feature2')}
+              </Text>
+            </View>
+
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>🔥</Text>
+              <Text
+                style={[
+                  styles.featureText,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    color: theme.colors.text.primary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.features.feature3')}
+              </Text>
+            </View>
+          </View>
+
+          {/* CTA Button */}
+          <TouchableOpacity
+            style={[
+              styles.startButton,
+              {
+                backgroundColor: theme.colors.primary[500],
+                ...theme.shadows.lg,
               },
             ]}
+            onPress={handleStart}
+            accessibilityRole="button"
+            accessibilityLabel={t('onboarding.welcome.startButton')}
+            accessibilityHint={t('onboarding.welcome.startHint', {
+              defaultValue: 'Start onboarding',
+            })}
           >
-            {t('onboarding.welcome.startButton')}
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={[
+                styles.startButtonText,
+                {
+                  fontFamily: theme.typography.families.display,
+                  fontWeight: '600',
+                  color: theme.colors.text.inverse,
+                },
+              ]}
+            >
+              {t('onboarding.welcome.startButton')}
+            </Text>
+          </TouchableOpacity>
 
-        {/* Footer Stats */}
-        <View style={styles.footer}>
-          <View style={styles.stat}>
-            <Text style={[styles.statIcon, { color: theme.colors.primary[500] }]}>✓</Text>
-            <Text
-              style={[
-                styles.statText,
-                {
-                  fontFamily: theme.typography.families.body,
-                  color: theme.colors.text.secondary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.stats.free')}
-            </Text>
+          {/* Footer Stats */}
+          <View style={styles.footer}>
+            <View style={styles.stat}>
+              <Text style={[styles.statIcon, { color: theme.colors.primary[500] }]}>✓</Text>
+              <Text
+                style={[
+                  styles.statText,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    color: theme.colors.text.secondary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.stats.free')}
+              </Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={[styles.statIcon, { color: theme.colors.primary[500] }]}>✓</Text>
+              <Text
+                style={[
+                  styles.statText,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    color: theme.colors.text.secondary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.stats.safe')}
+              </Text>
+            </View>
+            <View style={styles.stat}>
+              <Text style={[styles.statIcon, { color: theme.colors.primary[500] }]}>✓</Text>
+              <Text
+                style={[
+                  styles.statText,
+                  {
+                    fontFamily: theme.typography.families.body,
+                    color: theme.colors.text.secondary,
+                  },
+                ]}
+              >
+                {t('onboarding.welcome.stats.users')}
+              </Text>
+            </View>
           </View>
-          <View style={styles.stat}>
-            <Text style={[styles.statIcon, { color: theme.colors.primary[500] }]}>✓</Text>
-            <Text
-              style={[
-                styles.statText,
-                {
-                  fontFamily: theme.typography.families.body,
-                  color: theme.colors.text.secondary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.stats.safe')}
-            </Text>
-          </View>
-          <View style={styles.stat}>
-            <Text style={[styles.statIcon, { color: theme.colors.primary[500] }]}>✓</Text>
-            <Text
-              style={[
-                styles.statText,
-                {
-                  fontFamily: theme.typography.families.body,
-                  color: theme.colors.text.secondary,
-                },
-              ]}
-            >
-              {t('onboarding.welcome.stats.users')}
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
-    </View>
+        </ScrollView>
+      </View>
+    </ScreenContainer>
   );
 };
 

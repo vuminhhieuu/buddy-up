@@ -1,0 +1,16 @@
+{
+  "title": "Language",
+  "currentLanguage": "Current language",
+  "closeLanguageSelection": "Close language selection",
+  "selectLanguage": "Select language",
+  "languages": {
+    "vi": "Tiếng Việt",
+    "en": "English"
+  },
+  "languageNames": {
+    "vi": "Vietnamese",
+    "en": "English"
+  },
+  "changeSuccess": "Language changed successfully",
+  "changeError": "An error occurred while changing the language"
+}

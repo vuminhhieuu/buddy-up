@@ -1,9 +1,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ProfileScreen } from '../screens/ProfileScreen';
-import { ProfileAchievementsScreen } from '../screens/ProfileAchievementsScreen';
-import { ProfileSettingsScreen } from '../screens/ProfileSettingsScreen';
-import { SubjectDetailScreen } from '../screens/SubjectDetailScreen';
+import { ProfileScreen } from '../screens/profile/ProfileScreen';
+import { ProfileAchievementsScreen } from '../screens/profile/ProfileAchievementsScreen';
+import { ProfileSettingsScreen } from '../screens/profile/ProfileSettingsScreen';
+import { SubjectDetailScreen } from '../screens/profile/SubjectDetailScreen';
 import type { Achievement, Subject } from '../types/profile';
 
 export type ProfileStackParamList = {

@@ -9,6 +9,7 @@ import { addIncomingRequest } from '../store/slices/buddySlice';
 import type { ConnectionRequest, BuddyProfile } from '../types/buddy';
 import { showSuccessToast, showInfoToast } from '../utils/toast';
 import { useTranslation } from 'react-i18next';
+import { logger } from '../utils/logger';
 
 /**
  * Type guard to validate ConnectionRequest payload from Supabase Realtime
@@ -59,16 +60,16 @@ const hasStatusUpdateFields = (
 
 export const useBuddyRequests = (userId: string | null) => {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation();
+  const { t } = useTranslation('buddy');
   const subscriptionRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
 
   useEffect(() => {
     if (!userId) {
-      console.log('[useBuddyRequests] No userId, skipping subscription');
+      logger.debug('useBuddyRequests', 'No userId, skipping subscription');
       return;
     }
 
-    console.log(`[useBuddyRequests] Setting up Realtime subscription for user: ${userId}`);
+    logger.debug('useBuddyRequests', `Setting up Realtime subscription for user: ${userId}`);
 
     // Create channel for this user
     const channelName = `connections:${userId}`;
@@ -85,7 +86,7 @@ export const useBuddyRequests = (userId: string | null) => {
           filter: `user_id_2=eq.${userId}`,
         },
         async (payload) => {
-          console.log('[useBuddyRequests] Received INSERT event:', {
+          logger.debug('useBuddyRequests', 'Received INSERT event:', {
             connectionId: payload.new?.id,
             status: payload.new?.status,
             user_id_1: payload.new?.user_id_1,
@@ -95,13 +96,13 @@ export const useBuddyRequests = (userId: string | null) => {
           try {
             // Validate payload structure before processing
             if (!payload.new) {
-              console.error('[useBuddyRequests] Missing payload.new');
+              logger.error('useBuddyRequests', 'Missing payload.new');
               return;
             }
 
             // Type guard validation to ensure payload has expected shape
             if (!isValidConnectionRequest(payload.new)) {
-              console.error('[useBuddyRequests] Invalid connection request payload:', payload.new);
+              logger.error('useBuddyRequests', 'Invalid connection request payload:', payload.new);
               return;
             }
 
@@ -109,7 +110,7 @@ export const useBuddyRequests = (userId: string | null) => {
 
             // Validate required fields are present (additional safety check)
             if (!connection.id || !connection.created_at || !connection.requested_by) {
-              console.error('[useBuddyRequests] Missing required fields:', {
+              logger.error('useBuddyRequests', 'Missing required fields:', {
                 id: connection.id,
                 created_at: connection.created_at,
                 requested_by: connection.requested_by,
@@ -119,12 +120,13 @@ export const useBuddyRequests = (userId: string | null) => {
 
             // Only process pending requests
             if (connection.status !== 'pending') {
-              console.log('[useBuddyRequests] Skipping non-pending request:', connection.status);
+              logger.debug('useBuddyRequests', 'Skipping non-pending request:', connection.status);
               return;
             }
 
-            console.log(
-              '[useBuddyRequests] Processing pending request from:',
+            logger.debug(
+              'useBuddyRequests',
+              'Processing pending request from:',
               connection.requested_by,
             );
 
@@ -137,11 +139,11 @@ export const useBuddyRequests = (userId: string | null) => {
               .single();
 
             if (profileError || !senderProfile) {
-              console.error('[useBuddyRequests] Error fetching sender profile:', profileError);
+              logger.error('useBuddyRequests', 'Error fetching sender profile:', profileError);
               return;
             }
 
-            console.log('[useBuddyRequests] Fetched sender profile:', senderProfile.display_name);
+            logger.debug('useBuddyRequests', 'Fetched sender profile:', senderProfile.display_name);
 
             // Convert sender profile to BuddyProfile format
             // Map all required fields with defaults for missing ones
@@ -176,20 +178,20 @@ export const useBuddyRequests = (userId: string | null) => {
               }),
             );
 
-            console.log('[useBuddyRequests] Added request to Redux state:', {
+            logger.debug('useBuddyRequests', 'Added request to Redux state:', {
               connectionId: connection.id,
               senderName: sender.display_name,
             });
 
             // Show toast notification
-            const toastMessage = t('buddy.notifications.newRequestMessage', {
+            const toastMessage = t('notifications.newRequestMessage', {
               name: sender.display_name,
             });
-            console.log('[useBuddyRequests] Showing toast with message:', toastMessage);
+            logger.debug('useBuddyRequests', 'Showing toast with message:', toastMessage);
             showSuccessToast(toastMessage);
-            console.log('[useBuddyRequests] Toast.show() called');
+            logger.debug('useBuddyRequests', 'Toast.show() called');
           } catch (error) {
-            console.error('[useBuddyRequests] Error processing incoming request:', error);
+            logger.error('useBuddyRequests', 'Error processing incoming request:', error);
           }
         },
       )
@@ -204,7 +206,7 @@ export const useBuddyRequests = (userId: string | null) => {
           filter: `requested_by=eq.${userId}`,
         },
         async (payload) => {
-          console.log('[useBuddyRequests] Received UPDATE event:', {
+          logger.debug('useBuddyRequests', 'Received UPDATE event:', {
             connectionId: payload.new?.id,
             oldStatus: payload.old?.status,
             newStatus: payload.new?.status,
@@ -214,8 +216,9 @@ export const useBuddyRequests = (userId: string | null) => {
           try {
             // Validate payload structure (only minimal fields required)
             if (!payload.new || !hasStatusUpdateFields(payload.new)) {
-              console.error(
-                '[useBuddyRequests] Missing minimal fields for status update:',
+              logger.error(
+                'useBuddyRequests',
+                'Missing minimal fields for status update:',
                 payload.new,
               );
               return;
@@ -229,8 +232,9 @@ export const useBuddyRequests = (userId: string | null) => {
 
             // Only process if status is accepted/rejected
             if (newConnection.status !== 'accepted' && newConnection.status !== 'rejected') {
-              console.log(
-                '[useBuddyRequests] Status changed to non-accepted/rejected:',
+              logger.debug(
+                'useBuddyRequests',
+                'Status changed to non-accepted/rejected:',
                 newConnection.status,
               );
               return;
@@ -238,7 +242,7 @@ export const useBuddyRequests = (userId: string | null) => {
 
             // If we have previous status info, skip duplicate updates unless it was pending
             if (previousStatus && previousStatus !== 'pending') {
-              console.log('[useBuddyRequests] Skipping status update from:', previousStatus);
+              logger.debug('useBuddyRequests', 'Skipping status update from:', previousStatus);
               return;
             }
 
@@ -256,12 +260,12 @@ export const useBuddyRequests = (userId: string | null) => {
               .single();
 
             if (profileError || !receiverProfile) {
-              console.error('[useBuddyRequests] Error fetching receiver profile:', profileError);
+              logger.error('useBuddyRequests', 'Error fetching receiver profile:', profileError);
               // Still show toast without name
               if (newConnection.status === 'accepted') {
-                showSuccessToast(t('buddy.notifications.requestAccepted'));
+                showSuccessToast(t('notifications.requestAccepted'));
               } else {
-                showInfoToast(t('buddy.notifications.requestRejected'));
+                showInfoToast(t('notifications.requestRejected'));
               }
               return;
             }
@@ -269,43 +273,43 @@ export const useBuddyRequests = (userId: string | null) => {
             // Show toast notification
             if (newConnection.status === 'accepted') {
               showSuccessToast(
-                t('buddy.notifications.requestAcceptedMessage', {
+                t('notifications.requestAcceptedMessage', {
                   name: receiverProfile.display_name,
                 }),
               );
             } else {
               showInfoToast(
-                t('buddy.notifications.requestRejectedMessage', {
+                t('notifications.requestRejectedMessage', {
                   name: receiverProfile.display_name,
                 }),
               );
             }
 
-            console.log('[useBuddyRequests] Toast notification shown for status update');
+            logger.debug('useBuddyRequests', 'Toast notification shown for status update');
           } catch (error) {
-            console.error('[useBuddyRequests] Error processing status update:', error);
+            logger.error('useBuddyRequests', 'Error processing status update:', error);
           }
         },
       )
       .subscribe((status, err) => {
-        console.log(`[useBuddyRequests] Subscription status changed: ${status}`, {
+        logger.debug('useBuddyRequests', `Subscription status changed: ${status}`, {
           channelName,
           userId,
           error: err,
         });
 
         if (status === 'SUBSCRIBED') {
-          console.log('[useBuddyRequests] ✅ Successfully subscribed to connection requests');
+          logger.info('useBuddyRequests', '✅ Successfully subscribed to connection requests');
         } else if (status === 'CHANNEL_ERROR') {
-          console.error('[useBuddyRequests] ❌ Channel error:', err);
-          console.error('[useBuddyRequests] Attempting to reconnect...');
+          logger.error('useBuddyRequests', '❌ Channel error:', err);
+          logger.warn('useBuddyRequests', 'Attempting to reconnect...');
           // Supabase SDK will automatically attempt to reconnect
         } else if (status === 'TIMED_OUT') {
-          console.warn('[useBuddyRequests] ⚠️ Channel timed out, attempting to reconnect...');
+          logger.warn('useBuddyRequests', '⚠️ Channel timed out, attempting to reconnect...');
         } else if (status === 'CLOSED') {
-          console.log('[useBuddyRequests] Channel closed');
+          logger.debug('useBuddyRequests', 'Channel closed');
         } else {
-          console.log(`[useBuddyRequests] Unknown status: ${status}`);
+          logger.debug('useBuddyRequests', `Unknown status: ${status}`);
         }
       });
 
@@ -314,7 +318,7 @@ export const useBuddyRequests = (userId: string | null) => {
     // Cleanup: unsubscribe when component unmounts or userId changes
     // Capture channel in closure to prevent race condition when userId changes rapidly
     return () => {
-      console.log(`[useBuddyRequests] Cleaning up subscription for user: ${userId}`);
+      logger.debug('useBuddyRequests', `Cleaning up subscription for user: ${userId}`);
       // Use channel from closure instead of subscriptionRef.current to avoid race condition
       supabase.removeChannel(channel);
       // Only clear ref if this is still the current channel

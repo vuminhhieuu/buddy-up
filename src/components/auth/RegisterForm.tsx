@@ -16,6 +16,14 @@ import {
   setCurrentProfileStep,
 } from '../../store/slices/authSlice';
 import { translateAuthError } from '../../utils/authErrors';
+import { logger } from '../../utils/logger';
+import {
+  DISPLAY_NAME_MIN_LENGTH,
+  DISPLAY_NAME_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
+  VALIDATION_MESSAGES,
+} from '../../constants/validation';
 const PasswordStrengthIndicator: React.FC<{
   password: string;
   theme: ReturnType<typeof useTheme>['theme'];
@@ -65,10 +73,10 @@ const PasswordStrengthIndicator: React.FC<{
       >
         {t(
           strength === 'weak'
-            ? 'auth.strengthWeak'
+            ? 'auth:strengthWeak'
             : strength === 'medium'
-              ? 'auth.strengthMedium'
-              : 'auth.strengthStrong',
+              ? 'auth:strengthMedium'
+              : 'auth:strengthStrong',
         )}
       </Text>
     </>
@@ -76,12 +84,19 @@ const PasswordStrengthIndicator: React.FC<{
 };
 
 const RegisterSchema = Yup.object().shape({
-  displayName: Yup.string().min(2, 'auth.nameMin').required('auth.required'),
-  email: Yup.string().email('auth.invalidEmail').required('auth.required'),
-  password: Yup.string().min(6, 'auth.passwordMin').required('auth.required'),
+  displayName: Yup.string()
+    .min(DISPLAY_NAME_MIN_LENGTH, VALIDATION_MESSAGES.displayNameMin)
+    .max(DISPLAY_NAME_MAX_LENGTH, VALIDATION_MESSAGES.displayNameMax)
+    .required(VALIDATION_MESSAGES.displayNameRequired),
+  email: Yup.string()
+    .email(VALIDATION_MESSAGES.invalidEmail)
+    .required(VALIDATION_MESSAGES.required),
+  password: Yup.string()
+    .min(PASSWORD_MIN_LENGTH, VALIDATION_MESSAGES.passwordMin)
+    .required(VALIDATION_MESSAGES.required),
   confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password')], 'auth.passwordMismatch')
-    .required('auth.required'),
+    .oneOf([Yup.ref('password')], VALIDATION_MESSAGES.passwordMismatch)
+    .required(VALIDATION_MESSAGES.required),
 });
 
 type RegisterFormProps = {
@@ -94,7 +109,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   onNavigateToProfileSetup,
 }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('auth');
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -128,7 +143,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   );
 
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
-    console.log(`Social login with ${provider}`);
+    logger.debug('RegisterForm', `Social login with ${provider}`);
   };
 
   return (
@@ -167,7 +182,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           const errorMessage = translateAuthError(err as Error, t, 'register');
           setStatus(errorMessage);
           setTimeout(() => {
-            Alert.alert(t('auth.registerFailedTitle'), errorMessage, [{ text: t('auth.ok') }], {
+            Alert.alert(t('registerFailedTitle'), errorMessage, [{ text: t('ok') }], {
               cancelable: true,
             });
           }, 100);
@@ -181,8 +196,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
           <View>
             {/* Display Name */}
             <Input
-              label={t('auth.displayName')}
-              placeholder={t('auth.displayNamePlaceholder')}
+              label={t('displayName')}
+              placeholder={t('displayNamePlaceholder')}
               value={values.displayName}
               onChangeText={handleChange('displayName')}
               onBlur={handleBlur('displayName')}
@@ -198,8 +213,8 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
             {/* Email */}
             <Input
-              label={t('auth.email')}
-              placeholder={t('auth.emailPlaceholder')}
+              label={t('email')}
+              placeholder={t('emailPlaceholder')}
               value={values.email}
               onChangeText={handleChange('email')}
               onBlur={handleBlur('email')}
@@ -214,13 +229,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
             {/* Password */}
             <Input
-              label={t('auth.password')}
-              placeholder={t('auth.passwordPlaceholder')}
+              label={t('password')}
+              placeholder={t('passwordPlaceholder')}
               value={values.password}
               onChangeText={handleChange('password')}
               onBlur={handleBlur('password')}
               secureTextEntry={!showPassword}
-              maxLength={128}
+              maxLength={PASSWORD_MAX_LENGTH}
               errorText={touched.password && errors.password ? t(errors.password) : undefined}
               right={
                 <Pressable
@@ -259,13 +274,13 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
             {/* Confirm Password */}
             <Input
-              label={t('auth.confirmPassword')}
-              placeholder={t('auth.confirmPasswordPlaceholder')}
+              label={t('confirmPassword')}
+              placeholder={t('confirmPasswordPlaceholder')}
               value={values.confirmPassword}
               onChangeText={handleChange('confirmPassword')}
               onBlur={handleBlur('confirmPassword')}
               secureTextEntry={!showConfirm}
-              maxLength={128}
+              maxLength={PASSWORD_MAX_LENGTH}
               errorText={
                 touched.confirmPassword && errors.confirmPassword
                   ? t(errors.confirmPassword)
@@ -317,7 +332,7 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
                 color="tertiary"
                 style={{ marginHorizontal: theme.spacing[3] }}
               >
-                {t('auth.or')}
+                {t('or')}
               </Text>
               <View style={styles.dividerLine} />
             </View>
@@ -333,11 +348,11 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
             {/* Footer */}
             <View style={styles.footer}>
               <Text variant="body" color="tertiary">
-                {t('auth.haveAccount')}{' '}
+                {t('haveAccount')}{' '}
               </Text>
               <Pressable onPress={onSwitchToLogin}>
                 <Text variant="body" color="primary" style={{ fontWeight: '600' as const }}>
-                  {t('auth.loginNow')}
+                  {t('loginNow')}
                 </Text>
               </Pressable>
             </View>

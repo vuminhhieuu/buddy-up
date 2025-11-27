@@ -22,7 +22,7 @@ const AchievementsSectionComponent: React.FC<AchievementsSectionProps> = ({
   style,
 }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('profile');
 
   return (
     <View style={[styles.container, { paddingHorizontal: theme.spacing[3] }, style]}>
@@ -40,13 +40,13 @@ const AchievementsSectionComponent: React.FC<AchievementsSectionProps> = ({
               },
             ]}
           >
-            {t('profileScreen.achievements.title')}
+            {t('achievements.title')}
           </Text>
         </View>
         {onViewAllPress && (
           <Pressable onPress={onViewAllPress} accessibilityRole="button">
             <Text variant="bodySmall" color="info" style={styles.viewAll}>
-              {t('profileScreen.achievements.viewAll')}
+              {t('achievements.viewAll')}
             </Text>
           </Pressable>
         )}
@@ -56,7 +56,7 @@ const AchievementsSectionComponent: React.FC<AchievementsSectionProps> = ({
 
       {achievements.length === 0 ? (
         <Text variant="bodySmall" color="secondary">
-          {t('profileScreen.achievements.empty')}
+          {t('achievements.empty')}
         </Text>
       ) : (
         <ScrollView

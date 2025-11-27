@@ -1,7 +1,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { AuthScreen, AuthScreenParams } from '../screens/AuthScreen';
-import { ProfileSetupScreen } from '../screens/ProfileSetupScreen';
+import { AuthScreen, AuthScreenParams } from '../screens/auth/AuthScreen';
+import { ProfileSetupScreen } from '../screens/auth/ProfileSetupScreen';
 import { useAppSelector } from '../store/hooks';
 
 export type AuthStackParamList = {

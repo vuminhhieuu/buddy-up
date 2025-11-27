@@ -3,49 +3,48 @@
  * Types and interfaces for buddy search, filtering, and matching functionality
  */
 
+import type {
+  AVAILABLE_TIME_VALUES,
+  LEARNING_STYLE_VALUES,
+  LEVEL_VALUES,
+  SORT_OPTION_VALUES,
+  CONNECTION_STATUS_VALUES,
+  DEFAULT_LEARNING_GOALS,
+} from '../constants/buddy';
+
 // ============================================================================
-// Enums & Literal Types
+// Enums & Literal Types (derived from constants)
 // ============================================================================
 
 /**
  * Learning goal options (matching UI filter screen)
+ * Allows custom goals in addition to default ones
  */
-export type LearningGoal =
-  | 'JLPT N3'
-  | 'React Native'
-  | 'TOEIC'
-  | 'IELTS'
-  | 'Python'
-  | 'Data Science'
-  | 'UI/UX'
-  | 'Marketing'
-  | string; // Allow custom goals
+export type LearningGoal = (typeof DEFAULT_LEARNING_GOALS)[number] | string;
 
 /**
  * Available time slots (matching UI filter screen)
+ * Derived from AVAILABLE_TIME_VALUES constant
  */
-export type AvailableTime =
-  | 'morning'
-  | 'afternoon'
-  | 'evening'
-  | 'late_night'
-  | 'weekend'
-  | 'flexible';
+export type AvailableTime = (typeof AVAILABLE_TIME_VALUES)[number];
 
 /**
  * Learning style options (matching UI filter screen)
+ * Derived from LEARNING_STYLE_VALUES constant
  */
-export type LearningStyle = 'serious' | 'relaxed' | 'balanced' | 'not_important';
+export type LearningStyle = (typeof LEARNING_STYLE_VALUES)[number];
 
 /**
  * Learning level options (matching UI filter screen)
+ * Derived from LEVEL_VALUES constant
  */
-export type Level = 'beginner' | 'intermediate' | 'advanced';
+export type Level = (typeof LEVEL_VALUES)[number];
 
 /**
  * Sort options for buddy search results
+ * Derived from SORT_OPTION_VALUES constant
  */
-export type SortOption = 'best_match' | 'nearest' | 'newest';
+export type SortOption = (typeof SORT_OPTION_VALUES)[number];
 
 // ============================================================================
 // Filter Interfaces
@@ -78,21 +77,7 @@ export interface BuddyFilters {
   prioritizeFreeSchedule?: boolean;
 }
 
-/**
- * Default filter values
- */
-export const DEFAULT_BUDDY_FILTERS: BuddyFilters = {
-  searchQuery: undefined,
-  learningGoals: [],
-  availableTimes: [],
-  learningStyle: undefined,
-  level: undefined,
-  sortBy: 'best_match',
-  onlyOnline: false,
-  onlyVerified: false,
-  hideRejected: false,
-  prioritizeFreeSchedule: false,
-};
+// Note: DEFAULT_BUDDY_FILTERS has been moved to src/constants/buddy.ts
 
 // ============================================================================
 // Profile Interfaces
@@ -198,8 +183,9 @@ export interface BuddySearchResult {
 
 /**
  * Connection status enum (matches database enum)
+ * Derived from CONNECTION_STATUS_VALUES constant
  */
-export type ConnectionStatus = 'pending' | 'accepted' | 'blocked' | 'rejected';
+export type ConnectionStatus = (typeof CONNECTION_STATUS_VALUES)[number];
 
 /**
  * Connection request from database

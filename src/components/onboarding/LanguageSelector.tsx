@@ -5,20 +5,21 @@ import { useTheme } from '../../styles';
 import { saveLanguage, getStoredLanguage, type SupportedLanguage } from '../../services/language';
 import { VietnamFlagIcon, UnitedStatesFlagIcon, type FlagIconProps } from '../icons/flags';
 import { showErrorToast } from '../../utils/toast';
+import { logger } from '../../utils/logger';
 
 type FlagComponent = React.FC<FlagIconProps>;
 
 const LANGUAGE_CONFIGS: Array<{
   code: SupportedLanguage;
   Flag: FlagComponent;
-  label: string;
+  labelKey: string;
 }> = [
-  { code: 'vi', Flag: VietnamFlagIcon, label: 'Tiếng Việt' },
-  { code: 'en', Flag: UnitedStatesFlagIcon, label: 'English' },
+  { code: 'vi', Flag: VietnamFlagIcon, labelKey: 'languageScreen.languages.vi' },
+  { code: 'en', Flag: UnitedStatesFlagIcon, labelKey: 'languageScreen.languages.en' },
 ];
 
 export const LanguageSelector: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t, i18n } = useTranslation('common');
   const { theme } = useTheme();
   const [modalVisible, setModalVisible] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<SupportedLanguage>('vi');
@@ -30,10 +31,8 @@ export const LanguageSelector: React.FC = () => {
         const lang = (stored || i18n.language || 'vi') as SupportedLanguage;
         setCurrentLanguage(lang);
       } catch (err) {
-        console.error('Error loading stored language:', err);
-        showErrorToast(
-          t('errors.loadLanguageFailed', { defaultValue: 'Unable to load language preference.' }),
-        );
+        logger.error('LanguageSelector', 'Error loading stored language', err);
+        showErrorToast(t('languageScreen.errors.loadLanguageFailed'));
       }
     };
     loadLanguage();
@@ -50,10 +49,8 @@ export const LanguageSelector: React.FC = () => {
       setCurrentLanguage(language);
       setModalVisible(false);
     } catch (err) {
-      console.error('Error changing language:', err);
-      showErrorToast(
-        t('errors.languageChangeFailed', { defaultValue: 'Failed to change language.' }),
-      );
+      logger.error('LanguageSelector', 'Error changing language', err);
+      showErrorToast(t('languageScreen.errors.languageChangeFailed'));
     }
   };
 
@@ -129,7 +126,7 @@ export const LanguageSelector: React.FC = () => {
                     onPress={() => handleLanguageChange(item.code)}
                     accessibilityRole="button"
                     accessibilityLabel={t('languageScreen.chooseLanguage', {
-                      defaultValue: `Choose ${item.label}`,
+                      language: t(item.labelKey),
                     })}
                     accessibilityState={{ selected: isSelected }}
                   >
@@ -144,7 +141,7 @@ export const LanguageSelector: React.FC = () => {
                         },
                       ]}
                     >
-                      {item.label}
+                      {t(item.labelKey)}
                     </Text>
                     {isSelected && (
                       <Text style={[styles.checkmark, { color: theme.colors.primary[500] }]}>

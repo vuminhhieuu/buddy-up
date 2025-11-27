@@ -25,7 +25,7 @@ export const BuddyHero: React.FC<BuddyHeroProps> = ({
   activeFiltersCount,
 }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('buddy');
 
   return (
     <View style={{ marginBottom: theme.spacing[5] }}>
@@ -98,7 +98,7 @@ export const BuddyHero: React.FC<BuddyHeroProps> = ({
 
           <View style={{ flex: 1 }}>
             <Input
-              placeholder={t('buddy.searchPlaceholder')}
+              placeholder={t('searchPlaceholder')}
               value={searchQuery}
               onChangeText={(value) => onSearchChange(value)}
               left={<Search size={18} color={theme.colors.text.tertiary} />}

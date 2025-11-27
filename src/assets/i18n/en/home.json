@@ -1,0 +1,46 @@
+{
+  "header": {
+    "defaultName": "friend",
+    "openProfile": "Open profile",
+    "notifications": "Notifications",
+    "subtitle": "Ready to learn today?",
+    "greeting": {
+      "morning": "Good morning, {{name}}! 👋",
+      "afternoon": "Good afternoon, {{name}}! 👋",
+      "evening": "Good evening, {{name}}! 👋"
+    }
+  },
+  "hero": {
+    "streakLabel": "Study streak",
+    "weekLabel": "this week",
+    "encouragement": "Awesome! Keep up the momentum 💪"
+  },
+  "stats": {
+    "studyHours": "Study hours this week",
+    "completedSessions": "Sessions completed",
+    "rewardPoints": "Reward points"
+  },
+  "sessions": {
+    "title": "Upcoming sessions",
+    "viewAll": "View all",
+    "studyWith": "Study with {{name}}",
+    "defaultBuddyName": "a buddy",
+    "unknownSubject": "Subject TBD",
+    "startingSoon": "Starting soon",
+    "countdownMinutes": "{{count}} min left",
+    "countdownHours": "{{count}} hrs left",
+    "countdownDays": "{{count}} days left",
+    "accessibilityLabel": "Session with {{name}} at {{time}}",
+    "emptyTitle": "No sessions yet",
+    "emptySubtitle": "Create a study session or find a buddy to get started."
+  },
+  "actions": {
+    "createSession": "Create session",
+    "findBuddy": "Find buddy"
+  },
+  "errors": {
+    "title": "Unable to load data",
+    "subtitle": "Please check your connection or try again later.",
+    "retry": "Retry"
+  }
+}

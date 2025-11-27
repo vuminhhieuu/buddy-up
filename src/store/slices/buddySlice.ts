@@ -6,11 +6,13 @@ import type {
   ConnectionRequest,
   IncomingRequest,
 } from '../../types/buddy';
-import { DEFAULT_BUDDY_FILTERS } from '../../types/buddy';
+import { DEFAULT_BUDDY_FILTERS } from '../../constants/buddy';
 import * as buddyService from '../../services/buddy';
 import type { RootState } from '../index';
 import { signOutState } from './authSlice';
 import type { RespondToBuddyRequestResponse } from '../../services/buddy';
+import { logger } from '../../utils/logger';
+import { formatErrorMessage } from '../../services/helpers';
 
 export interface BuddyState {
   filters: BuddyFilters;
@@ -55,7 +57,7 @@ export const searchBuddiesAsync = createAsyncThunk<
     });
     return result;
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Failed to search buddies';
+    const errorMessage = formatErrorMessage(error) || 'Failed to search buddies';
     return rejectWithValue(errorMessage);
   }
 });
@@ -83,7 +85,7 @@ export const loadMoreBuddiesAsync = createAsyncThunk<BuddySearchResult, void, { 
       });
       return result;
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load more buddies';
+      const errorMessage = formatErrorMessage(error) || 'Failed to load more buddies';
       return rejectWithValue(errorMessage);
     }
   },
@@ -132,7 +134,7 @@ export const sendBuddyRequestAsync = createAsyncThunk<
       connection: response.connection,
     };
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to send request';
+    const message = formatErrorMessage(error) || 'Failed to send request';
     return rejectWithValue({
       targetUserId,
       error: message,
@@ -160,8 +162,7 @@ export const fetchIncomingRequestsAsync = createAsyncThunk<
     const requests = await buddyService.fetchIncomingRequests(currentUserId);
     return requests;
   } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : 'Failed to fetch incoming requests';
+    const errorMessage = formatErrorMessage(error) || 'Failed to fetch incoming requests';
     return rejectWithValue(errorMessage);
   }
 });
@@ -220,7 +221,7 @@ export const respondToBuddyRequestAsync = createAsyncThunk<
         action,
       };
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to respond to request';
+      const message = formatErrorMessage(error) || 'Failed to respond to request';
       return rejectWithValue({
         connectionId,
         error: message,
@@ -268,12 +269,13 @@ const buddySlice = createSlice({
           read: false,
         });
         state.unreadRequestsCount += 1;
-        console.log(
-          '[buddySlice] Added new incoming request, unread count:',
+        logger.debug(
+          'buddySlice',
+          'Added new incoming request, unread count:',
           state.unreadRequestsCount,
         );
       } else {
-        console.log('[buddySlice] Request already exists, skipping:', action.payload.id);
+        logger.debug('buddySlice', 'Request already exists, skipping:', action.payload.id);
       }
     },
     markRequestAsRead(state, action: PayloadAction<string>) {
@@ -383,7 +385,7 @@ const buddySlice = createSlice({
         // Recalculate unread count from all merged requests to ensure accuracy
         const calculatedUnreadCount = mergedRequests.filter((req) => !req.read).length;
         state.unreadRequestsCount = calculatedUnreadCount;
-        console.log('[buddySlice] Fetched incoming requests:', {
+        logger.debug('buddySlice', 'Fetched incoming requests:', {
           totalRequests: mergedRequests.length,
           unreadCount: calculatedUnreadCount,
           newRequests: newUnreadCount,

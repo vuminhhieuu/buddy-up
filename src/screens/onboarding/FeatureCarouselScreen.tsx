@@ -12,6 +12,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { FeatureSlide } from '../../components/onboarding/FeatureSlide';
 import { useTheme } from '../../styles';
+import { ScreenContainer } from '../../components/ui';
 
 interface FeatureCarouselScreenProps {
   onComplete: () => void;
@@ -30,7 +31,7 @@ interface FeatureData {
 export const FeatureCarouselScreen: React.FC<FeatureCarouselScreenProps> = ({ onComplete }) => {
   const { width } = useWindowDimensions();
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
 
@@ -97,81 +98,86 @@ export const FeatureCarouselScreen: React.FC<FeatureCarouselScreenProps> = ({ on
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <FlatList
-        ref={flatListRef}
-        data={features}
-        renderItem={renderItem}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        keyExtractor={(item) => item.id}
-        style={styles.flatList}
-      />
+    <ScreenContainer
+      contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 0 }}
+      style={{ backgroundColor: theme.colors.background }}
+    >
+      <View style={styles.container}>
+        <FlatList
+          ref={flatListRef}
+          data={features}
+          renderItem={renderItem}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+          keyExtractor={(item) => item.id}
+          style={styles.flatList}
+        />
 
-      {/* Pagination */}
-      <View style={styles.paginationContainer}>
-        {features.map((_, index) => (
+        {/* Pagination */}
+        <View style={styles.paginationContainer}>
+          {features.map((_, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => scrollToIndex(index)}
+              accessibilityRole="button"
+              accessibilityState={{ selected: currentIndex === index }}
+              accessibilityLabel={t('onboarding.carousel.slideIndicator', {
+                index: index + 1,
+                total: features.length,
+                defaultValue: `Slide ${index + 1} of ${features.length}`,
+              })}
+              style={[styles.paginationTouchable]}
+            >
+              <View
+                style={[
+                  styles.paginationDot,
+                  { backgroundColor: theme.colors.neutral[300] },
+                  currentIndex === index && {
+                    width: 24,
+                    backgroundColor: theme.colors.primary[500],
+                  },
+                ]}
+              />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Button */}
+        <View style={styles.buttonContainer}>
           <TouchableOpacity
-            key={index}
-            onPress={() => scrollToIndex(index)}
-            accessibilityRole="button"
-            accessibilityState={{ selected: currentIndex === index }}
-            accessibilityLabel={t('onboarding.carousel.slideIndicator', {
-              index: index + 1,
-              total: features.length,
-              defaultValue: `Slide ${index + 1} of ${features.length}`,
-            })}
-            style={[styles.paginationTouchable]}
-          >
-            <View
-              style={[
-                styles.paginationDot,
-                { backgroundColor: theme.colors.neutral[300] },
-                currentIndex === index && {
-                  width: 24,
-                  backgroundColor: theme.colors.primary[500],
-                },
-              ]}
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Button */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={[
-            styles.startButton,
-            {
-              backgroundColor: theme.colors.primary[500],
-              ...theme.shadows.lg,
-            },
-          ]}
-          onPress={onComplete}
-          accessibilityRole="button"
-          accessibilityLabel={t('onboarding.carousel.startButton')}
-          accessibilityHint={t('onboarding.carousel.startHint', {
-            defaultValue: 'Finish onboarding',
-          })}
-        >
-          <Text
             style={[
-              styles.startButtonText,
+              styles.startButton,
               {
-                fontFamily: theme.typography.families.display,
-                fontWeight: '600',
-                color: theme.colors.text.inverse,
+                backgroundColor: theme.colors.primary[500],
+                ...theme.shadows.lg,
               },
             ]}
+            onPress={onComplete}
+            accessibilityRole="button"
+            accessibilityLabel={t('onboarding.carousel.startButton')}
+            accessibilityHint={t('onboarding.carousel.startHint', {
+              defaultValue: 'Finish onboarding',
+            })}
           >
-            {t('onboarding.carousel.startButton')}
-          </Text>
-        </TouchableOpacity>
+            <Text
+              style={[
+                styles.startButtonText,
+                {
+                  fontFamily: theme.typography.families.display,
+                  fontWeight: '600',
+                  color: theme.colors.text.inverse,
+                },
+              ]}
+            >
+              {t('onboarding.carousel.startButton')}
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
+    </ScreenContainer>
   );
 };
 

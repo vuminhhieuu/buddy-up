@@ -1,8 +1,8 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { BuddyScreen } from '../screens/BuddyScreen';
-import { BuddyRequestsScreen } from '../screens/BuddyRequestsScreen';
-import { ConnectionSuccessScreen } from '../screens/ConnectionSuccessScreen';
+import { BuddyScreen } from '../screens/buddy/BuddyScreen';
+import { BuddyRequestsScreen } from '../screens/buddy/BuddyRequestsScreen';
+import { ConnectionSuccessScreen } from '../screens/buddy/ConnectionSuccessScreen';
 import type { ConnectionRequest, BuddyProfile } from '../types/buddy';
 
 export type BuddyStackParamList = {

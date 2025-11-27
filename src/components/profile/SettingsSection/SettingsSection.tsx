@@ -15,7 +15,7 @@ export type SettingsSectionProps = {
 
 const SettingsSectionComponent: React.FC<SettingsSectionProps> = ({ items, style }) => {
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t } = useTranslation('profile');
 
   return (
     <View style={[styles.container, { paddingHorizontal: theme.spacing[3] }, style]}>
@@ -33,7 +33,7 @@ const SettingsSectionComponent: React.FC<SettingsSectionProps> = ({ items, style
               },
             ]}
           >
-            {t('profileScreen.settings.title')}
+            {t('settings.title')}
           </Text>
         </View>
       </View>

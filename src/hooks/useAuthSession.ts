@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../config/supabase';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { setLoading, setUser } from '../store/slices/authSlice';
+import { logger } from '../utils/logger';
 
 export const useAuthSession = () => {
   const dispatch = useAppDispatch();
@@ -28,7 +29,7 @@ export const useAuthSession = () => {
           dispatch(setUser(null));
         }
       } catch (error) {
-        console.error('Failed to sync auth session:', error);
+        logger.error('useAuthSession', 'Failed to sync auth session:', error);
         dispatch(setUser(null));
       } finally {
         if (mounted) {
