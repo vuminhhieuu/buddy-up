@@ -5,6 +5,7 @@ import { Text } from '../Text/Text';
 
 export type InputProps = TextInputProps & {
   label?: string;
+  labelBold?: boolean;
   helperText?: string;
   errorText?: string;
   left?: React.ReactNode;
@@ -13,6 +14,7 @@ export type InputProps = TextInputProps & {
 
 export const Input: React.FC<InputProps> = ({
   label,
+  labelBold,
   helperText,
   errorText,
   left,
@@ -31,7 +33,13 @@ export const Input: React.FC<InputProps> = ({
   return (
     <View>
       {label ? (
-        <Text variant="h6" style={{ marginBottom: theme.spacing[2] }}>
+        <Text
+          variant="h6"
+          style={{
+            marginBottom: theme.spacing[2],
+            fontWeight: labelBold ? ('700' as const) : undefined,
+          }}
+        >
           {label}
         </Text>
       ) : null}

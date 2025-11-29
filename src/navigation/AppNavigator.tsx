@@ -6,6 +6,7 @@ import { MainTabsNavigator } from './MainTabsNavigator';
 import { AuthNavigator } from './AuthNavigator';
 import { OnboardingNavigator } from './OnboardingNavigator';
 import { CreateSessionScreen } from '../screens/session/CreateSessionScreen';
+import CreateSessionSuccessScreen from '../screens/session/CreateSessionSuccessScreen';
 import { useAppSelector } from '../store/hooks';
 import { useFirstLaunch } from '../hooks/useFirstLaunch';
 import { useTheme } from '../styles';
@@ -16,6 +17,15 @@ export type RootStackParamList = {
   Auth: { profileSetupInProgress: boolean };
   MainTabs: undefined;
   CreateSession: undefined;
+  CreateSessionSuccess:
+    | {
+        sessionTitle?: string;
+        sessionDateTime?: string;
+        scheduledStartIso?: string;
+        scheduledEndIso?: string;
+        duration?: string;
+      }
+    | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -49,6 +59,7 @@ export const AppNavigator: React.FC = () => {
           <>
             <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
             <Stack.Screen name="CreateSession" component={CreateSessionScreen} />
+            <Stack.Screen name="CreateSessionSuccess" component={CreateSessionSuccessScreen} />
           </>
         ) : (
           <Stack.Screen

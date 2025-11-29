@@ -6,6 +6,7 @@ import { Text } from '../ui/Text/Text';
 import { Avatar } from '../ui';
 import { Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
+import { formatISOToLocal, formatWeekdayDate, formatStartEndTimes } from '../../utils/date';
 import { MS_PER_HOUR } from '../../constants/profile';
 
 export type Session = {
@@ -24,28 +25,9 @@ export type UpcomingSessionsProps = {
   onViewAllPress?: () => void;
 };
 
-const formatTimeRange = (startIso: string, endIso: string | null | undefined, locale: string) => {
-  const start = new Date(startIso);
-  const end = endIso ? new Date(endIso) : null;
-  const today = new Date();
-  const isToday =
-    start.getDate() === today.getDate() &&
-    start.getMonth() === today.getMonth() &&
-    start.getFullYear() === today.getFullYear();
-
-  const timeFormatter = new Intl.DateTimeFormat(locale, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-  if (isToday && end) {
-    return `${timeFormatter.format(start)} - ${timeFormatter.format(end)}`;
-  }
-
-  const dayFormatter = new Intl.DateTimeFormat(locale, { weekday: 'long' });
-  const dayLabel = dayFormatter.format(start);
-  return `${dayLabel} - ${timeFormatter.format(start)}`;
-};
+const formatDateLine = (startIso: string, locale: string) => formatWeekdayDate(startIso, locale);
+const formatTimesLine = (startIso: string, endIso: string | null | undefined, locale: string) =>
+  formatStartEndTimes(startIso, endIso ?? null, locale);
 
 const formatCountdown = (startIso: string, t: (key: string, opts?: any) => string) => {
   const diffMs = new Date(startIso).getTime() - Date.now();
@@ -112,7 +94,7 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
               accessibilityRole="button"
               accessibilityLabel={t('sessions.accessibilityLabel', {
                 name: session.buddyName || session.title || '',
-                time: new Date(session.scheduledStart).toLocaleString(),
+                time: formatISOToLocal(session.scheduledStart),
               })}
             >
               <Card padding={4} elevation="sm" style={styles.sessionCard}>
@@ -127,7 +109,7 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
                       },
                     ]}
                   >
-                    {formatTimeRange(session.scheduledStart, session.scheduledEnd, locale)}
+                    {session.title || session.subject || t('sessions.unknownSubject')}
                   </Text>
                   <View
                     style={[
@@ -160,10 +142,11 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
                     style={styles.avatar}
                   />
                   <View style={styles.sessionInfo}>
-                    <Text variant="body" style={styles.buddyName}>
-                      {t('sessions.studyWith', {
-                        name: session.buddyName || t('sessions.defaultBuddyName'),
-                      })}
+                    <Text variant="body" style={styles.dateLine} numberOfLines={1}>
+                      {formatDateLine(session.scheduledStart, locale)}
+                    </Text>
+                    <Text variant="bodySmall" style={styles.timeLine} numberOfLines={1}>
+                      {formatTimesLine(session.scheduledStart, session.scheduledEnd, locale)}
                     </Text>
                     <View
                       style={[
@@ -267,6 +250,14 @@ const styles = StyleSheet.create({
   },
   subjectText: {
     fontSize: 12,
+  },
+  dateLine: {
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  timeLine: {
+    fontSize: 14,
+    color: '#6b7280',
   },
   emptyState: {
     paddingVertical: 24,
