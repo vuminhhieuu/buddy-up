@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Pressable, Dimensions } from 'react-native';
-import { ScreenContainer, Text, Button, Spacer } from '../../../components/ui';
+import { ScreenContainer, Text, ProfileSetupNextButton, Spacer } from '../../../components/ui';
 import { SkipButton } from '../../../components/ui/SkipButton/SkipButton';
 import { ProcessHeader } from '../../../components/ui';
 import { useTheme } from '../../../styles';
@@ -8,7 +8,9 @@ import { useTranslation } from 'react-i18next';
 import { Formik } from 'formik';
 import { profileStep2Schema } from '../../../utils/validation';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
-import { setProfileData, setProfileSetupInProgress } from '../../../store/slices/authSlice';
+import { saveStepForUser } from '../../../lib/supabaseHelpers';
+import { setProfileData } from '../../../store/slices/authSlice';
+import { logger } from '../../../utils/logger';
 import { Sun, CloudSun, Moon, PartyPopper, Zap, ArrowLeft } from 'lucide-react-native';
 import { BASE_HORIZONTAL_PADDING } from '../../../constants/layout';
 
@@ -26,7 +28,7 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
   const { theme } = useTheme();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { profileData } = useAppSelector((s) => s.auth);
+  const { profileData, userId } = useAppSelector((s: any) => s.auth);
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -202,7 +204,7 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
               <ArrowLeft size={18} color={theme.colors.text.primary} />
             </Pressable>
 
-            <SkipButton onSkip={onSkip} style={styles.skipButton} />
+            <SkipButton style={styles.skipButton} />
           </View>
         </ProcessHeader>
 
@@ -236,6 +238,30 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
                     learningStyle: values.learningStyle as any,
                   }),
                 );
+
+                try {
+                  if (userId) {
+                    const r = await saveStepForUser(
+                      userId,
+                      {
+                        available_times: values.availableTimes,
+                        learning_times: values.availableTimes,
+                        learning_style: values.learningStyle,
+                      },
+                      true,
+                    );
+                    if (r?.error) {
+                      logger.warn(
+                        'ProfileSetupStep2Screen',
+                        '[onSubmit] saveStepForUser error',
+                        r.error,
+                      );
+                    }
+                  }
+                } catch (err) {
+                  logger.warn('ProfileSetupStep2Screen', 'Failed to save step 2 to Supabase', err);
+                }
+
                 onNext?.();
               } finally {
                 setSubmitting(false);
@@ -341,11 +367,9 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
                   </View>
 
                   <View style={styles.footer}>
-                    <Button
-                      label={t('profileSetup.nextButton')}
+                    <ProfileSetupNextButton
                       onPress={() => handleSubmit()}
                       loading={submitting}
-                      style={{ width: '100%' }}
                       disabled={
                         submitting || !values.availableTimes.length || !values.learningStyle
                       }

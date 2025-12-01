@@ -23,7 +23,7 @@
     }
   },
   "profileSetup": {
-    "selectedCount": "Đã chọn {{count}}/3 môn",
+    "selectedCountSimple": "Đã chọn {{count}} môn",
     "groupLanguage": "Ngôn ngữ",
     "groupProgramming": "Lập trình",
     "groupExam": "Thi cử",
@@ -84,10 +84,6 @@
     "categoryChemistry": "Hóa",
     "categoryIT": "CNTT",
     "categoryOther": "Khác",
-    "categoriesRequired": "Vui lòng chọn ít nhất một môn học.",
-    "categoriesMaxExceeded": "Bạn chỉ được chọn tối đa {{max}} môn.",
-    "availableTimesRequired": "Vui lòng chọn ít nhất một khung thời gian",
-    "learningStyleRequired": "Vui lòng chọn một phong cách học",
     "completedTitle": "Hoàn thành!",
     "completedSubtitle": "Chào mừng bạn đến với Buddy Up, {{name}}! 🎉",
     "goalsLabel": "MỤC TIÊU HỌC TẬP",
@@ -116,9 +112,7 @@
     "permissionDenied": "Từ chối quyền",
     "cameraPermissionRequired": "Cần quyền truy cập máy ảnh để chụp ảnh.",
     "libraryPermissionRequired": "Cần quyền truy cập thư viện để chọn ảnh.",
-    "back": "Quay lại",
-    "maxSelectedTitle": "Đã chọn tối đa",
-    "maxSelectedMessage": "Bạn chỉ được chọn tối đa {{max}} môn."
+    "back": "Quay lại"
   },
   "onboarding": {
     "welcome": {

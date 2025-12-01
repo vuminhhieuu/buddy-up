@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { View, Pressable } from 'react-native';
-import { ScreenContainer, Text, Button } from '../../../components/ui';
+import { ScreenContainer, Text, ProfileSetupNextButton } from '../../../components/ui';
 import { SkipButton } from '../../../components/ui/SkipButton/SkipButton';
 import { ProcessHeader } from '../../../components/ui';
 import { useTheme } from '../../../styles';
@@ -8,6 +8,8 @@ import { ArrowLeft } from 'lucide-react-native';
 import { Globe, Laptop, Pencil, BookOpen } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
+import { saveStepForUser } from '../../../lib/supabaseHelpers';
+import { setProfileData } from '../../../store/slices/authSlice';
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { MIN_CATEGORIES } from '../../../constants/profileSetup';
@@ -69,10 +71,7 @@ export const CATEGORY_GROUPS = [
 ];
 
 const profileStep3Schema = Yup.object().shape({
-  categories: Yup.array()
-    .of(Yup.string())
-    .min(MIN_CATEGORIES, 'profileSetup.categoriesRequired')
-    .required('profileSetup.categoriesRequired'),
+  categories: Yup.array().of(Yup.string()),
 });
 
 export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (props) => {
@@ -80,7 +79,7 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
   const { onNext, onBack } = props;
   const { onSkip } = props;
   const dispatch = useAppDispatch();
-  const profileData = useAppSelector((s) => s.auth.profileData);
+  const { profileData, userId } = useAppSelector((s: any) => s.auth);
   const { t } = useTranslation();
   const { theme } = useTheme();
   const [submitting, setSubmitting] = useState(false);
@@ -185,7 +184,7 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
               <ArrowLeft size={18} color={theme.colors.text.primary} />
             </Pressable>
 
-            <SkipButton onSkip={onSkip} style={styles.skipButton} />
+            <SkipButton style={styles.skipButton} />
           </View>
         </ProcessHeader>
         <View
@@ -208,8 +207,15 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
             validationSchema={profileStep3Schema}
             onSubmit={async (values) => {
               setSubmitting(true);
-              onNext?.(values.categories);
-              setSubmitting(false);
+              try {
+                if (userId) {
+                  await saveStepForUser(userId, { learning_interests: values.categories }, true);
+                  dispatch(setProfileData({ categories: values.categories }));
+                }
+                onNext?.(values.categories);
+              } finally {
+                setSubmitting(false);
+              }
             }}
           >
             {({ values, setFieldValue, handleSubmit, errors, touched }) => {
@@ -237,7 +243,6 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
                               <Text style={[styles.selectedCountText, { fontWeight: 'bold' }]}>
                                 {t('profileSetup.selectedCountSimple', {
                                   count: selectedCount,
-                                  defaultValue: 'Đã chọn {{count}} môn',
                                 })}
                               </Text>
                             </View>
@@ -321,16 +326,12 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
                       {t(String(errors.categories))}
                     </Text>
                   ) : null}
-                  <View style={{ marginTop: theme.spacing[4] }}>
-                    <Button
-                      label={t('profileSetup.nextButton')}
+                  <View style={styles.footer}>
+                    <ProfileSetupNextButton
                       onPress={handleSubmit}
                       loading={submitting}
                       disabled={submitting || selectedCount < minSelect}
-                      variant="primary"
-                      size="md"
                       style={{
-                        width: '100%',
                         borderRadius: theme.radius.lg,
                       }}
                     />

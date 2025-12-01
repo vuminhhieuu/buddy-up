@@ -29,6 +29,8 @@ export type { SegmentedControlProps } from './SegmentedControl';
 export { ProcessHeader } from './ProcessHeader/ProcessHeader';
 export type { ProcessHeaderProps } from './ProcessHeader/ProcessHeader';
 export { NextButton } from './NextButton/NextButton';
+export { ProfileSetupNextButton } from './ProfileSetupNextButton/ProfileSetupNextButton';
+export type { ProfileSetupNextButtonProps } from './ProfileSetupNextButton/ProfileSetupNextButton';
 export { ProgressBar } from './ProgressBar/ProgressBar';
 export type { ProgressBarProps, ProgressBarVariant } from './ProgressBar/ProgressBar';
 export { StatCard } from './StatCard/StatCard';
