@@ -185,6 +185,7 @@ export const CreateSessionScreen: React.FC = () => {
       const sessionDateTime = formatDateTimeDDMMYYYYHHMM(startDate);
 
       (navigation as any).navigate('CreateSessionSuccess', {
+        sessionId: data.id,
         sessionTitle: payload.title,
         sessionDateTime,
         scheduledStartIso: startDate.toISOString(),

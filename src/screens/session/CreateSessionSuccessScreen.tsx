@@ -74,6 +74,7 @@ const useSessionDateFormatting = (
 export type CreateSessionSuccessProps = {
   visible?: boolean;
   onClose?: () => void;
+  sessionId?: string;
   sessionTitle?: string;
   sessionDateTime?: string;
 };
@@ -81,6 +82,7 @@ export type CreateSessionSuccessProps = {
 const CreateSessionSuccessScreen: React.FC<CreateSessionSuccessProps> = ({
   visible: visibleProp,
   onClose: onCloseProp,
+  sessionId: sessionIdProp,
   sessionTitle: sessionTitleProp,
   sessionDateTime: sessionDateTimeProp,
 }) => {
@@ -90,6 +92,7 @@ const CreateSessionSuccessScreen: React.FC<CreateSessionSuccessProps> = ({
 
   const routeParams: any = (route && (route.params as any)) || {};
 
+  const sessionId = sessionIdProp ?? routeParams.sessionId;
   const sessionTitle = sessionTitleProp ?? routeParams.sessionTitle;
   const sessionDateTime = sessionDateTimeProp ?? routeParams.sessionDateTime;
 
@@ -216,7 +219,11 @@ const CreateSessionSuccessScreen: React.FC<CreateSessionSuccessProps> = ({
             <Button
               label={t('viewSession')}
               onPress={() => {
-                alert(t('underDevelopment') ?? 'Feature under development');
+                if (sessionId) {
+                  (navigation as any).navigate('SessionDetail', { sessionId, fromSuccess: true });
+                } else {
+                  alert(t('underDevelopment') ?? 'Feature under development');
+                }
               }}
               variant="primary"
               size="lg"

@@ -7,6 +7,7 @@ import { AuthNavigator } from './AuthNavigator';
 import { OnboardingNavigator } from './OnboardingNavigator';
 import { CreateSessionScreen } from '../screens/session/CreateSessionScreen';
 import CreateSessionSuccessScreen from '../screens/session/CreateSessionSuccessScreen';
+import SessionDetailScreen from '../screens/session/SessionDetailScreen';
 import { useAppSelector } from '../store/hooks';
 import { useFirstLaunch } from '../hooks/useFirstLaunch';
 import { useTheme } from '../styles';
@@ -26,6 +27,8 @@ export type RootStackParamList = {
         duration?: string;
       }
     | undefined;
+  SessionDetail: { sessionId: string };
+  UpcomingSessionsAll: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -60,6 +63,11 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
             <Stack.Screen name="CreateSession" component={CreateSessionScreen} />
             <Stack.Screen name="CreateSessionSuccess" component={CreateSessionSuccessScreen} />
+            <Stack.Screen name="SessionDetail" component={SessionDetailScreen} />
+            <Stack.Screen
+              name="UpcomingSessionsAll"
+              component={require('../screens/session/UpcomingSessionsAllScreen').default}
+            />
           </>
         ) : (
           <Stack.Screen
