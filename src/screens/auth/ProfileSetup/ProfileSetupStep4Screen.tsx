@@ -45,10 +45,7 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
       borderRadius: theme.radius.lg,
       padding: theme.spacing[4],
       marginVertical: theme.spacing[2],
-      shadowColor: '#000',
-      shadowOpacity: 0.05,
-      shadowRadius: 8,
-      elevation: 2,
+      ...(theme.shadows?.md || {}),
     },
     button: {
       marginTop: theme.spacing[4],
@@ -74,7 +71,7 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
     goals: profileData.studyGoal ? [profileData.studyGoal] : [],
     freeTime: profileData.availableTimes?.join(', ') || t('profileSetup.noAvailableTimes'),
     subjects: profileData.categories?.length
-      ? t('profileSetup.selectedCount', { count: profileData.categories.length })
+      ? t('profileSetup.selectedCountSimple', { count: profileData.categories.length })
       : t('profileSetup.noSubjectsSelected'),
   };
   const handleFindBuddy = () => {
@@ -110,41 +107,31 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
         progressBarColor={theme.colors.primary[500]}
         progressBarBgColor={theme.colors.border}
         containerStyle={styles.header}
-      >
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back', { defaultValue: 'Back' })}
-          onPress={onBack || (() => {})}
-          style={{
-            width: 35,
-            height: 35,
-            borderRadius: theme.radius.md,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: theme.colors.background,
-            borderWidth: 1,
-            borderColor: theme.colors.border,
-            marginBottom: theme.spacing[2],
-            alignSelf: 'flex-start',
-          }}
-        >
-          <ArrowLeft size={18} color={theme.colors.text.primary} />
-        </Pressable>
-      </ProcessHeader>
+      />
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
         {/* Completion icon */}
         <View style={{ marginTop: theme.spacing[6], marginBottom: theme.spacing[2] }}>
           <View
             style={{
-              width: 90,
-              height: 90,
-              borderRadius: 45,
+              width: 100,
+              height: 100,
+              borderRadius: 50,
               backgroundColor: theme.colors.primary[100],
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <Text style={{ fontSize: 48, color: theme.colors.primary[500] }}>✓</Text>
+            {/* Ensure the check mark is centered and not clipped */}
+            <Text
+              style={{
+                fontSize: 50,
+                lineHeight: 100,
+                textAlign: 'center',
+                color: theme.colors.primary[500],
+              }}
+            >
+              ✓
+            </Text>
           </View>
         </View>
         {/* Title & greeting */}

@@ -23,7 +23,7 @@
     }
   },
   "profileSetup": {
-    "selectedCount": "Selected {{count}}/3 subjects",
+    "selectedCountSimple": "Selected {{count}} subjects",
     "groupLanguage": "Language",
     "groupProgramming": "Programming",
     "groupExam": "Exam",
@@ -84,10 +84,7 @@
     "categoryChemistry": "Chemistry",
     "categoryIT": "IT",
     "categoryOther": "Other",
-    "categoriesRequired": "Please select at least one subject.",
     "categoriesMaxExceeded": "You can select up to {{max}} subjects.",
-    "availableTimesRequired": "Please choose at least one time",
-    "learningStyleRequired": "Please select a learning style",
     "completedTitle": "Completed!",
     "completedSubtitle": "Welcome to Buddy Up, {{name}}! 🎉",
     "goalsLabel": "STUDY GOALS",
@@ -116,9 +113,7 @@
     "permissionDenied": "Permission denied",
     "cameraPermissionRequired": "Camera permission is required to take photos.",
     "libraryPermissionRequired": "Library permission is required to choose a photo.",
-    "back": "Back",
-    "maxSelectedTitle": "Maximum selected",
-    "maxSelectedMessage": "You can select up to {{max}} subjects only."
+    "back": "Back"
   },
   "onboarding": {
     "welcome": {

@@ -6,14 +6,14 @@ import {
   ScreenContainer,
   Text,
   Spacer,
-  Button,
+  ProfileSetupNextButton,
   Input,
   AvatarPickerSection,
 } from '../../../components/ui';
-import { SkipButton } from '../../../components/ui/SkipButton/SkipButton';
 import { useTheme } from '../../../styles';
 import { profileStep1Schema } from '../../../utils/validation';
 import { uploadAvatarToStorage, updateProfileStep1 } from '../../../services/profile';
+import { saveStepForUser } from '../../../lib/supabaseHelpers';
 import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import {
   setProfileData,
@@ -26,10 +26,7 @@ export type ProfileSetupStep1ScreenProps = {
   onSkip?: () => void;
 };
 
-export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = ({
-  onNext,
-  onSkip,
-}) => {
+export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = ({ onNext }) => {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
@@ -81,19 +78,11 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
     };
   }, [theme]);
 
-  const handleSkip = () => {
-    dispatch(setProfileSetupInProgress(false));
-    onSkip?.();
-  };
-
   return (
     <ScreenContainer>
       <View style={{ flex: 1 }}>
         {/* Header */}
         <View style={styles.header}>
-          {/* Skip Button */}
-          <SkipButton onSkip={handleSkip} style={styles.skipButton} />
-
           {/* Title Row */}
           <View style={styles.titleRow}>
             <Text
@@ -188,6 +177,29 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
                     }),
                   );
 
+                  try {
+                    const r = await saveStepForUser(
+                      userId,
+                      {
+                        display_name: values.displayName,
+                        bio: values.studyGoal,
+                        avatar_url: uploadedAvatarUrl || avatarUri,
+                      },
+                      true,
+                    );
+                    if (r?.error) {
+                      const errorMessage = r.error?.message || 'Failed to save step 1';
+                      setStatus(errorMessage);
+                      Alert.alert(t('common.error'), errorMessage);
+                      return;
+                    }
+                  } catch (err) {
+                    const errorMessage = err instanceof Error ? err.message : t('common.error');
+                    setStatus(errorMessage);
+                    Alert.alert(t('common.error'), errorMessage);
+                    return;
+                  }
+
                   dispatch(setCurrentProfileStep(2));
 
                   onNext?.({
@@ -276,8 +288,7 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
                     ) : null}
                   </View>
                   <View>
-                    <Button
-                      label={t('profileSetup.nextButton')}
+                    <ProfileSetupNextButton
                       onPress={() => handleSubmit()}
                       loading={submitting}
                       disabled={!values.displayName || !values.studyGoal || submitting}
