@@ -7,6 +7,7 @@ import { logger } from '../utils/logger';
 export const useAuthSession = () => {
   const dispatch = useAppDispatch();
   const isRegistering = useAppSelector((state) => state.auth.isRegistering);
+  const isPasswordResetFlow = useAppSelector((state) => state.auth.isPasswordResetFlow);
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export const useAuthSession = () => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!mounted) return;
-      if (isRegistering) return;
+      if (isRegistering || isPasswordResetFlow) return;
 
       if (session?.user) {
         dispatch(
@@ -63,7 +64,7 @@ export const useAuthSession = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [dispatch, isRegistering]);
+  }, [dispatch, isRegistering, isPasswordResetFlow]);
 
   return { initialized };
 };

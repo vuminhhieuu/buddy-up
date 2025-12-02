@@ -17,6 +17,7 @@ export interface AuthState {
   loading: boolean;
   authStartScreen: 'Register' | 'Login';
   isRegistering: boolean;
+  isPasswordResetFlow: boolean;
   profileSetupInProgress: boolean;
   currentProfileStep: number;
   profileData: ProfileSetupData;
@@ -29,6 +30,7 @@ const initialState: AuthState = {
   loading: false,
   authStartScreen: 'Login',
   isRegistering: false,
+  isPasswordResetFlow: false,
   profileSetupInProgress: false,
   currentProfileStep: 1,
   profileData: {},
@@ -59,6 +61,9 @@ const authSlice = createSlice({
     setIsRegistering(state, action: PayloadAction<boolean>) {
       state.isRegistering = action.payload;
     },
+    setIsPasswordResetFlow(state, action: PayloadAction<boolean>) {
+      state.isPasswordResetFlow = action.payload;
+    },
     setProfileSetupInProgress(state, action: PayloadAction<boolean>) {
       state.profileSetupInProgress = action.payload;
     },
@@ -82,6 +87,7 @@ export const {
   setAuthStartScreen,
   signOutState,
   setIsRegistering,
+  setIsPasswordResetFlow,
   setProfileSetupInProgress,
   setCurrentProfileStep,
   setProfileData,

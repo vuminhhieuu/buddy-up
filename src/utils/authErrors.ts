@@ -4,7 +4,7 @@ import { AUTH_ERROR_CODES, ERROR_MESSAGE_PATTERNS } from '../constants/errors';
 export function translateAuthError(
   error: AuthError | Error | null | undefined,
   t: (key: string) => string,
-  context: 'login' | 'register' = 'login',
+  context: 'login' | 'register' | 'passwordReset' | 'passwordChange' = 'login',
 ): string {
   if (!error) {
     return context === 'register' ? t('registerFailed') : t('loginFailed');
@@ -27,8 +27,31 @@ export function translateAuthError(
     case AUTH_ERROR_CODES.NETWORK_ERROR:
     case AUTH_ERROR_CODES.NETWORK_REQUEST_FAILED:
       return t('networkError');
+    case AUTH_ERROR_CODES.OTP_EXPIRED:
+      return t('otpExpired');
+    case AUTH_ERROR_CODES.OTP_INVALID:
+      return t('otpInvalid');
+    case AUTH_ERROR_CODES.OTP_RATE_LIMIT:
+      return t('tooManyRequests');
+    case AUTH_ERROR_CODES.EMAIL_NOT_REGISTERED:
+      return t('emailNotRegistered');
     default: {
       const lowerMessage = errorMessage.toLowerCase();
+
+      // Check for OTP invalid patterns first (more specific)
+      if (ERROR_MESSAGE_PATTERNS.OTP_INVALID.some((pattern) => lowerMessage.includes(pattern))) {
+        return t('otpInvalid');
+      }
+
+      // Check for OTP expired patterns
+      if (ERROR_MESSAGE_PATTERNS.OTP_EXPIRED.some((pattern) => lowerMessage.includes(pattern))) {
+        return t('otpExpired');
+      }
+
+      // Check for OTP rate limit patterns
+      if (ERROR_MESSAGE_PATTERNS.OTP_RATE_LIMIT.some((pattern) => lowerMessage.includes(pattern))) {
+        return t('tooManyRequests');
+      }
 
       // Check for email already exists patterns
       if (
@@ -54,6 +77,15 @@ export function translateAuthError(
         return t('emailNotConfirmed');
       }
 
+      // Check for email not registered patterns
+      if (
+        ERROR_MESSAGE_PATTERNS.EMAIL_NOT_REGISTERED.some((pattern) =>
+          lowerMessage.includes(pattern),
+        )
+      ) {
+        return t('emailNotRegistered');
+      }
+
       // Check for user not found patterns
       if (ERROR_MESSAGE_PATTERNS.USER_NOT_FOUND.some((pattern) => lowerMessage.includes(pattern))) {
         return t('userNotFound');
@@ -69,7 +101,11 @@ export function translateAuthError(
         return t('networkError');
       }
 
-      return context === 'register' ? t('registerFailed') : t('loginFailed');
+      // Context-specific fallback messages
+      if (context === 'register') return t('registerFailed');
+      if (context === 'passwordReset') return t('passwordResetFailed') || t('loginFailed');
+      if (context === 'passwordChange') return t('passwordChangeFailed') || t('loginFailed');
+      return t('loginFailed');
     }
   }
 }

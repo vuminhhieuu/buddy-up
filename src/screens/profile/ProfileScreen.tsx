@@ -308,6 +308,12 @@ export const ProfileScreen: React.FC = () => {
         onPress: () => handleOpenSettingsSection('security'),
       },
       {
+        id: 'change-password',
+        label: t('changePassword', { ns: 'auth' }),
+        icon: 'key',
+        onPress: () => navigation.navigate('ChangePassword'),
+      },
+      {
         id: 'language',
         label: t('settings.language'),
         icon: 'globe',
@@ -343,7 +349,7 @@ export const ProfileScreen: React.FC = () => {
         variant: 'danger',
         onPress: () =>
           Alert.alert(t('signOut', { ns: 'auth' }), t('settings.confirmLogout'), [
-            { text: t('back', { ns: 'common' }), style: 'cancel' },
+            { text: t('common.back', { ns: 'common' }), style: 'cancel' },
             { text: t('signOut', { ns: 'auth' }), style: 'destructive', onPress: handleSignOut },
           ]),
       },
@@ -352,6 +358,7 @@ export const ProfileScreen: React.FC = () => {
       handleLanguageItemPress,
       handleOpenSettingsSection,
       handleSignOut,
+      navigation,
       t,
       theme.colors.surface,
       currentLanguage,

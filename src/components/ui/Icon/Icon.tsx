@@ -23,6 +23,7 @@ import {
   Pencil,
   ChevronRight,
   Star,
+  Key,
   type LucideIcon,
 } from 'lucide-react-native';
 
@@ -47,7 +48,8 @@ export type IconName =
   | 'logout'
   | 'pencil'
   | 'chevronRight'
-  | 'star';
+  | 'star'
+  | 'key';
 
 const NAME_TO_ICON: Record<IconName, LucideIcon> = {
   home: Home,
@@ -71,6 +73,7 @@ const NAME_TO_ICON: Record<IconName, LucideIcon> = {
   pencil: Pencil,
   chevronRight: ChevronRight,
   star: Star,
+  key: Key,
 };
 
 export type IconProps = {
