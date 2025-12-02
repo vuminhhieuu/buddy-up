@@ -19,6 +19,10 @@ export const AUTH_ERROR_CODES = {
   NETWORK_ERROR: 'network_error',
   NETWORK_REQUEST_FAILED: 'network_request_failed',
   SIGNUP_DISABLED: 'signup_disabled',
+  OTP_EXPIRED: 'otp_expired',
+  OTP_INVALID: 'otp_invalid',
+  OTP_RATE_LIMIT: 'otp_rate_limit',
+  EMAIL_NOT_REGISTERED: 'email_not_registered',
 } as const;
 
 // ============================================================================
@@ -72,6 +76,15 @@ export const ERROR_MESSAGE_PATTERNS = {
     'already registered',
   ],
 
+  // Email not registered patterns
+  EMAIL_NOT_REGISTERED: [
+    'email not registered',
+    'user not registered',
+    'no user found',
+    'signups not allowed',
+    'signup is disabled',
+  ],
+
   // Invalid credentials patterns
   INVALID_CREDENTIALS: ['invalid login credentials', 'invalid credentials'],
 
@@ -86,6 +99,11 @@ export const ERROR_MESSAGE_PATTERNS = {
 
   // Network error patterns
   NETWORK_ERROR: ['network', 'connection'],
+
+  // OTP error patterns
+  OTP_EXPIRED: ['token expired', 'otp expired', 'otp has expired'],
+  OTP_INVALID: ['token mismatch', 'invalid token', 'otp invalid', 'invalid otp', 'token invalid'],
+  OTP_RATE_LIMIT: ['rate limit', 'too many', 'rate_limit'],
 
   // Unknown error fallback
   UNKNOWN_ERROR: ['unknown error occurred'],

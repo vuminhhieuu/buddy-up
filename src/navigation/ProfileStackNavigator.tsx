@@ -4,6 +4,9 @@ import { ProfileScreen } from '../screens/profile/ProfileScreen';
 import { ProfileAchievementsScreen } from '../screens/profile/ProfileAchievementsScreen';
 import { ProfileSettingsScreen } from '../screens/profile/ProfileSettingsScreen';
 import { SubjectDetailScreen } from '../screens/profile/SubjectDetailScreen';
+import { ChangePasswordScreen } from '../screens/profile/ChangePasswordScreen';
+import { VerifyOTPScreen } from '../screens/auth/VerifyOTPScreen';
+import { ResetPasswordScreen } from '../screens/auth/ResetPasswordScreen';
 import type { Achievement, Subject } from '../types/profile';
 
 export type ProfileStackParamList = {
@@ -11,6 +14,9 @@ export type ProfileStackParamList = {
   ProfileAchievements: { achievements: Achievement[] };
   ProfileSettings: { section?: string };
   SubjectDetail: { subject: Subject };
+  ChangePassword: undefined;
+  VerifyOTP: { email: string; mode?: 'forgot' | 'change' };
+  ResetPassword: { email: string; token: string; mode?: 'forgot' | 'change' };
 };
 
 const Stack = createNativeStackNavigator<ProfileStackParamList>();
@@ -21,5 +27,8 @@ export const ProfileStackNavigator: React.FC = () => (
     <Stack.Screen name="ProfileAchievements" component={ProfileAchievementsScreen} />
     <Stack.Screen name="ProfileSettings" component={ProfileSettingsScreen} />
     <Stack.Screen name="SubjectDetail" component={SubjectDetailScreen} />
+    <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+    <Stack.Screen name="VerifyOTP" component={VerifyOTPScreen} />
+    <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
   </Stack.Navigator>
 );

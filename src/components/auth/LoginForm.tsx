@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { View, Pressable, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { Eye, EyeOff, Mail } from 'lucide-react-native';
 import { Text, Input, Spacer, Button, SocialButton } from '../ui';
 import { useTheme } from '../../styles';
@@ -29,6 +30,7 @@ type LoginFormProps = {
 export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const { theme } = useTheme();
   const { t } = useTranslation('auth');
+  const navigation = useNavigation();
   const dispatch = useAppDispatch();
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -63,7 +65,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     [theme],
   );
 
-  const handleForgotPassword = () => {};
+  const handleForgotPassword = () => {
+    (navigation as any).navigate('ForgotPassword');
+  };
 
   const handleSocialLogin = (provider: 'google' | 'facebook') => {
     logger.debug('LoginForm', `Social login with ${provider}`);
