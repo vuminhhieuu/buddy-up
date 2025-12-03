@@ -155,9 +155,11 @@ export function profileToCardData(profile: BuddyProfile): BuddyCardData {
     i18n.t('card.notUpdated', { ns: 'buddy' });
 
   // Format available times with icons
+  // Ensure available_times_detail exists and is an array to prevent errors
+  const availableTimesDetail = profile.available_times_detail || [];
   const availableTimes = profile.available_times.map((time, index) => ({
     icon: getAvailableTimeIcon(time),
-    text: profile.available_times_detail[index] || time,
+    text: availableTimesDetail[index] || time,
   }));
 
   // Format learning style

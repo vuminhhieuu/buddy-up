@@ -4,15 +4,11 @@
  */
 
 import { supabase } from '../../config/supabase';
-import type {
-  BuddyFilters,
-  BuddyProfile,
-  BuddySearchResult,
-  PaginationOptions,
-} from '../../types/buddy';
+import type { BuddyFilters, BuddySearchResult, PaginationOptions } from '../../types/buddy';
 import { DEFAULT_PAGE, DEFAULT_PAGE_LIMIT } from '../../constants/buddy';
 import { logger } from '../../utils/logger';
 import { getExcludedUserIds } from './connections';
+import { normalizeProfile, type SupabaseProfileRow } from './normalize';
 
 /**
  * Search buddies based on filters
@@ -101,9 +97,10 @@ export async function searchBuddies(
     }
 
     const excludedSet = new Set(excludedIds);
-    let profiles = ((data || []) as BuddyProfile[]).filter(
-      (profile) => !excludedSet.has(profile.user_id),
-    );
+    // Normalize profiles to ensure all fields have proper default values
+    const profiles = (data || [])
+      .map((row) => normalizeProfile(row as SupabaseProfileRow))
+      .filter((profile) => !excludedSet.has(profile.user_id));
 
     const filteredCount = profiles.length;
     const totalCount = count ? Math.max(0, count - (excludedIds.length - 1)) : filteredCount;
