@@ -13,9 +13,10 @@ import { useTheme } from '../../styles';
 import { useAppSelector } from '../../store/hooks';
 import { fetchHomeDashboard, type HomeDashboardData } from '../../services/home';
 import { useTranslation } from 'react-i18next';
-import { useNavigation, type NavigationProp } from '@react-navigation/native';
+import { useNavigation, type NavigationProp, useFocusEffect } from '@react-navigation/native';
 import type { MainTabParamList } from '../../navigation/MainTabsNavigator';
 import { logger } from '../../utils/logger';
+import { useInvitations } from '../../hooks/useInvitations';
 
 export const HomeScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -29,6 +30,7 @@ export const HomeScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const { pendingCount, loadPendingCount } = useInvitations();
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -68,11 +70,22 @@ export const HomeScreen: React.FC = () => {
     }
   }, [loadDashboard, userId]);
 
+  // Reload dashboard when screen comes back into focus (e.g., after deleting a session)
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        void loadDashboard(false);
+        void loadPendingCount();
+      }
+    }, [loadDashboard, loadPendingCount, userId]),
+  );
+
   const handleRefresh = useCallback(() => {
     if (!userId) return;
     setRefreshing(true);
     void loadDashboard(false);
-  }, [loadDashboard, userId]);
+    void loadPendingCount();
+  }, [loadDashboard, loadPendingCount, userId]);
 
   const stats: StatItem[] = useMemo(() => {
     const weeklyHours = dashboard?.weeklyStudyHours ?? 0;
@@ -124,6 +137,10 @@ export const HomeScreen: React.FC = () => {
 
   const handleNotificationPress = () => {
     logger.debug('HomeScreen', 'Notification pressed');
+    const parent = (navigation as any).getParent?.();
+    if (parent) {
+      parent.navigate('Invitations');
+    }
   };
 
   const handleAvatarPress = () => {
@@ -132,10 +149,18 @@ export const HomeScreen: React.FC = () => {
 
   const handleSessionPress = (sessionId: string) => {
     logger.debug('HomeScreen', 'Session pressed:', sessionId);
+    const parent = (navigation as any).getParent?.();
+    if (parent) {
+      parent.navigate('SessionDetail', { sessionId });
+    }
   };
 
   const handleViewAllPress = () => {
     logger.debug('HomeScreen', 'View all pressed');
+    const parent = (navigation as any).getParent?.();
+    if (parent) {
+      parent.navigate('UpcomingSessionsAll');
+    }
   };
 
   const handleCreateSessionPress = () => {
@@ -194,6 +219,7 @@ export const HomeScreen: React.FC = () => {
         <HomeHeader
           name={dashboard?.profileName || authDisplayName || undefined}
           avatarUrl={profileData?.avatarUrl || dashboard?.avatarUrl}
+          notificationsCount={pendingCount}
           onNotificationPress={handleNotificationPress}
           onAvatarPress={handleAvatarPress}
         />

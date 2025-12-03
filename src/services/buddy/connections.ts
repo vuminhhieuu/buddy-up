@@ -373,3 +373,51 @@ export async function getExcludedUserIds(currentUserId: string): Promise<string[
     return [currentUserId];
   }
 }
+
+/**
+ * Fetch accepted buddies (profiles) for the given user.
+ * Returns an array of BuddyProfile for users that have an accepted connection with currentUserId.
+ */
+export async function fetchAcceptedBuddies(currentUserId: string) {
+  try {
+    const { data: connections, error } = await supabase
+      .from('connections')
+      .select('user_id_1, user_id_2')
+      .or(`user_id_1.eq.${currentUserId},user_id_2.eq.${currentUserId}`)
+      .eq('status', 'accepted')
+      .is('deleted_at', null);
+
+    if (error) {
+      logger.error('fetchAcceptedBuddies', 'Error fetching accepted connections:', error);
+      return [];
+    }
+
+    if (!connections || connections.length === 0) return [];
+
+    const otherIds = connections
+      .map((c: any) => (c.user_id_1 === currentUserId ? c.user_id_2 : c.user_id_1))
+      .filter((id) => !!id);
+
+    if (otherIds.length === 0) return [];
+
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('user_id', otherIds)
+      .is('deleted_at', null);
+
+    if (profilesError) {
+      logger.error(
+        'fetchAcceptedBuddies',
+        'Error fetching profiles for accepted buddies:',
+        profilesError,
+      );
+      return [];
+    }
+
+    return (profiles || []) as import('../../types/buddy').BuddyProfile[];
+  } catch (err) {
+    logger.error('fetchAcceptedBuddies', 'Unexpected error', err);
+    return [];
+  }
+}

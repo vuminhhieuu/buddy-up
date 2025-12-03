@@ -44,6 +44,11 @@ export type HomeSession = {
   buddyAvatar?: string | null;
 };
 
+// Extended session info with raw status from DB
+export type HomeSessionFull = HomeSession & {
+  status: 'scheduled' | 'ongoing' | 'completed' | 'canceled';
+};
+
 export type HomeDashboardData = {
   profileName: string;
   avatarUrl?: string | null;
@@ -73,7 +78,7 @@ const logWarning = (scope: string, error: { message: string }) => {
 function startOfWeek(date: Date) {
   const d = new Date(date);
   const day = d.getDay();
-  const diff = (day + MONDAY_OFFSET) % 7; // Monday = start
+  const diff = (day + MONDAY_OFFSET) % 7;
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() - diff);
   return d;
@@ -232,7 +237,9 @@ const isRelevantSession = (
 ) => {
   if (session.creator_id === userId) return true;
   const participants = participantsMap.get(session.id) || [];
-  return participants.some((participant) => participant.user_id === userId);
+  return participants.some(
+    (participant) => participant.user_id === userId && participant.status === 'accepted',
+  );
 };
 
 const selectBuddyUserId = (
@@ -324,11 +331,7 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
   );
 
   const authUserData = (authUserResult as Awaited<ReturnType<typeof supabase.auth.getUser>>).data;
-  const lastSignInAt =
-    authUserData?.user?.last_sign_in_at ??
-    // @ts-expect-error Supabase SDK might expose camelCase in some versions
-    authUserData?.user?.lastSignInAt ??
-    null;
+  const lastSignInAt = authUserData?.user?.last_sign_in_at ?? null;
 
   const syncedProgress = await ensureDailyLoginStreak(userId, progressData, now, lastSignInAt);
 
@@ -456,4 +459,194 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     sessionGoal,
     sessions: userUpcomingSessions.slice(0, UPCOMING_SESSIONS_DISPLAY_LIMIT).map(toHomeSession),
   };
+}
+
+// Fetch all upcoming sessions for the user (no display limit)
+export async function fetchUpcomingSessionsAll(userId: string): Promise<HomeSession[]> {
+  const now = new Date();
+  const upcomingEnd = new Date(now.getTime() + UPCOMING_DAYS_AHEAD * MS_PER_DAY);
+
+  const { data: upcomingSessionsResult, error: upcomingError } = await supabase
+    .from('study_sessions')
+    .select('id, title, subject, scheduled_start, scheduled_end, status, creator_id')
+    .gte('scheduled_start', now.toISOString())
+    .lte('scheduled_start', upcomingEnd.toISOString())
+    .order('scheduled_start', { ascending: true });
+
+  if (upcomingError) {
+    logger.warn('fetchUpcomingSessionsAll', upcomingError.message, upcomingError);
+  }
+
+  const upcomingSessionsAll = safeList<SupabaseSession>(
+    { data: upcomingSessionsResult, error: upcomingError },
+    'upcomingSessionsAll',
+  );
+
+  const sessionIds = upcomingSessionsAll.map((s) => s.id);
+  const participantsMap = new Map<string, SessionParticipant[]>();
+  if (sessionIds.length > 0) {
+    const { data: participantsData } = await supabase
+      .from('study_session_participants')
+      .select('session_id, user_id, status')
+      .in('session_id', sessionIds);
+    participantsData?.forEach((participant) => {
+      const list = participantsMap.get(participant.session_id) || [];
+      list.push(participant);
+      participantsMap.set(participant.session_id, list);
+    });
+  }
+
+  const filtered = upcomingSessionsAll
+    .filter((session) => isRelevantSession(session as SupabaseSession, participantsMap, userId))
+    .sort(
+      (a: SupabaseSession, b: SupabaseSession) =>
+        new Date(a.scheduled_start).getTime() - new Date(b.scheduled_start).getTime(),
+    ) as SupabaseSession[];
+
+  const buddyUserIds = new Set<string>();
+  filtered.forEach((session) => {
+    const buddyId = selectBuddyUserId(session, participantsMap, userId);
+    if (buddyId) buddyUserIds.add(buddyId);
+  });
+
+  const buddyProfiles = new Map<string, ProfilePreview>();
+  if (buddyUserIds.size > 0) {
+    const { data: buddyProfilesData, error: buddyProfilesError } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, avatar_url')
+      .in('user_id', Array.from(buddyUserIds));
+    if (buddyProfilesError) {
+      logger.warn(
+        'fetchUpcomingSessionsAll.profiles',
+        buddyProfilesError.message,
+        buddyProfilesError,
+      );
+    }
+    buddyProfilesData?.forEach((profile) => {
+      buddyProfiles.set(profile.user_id, profile);
+    });
+  }
+
+  const toHomeSession = (session: SupabaseSession): HomeSession => {
+    const buddyId = selectBuddyUserId(session, participantsMap, userId);
+    const buddyProfile = buddyId ? buddyProfiles.get(buddyId) : undefined;
+    return {
+      id: session.id,
+      title: session.title,
+      subject: session.subject,
+      scheduledStart: session.scheduled_start,
+      scheduledEnd: session.scheduled_end,
+      buddyName: buddyProfile?.display_name || undefined,
+      buddyAvatar: buddyProfile?.avatar_url || undefined,
+    };
+  };
+
+  return filtered.map(toHomeSession);
+}
+
+// Fetch recent (past) and upcoming sessions (future) combined for the user, without display limit
+export async function fetchAllSessionsForUser(userId: string): Promise<HomeSessionFull[]> {
+  const now = new Date();
+  const upcomingEnd = new Date(now.getTime() + UPCOMING_DAYS_AHEAD * MS_PER_DAY);
+  const streakWindowStart = new Date(now.getTime() - WEEK_END_OFFSET * MS_PER_DAY);
+
+  // Recent sessions up to now
+  const { data: recentSessionsResult, error: recentError } = await supabase
+    .from('study_sessions')
+    .select('id, title, subject, scheduled_start, scheduled_end, status, creator_id')
+    .gte('scheduled_start', streakWindowStart.toISOString())
+    .lte('scheduled_start', now.toISOString())
+    .order('scheduled_start', { ascending: true });
+
+  if (recentError) {
+    logger.warn('fetchAllSessionsForUser.recent', recentError.message, recentError);
+  }
+
+  // Upcoming sessions from now to upcomingEnd
+  const { data: upcomingSessionsResult, error: upcomingError } = await supabase
+    .from('study_sessions')
+    .select('id, title, subject, scheduled_start, scheduled_end, status, creator_id')
+    .gte('scheduled_start', now.toISOString())
+    .lte('scheduled_start', upcomingEnd.toISOString())
+    .order('scheduled_start', { ascending: true });
+
+  if (upcomingError) {
+    logger.warn('fetchAllSessionsForUser.upcoming', upcomingError.message, upcomingError);
+  }
+
+  const recentSessionsAll = safeList<SupabaseSession>(
+    { data: recentSessionsResult, error: recentError },
+    'recentSessionsAll',
+  );
+  const upcomingSessionsAll = safeList<SupabaseSession>(
+    { data: upcomingSessionsResult, error: upcomingError },
+    'upcomingSessionsAllFull',
+  );
+
+  const combined = [...recentSessionsAll, ...upcomingSessionsAll] as SupabaseSession[];
+  const sessionIds = combined.map((s) => s.id);
+
+  // Build participants map
+  const participantsMap = new Map<string, SessionParticipant[]>();
+  if (sessionIds.length > 0) {
+    const { data: participantsData } = await supabase
+      .from('study_session_participants')
+      .select('session_id, user_id, status')
+      .in('session_id', sessionIds);
+    participantsData?.forEach((participant) => {
+      const list = participantsMap.get(participant.session_id) || [];
+      list.push(participant);
+      participantsMap.set(participant.session_id, list);
+    });
+  }
+
+  // Filter sessions relevant to the user
+  const filtered = combined
+    .filter((session) => isRelevantSession(session as SupabaseSession, participantsMap, userId))
+    .sort(
+      (a: SupabaseSession, b: SupabaseSession) =>
+        new Date(a.scheduled_start).getTime() - new Date(b.scheduled_start).getTime(),
+    ) as SupabaseSession[];
+
+  // Collect buddy profiles
+  const buddyUserIds = new Set<string>();
+  filtered.forEach((session) => {
+    const buddyId = selectBuddyUserId(session, participantsMap, userId);
+    if (buddyId) buddyUserIds.add(buddyId);
+  });
+
+  const buddyProfiles = new Map<string, ProfilePreview>();
+  if (buddyUserIds.size > 0) {
+    const { data: buddyProfilesData, error: buddyProfilesError } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, avatar_url')
+      .in('user_id', Array.from(buddyUserIds));
+    if (buddyProfilesError) {
+      logger.warn(
+        'fetchAllSessionsForUser.profiles',
+        buddyProfilesError.message,
+        buddyProfilesError,
+      );
+    }
+    buddyProfilesData?.forEach((profile) => {
+      buddyProfiles.set(profile.user_id, profile);
+    });
+  }
+
+  const toHomeSessionFull = (session: SupabaseSession): HomeSessionFull => {
+    const buddyId = selectBuddyUserId(session, participantsMap, userId);
+    const buddyProfile = buddyId ? buddyProfiles.get(buddyId) : undefined;
+    return {
+      id: session.id,
+      title: session.title,
+      subject: session.subject,
+      scheduledStart: session.scheduled_start,
+      scheduledEnd: session.scheduled_end,
+      buddyName: buddyProfile?.display_name || undefined,
+      buddyAvatar: buddyProfile?.avatar_url || undefined,
+      status: (session.status as any) ?? 'scheduled',
+    };
+  };
+
+  return filtered.map(toHomeSessionFull);
 }
