@@ -17,3 +17,6 @@ export * from './stats';
 
 // Updates
 export * from './update';
+
+// Delete
+export * from './delete';

@@ -34,6 +34,10 @@ export async function saveStepForUser(
     processedPayload.avatar_url = processedPayload.avatarUri;
     delete processedPayload.avatarUri;
   }
+  if (processedPayload.learning_interests !== undefined) {
+    processedPayload.interests = processedPayload.learning_interests;
+    delete processedPayload.learning_interests;
+  }
   Object.keys(processedPayload).forEach((k) => {
     const v = processedPayload[k];
     if (v === undefined) delete processedPayload[k];
