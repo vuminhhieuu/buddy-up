@@ -11,3 +11,6 @@ export * from './rooms';
 
 // Messages
 export * from './messages';
+
+// Conversations
+export * from './conversations';

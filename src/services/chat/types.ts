@@ -65,3 +65,58 @@ export interface SendMessageResponse {
   error?: string;
   errorCode?: 'INVALID_CHAT' | 'UNAUTHORIZED' | 'NETWORK_ERROR' | 'PERMISSION_DENIED';
 }
+
+/**
+ * Response from fetching messages
+ */
+export interface FetchMessagesResponse {
+  success: boolean;
+  messages?: Message[];
+  error?: string;
+  errorCode?: 'INVALID_CHAT' | 'UNAUTHORIZED' | 'NETWORK_ERROR' | 'PERMISSION_DENIED';
+}
+
+/**
+ * Chat conversation with last message and participant info
+ */
+export interface ChatConversation {
+  chatId: string;
+  type: 'direct' | 'group';
+  title: string | null;
+  lastMessage: Message | null;
+  lastMessageAt: string | null;
+  unreadCount: number;
+  participantId: string | null; // For direct chats: the other user's ID
+  participantName: string | null; // For direct chats: the other user's display name
+  participantAvatar: string | null; // For direct chats: the other user's avatar
+  updatedAt: string;
+}
+
+/**
+ * Response from fetching user conversations
+ */
+export interface FetchConversationsResponse {
+  success: boolean;
+  conversations?: ChatConversation[];
+  error?: string;
+  errorCode?: 'UNAUTHORIZED' | 'NETWORK_ERROR' | 'PERMISSION_DENIED';
+}
+
+/**
+ * Chat participant info (for direct chats)
+ */
+export interface ChatParticipantInfo {
+  userId: string;
+  displayName: string;
+  avatarUrl: string | null;
+}
+
+/**
+ * Response from getting chat participant info
+ */
+export interface GetParticipantInfoResponse {
+  success: boolean;
+  participant?: ChatParticipantInfo;
+  error?: string;
+  errorCode?: 'INVALID_CHAT' | 'UNAUTHORIZED' | 'NETWORK_ERROR' | 'PERMISSION_DENIED';
+}
