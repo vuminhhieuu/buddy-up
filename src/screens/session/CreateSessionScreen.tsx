@@ -9,18 +9,26 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  Alert,
+  Modal,
 } from 'react-native';
 import { ScreenContainer } from '../../components/ui/ScreenContainer/ScreenContainer';
 import { Input } from '../../components/ui/Input/Input';
 import { Button } from '../../components/ui/Button/Button';
 import { Text } from '../../components/ui/Text/Text';
 import { useTheme } from '../../styles';
-import { ArrowLeft } from 'lucide-react-native';
+import { ArrowLeft, Calendar, Clock } from 'lucide-react-native';
+import { BackButton } from '../../components/navigation/BackButton';
 import { useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTranslation } from 'react-i18next';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useAppSelector } from '../../store/hooks';
+import { createStudySession } from '../../services/session/create';
+import { fetchAcceptedBuddies } from '../../services/buddy/connections';
+import { showSuccessToast, showErrorToast } from '../../utils/toast';
+import { logger } from '../../utils/logger';
+import { formatDateTimeDDMMYYYYHHMM } from '../../utils/date';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Avatar } from '../../components/ui/Avatar/Avatar';
 
@@ -39,15 +47,157 @@ export const CreateSessionScreen: React.FC = () => {
   const [dateObj, setDateObj] = useState<Date | null>(null);
   const [timeObj, setTimeObj] = useState<Date | null>(null);
   const [duration, setDuration] = useState('90');
-  const [description, setDescription] = useState('');
+  const [customDuration, setCustomDuration] = useState('');
+  const [statusText, setStatusText] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationType, setLocationType] = useState<'online' | 'offline'>('online');
   const [link, setLink] = useState('');
   const [selectedBuddyIds, setSelectedBuddyIds] = useState<string[]>([]);
+  const [showBuddyModal, setShowBuddyModal] = useState(false);
 
   const buddies = useAppSelector((s) => s.buddy.results ?? []);
+  const userId = useAppSelector((s) => s.auth.userId);
 
-  const handleCreate = () => {
-    navigation.goBack();
+  const [acceptedBuddies, setAcceptedBuddies] = React.useState<
+    import('../../types/buddy').BuddyProfile[]
+  >([]);
+  const acceptedBuddyIds = React.useMemo(
+    () => new Set(acceptedBuddies.map((b) => b.user_id)),
+    [acceptedBuddies],
+  );
+
+  const getValidSelectedBuddyIds = () => selectedBuddyIds.filter((id) => acceptedBuddyIds.has(id));
+
+  React.useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (!userId) return;
+      const list = await fetchAcceptedBuddies(userId);
+      if (mounted) setAcceptedBuddies(list || []);
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [userId]);
+
+  const handleCreateShared = async () => {
+    if (!title.trim()) {
+      showErrorToast(t('errors.titleRequired'));
+      return;
+    }
+    if (!date || !time) {
+      showErrorToast(t('errors.dateTimeRequired'));
+      return;
+    }
+
+    let startDate: Date | null = null;
+    if (dateObj && timeObj) {
+      startDate = new Date(
+        dateObj.getFullYear(),
+        dateObj.getMonth(),
+        dateObj.getDate(),
+        timeObj.getHours(),
+        timeObj.getMinutes(),
+      );
+    } else {
+      const m = date.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      const tm = time.match(/^(\d{1,2}):(\d{2})$/);
+      if (m && tm) {
+        const day = parseInt(m[1], 10);
+        const month = parseInt(m[2], 10) - 1;
+        const year = parseInt(m[3], 10);
+        const hh = parseInt(tm[1], 10);
+        const mm = parseInt(tm[2], 10);
+        startDate = new Date(year, month, day, hh, mm);
+      }
+    }
+
+    if (!startDate) {
+      showErrorToast(t('errors.startDateParseFailed'));
+      return;
+    }
+
+    if (!userId) {
+      showErrorToast(t('errors.loginRequired'));
+      return;
+    }
+
+    const now = new Date();
+    if (startDate.getTime() < now.getTime()) {
+      showErrorToast(t('errorPastSession'));
+      return;
+    }
+
+    const durationMin =
+      duration === 'custom'
+        ? Number.parseInt(customDuration, 10) || 90
+        : Number.parseInt(duration ?? '90', 10) || 90;
+    const endDate = new Date(startDate.getTime() + durationMin * 60 * 1000);
+    const payload = {
+      title: title.trim(),
+      subject: subject || null,
+      scheduled_start: startDate.toISOString(),
+      scheduled_end: endDate.toISOString(),
+      creator_id: userId,
+      location: locationType === 'online' ? link || null : null,
+      description: statusText?.trim() ? statusText.trim() : null,
+      status: 'scheduled',
+    };
+
+    setIsSubmitting(true);
+    try {
+      logger.debug(
+        'CreateSessionScreen',
+        'startDate local',
+        startDate.toString(),
+        'ISO',
+        startDate.toISOString(),
+      );
+      logger.debug(
+        'CreateSessionScreen',
+        'endDate local',
+        endDate.toString(),
+        'ISO',
+        endDate.toISOString(),
+      );
+      logger.debug(
+        'CreateSessionScreen',
+        'createStudySession payload:',
+        payload,
+        'participants:',
+        selectedBuddyIds,
+      );
+      const validParticipantIds = getValidSelectedBuddyIds();
+      const { data, error } = await createStudySession(
+        payload,
+        validParticipantIds.length ? validParticipantIds : undefined,
+      );
+      if (error || !data) {
+        const msg = (error && (error.message || JSON.stringify(error))) || t('errors.createFailed');
+        showErrorToast(msg);
+        logger.error('CreateSessionScreen', 'createStudySession error:', error);
+        return;
+      }
+
+      showSuccessToast(t('successTitle'));
+
+      const sessionDateTime = formatDateTimeDDMMYYYYHHMM(startDate);
+
+      (navigation as any).navigate('CreateSessionSuccess', {
+        sessionId: data.id,
+        sessionTitle: payload.title,
+        sessionDateTime,
+        scheduledStartIso: startDate.toISOString(),
+        scheduledEndIso: endDate.toISOString(),
+        duration: String(durationMin),
+      });
+    } catch (err: any) {
+      logger.error('CreateSessionScreen', 'createStudySession unexpected error', err);
+      showErrorToast((err && (err.message || JSON.stringify(err))) || t('errors.createUnexpected'));
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const onChangeDate = (event: any, selected?: Date) => {
@@ -58,20 +208,59 @@ export const CreateSessionScreen: React.FC = () => {
         selected.getMonth() + 1,
       ).padStart(2, '0')}/${selected.getFullYear()}`;
       setDate(formatted);
+      if (timeObj) {
+        const now = new Date();
+        const candidate = new Date(
+          selected.getFullYear(),
+          selected.getMonth(),
+          selected.getDate(),
+          timeObj.getHours(),
+          timeObj.getMinutes(),
+        );
+        if (candidate < now) {
+          const hh = String(now.getHours()).padStart(2, '0');
+          const mm = String(now.getMinutes()).padStart(2, '0');
+          setTimeObj(now);
+          setTime(`${hh}:${mm}`);
+          Alert.alert(t('invalidTimeTitle'), t('invalidTimeReset'));
+        }
+      }
     }
   };
 
   const onChangeTime = (event: any, selected?: Date) => {
     setShowTimePicker(Platform.OS === 'ios');
     if (selected) {
-      setTimeObj(selected);
-      const hh = String(selected.getHours()).padStart(2, '0');
-      const mm = String(selected.getMinutes()).padStart(2, '0');
+      const base = dateObj ?? new Date();
+      const candidate = new Date(
+        base.getFullYear(),
+        base.getMonth(),
+        base.getDate(),
+        selected.getHours(),
+        selected.getMinutes(),
+      );
+      const now = new Date();
+      if (base.toDateString() === now.toDateString() && candidate < now) {
+        const hhNow = String(now.getHours()).padStart(2, '0');
+        const mmNow = String(now.getMinutes()).padStart(2, '0');
+        setTimeObj(now);
+        setTime(`${hhNow}:${mmNow}`);
+        Alert.alert(t('invalidTimeTitle'), t('invalidTimeChoose'));
+        return;
+      }
+
+      setTimeObj(candidate);
+      const hh = String(candidate.getHours()).padStart(2, '0');
+      const mm = String(candidate.getMinutes()).padStart(2, '0');
       setTime(`${hh}:${mm}`);
     }
   };
 
   const toggleBuddy = (id: string) => {
+    if (!acceptedBuddyIds.has(id)) {
+      showErrorToast(t('errors.notBuddies'));
+      return;
+    }
     setSelectedBuddyIds((prev) =>
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
     );
@@ -81,250 +270,511 @@ export const CreateSessionScreen: React.FC = () => {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
     >
-      <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-        <ScreenContainer style={{ backgroundColor: theme.colors.surface }}>
-          <View style={styles.headerRow}>
-            <Pressable
-              onPress={() => navigation.goBack()}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.back')}
-              style={({ pressed }) => [
-                {
-                  width: 35,
-                  height: 35,
-                  borderRadius: theme.radius.md,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  backgroundColor: theme.colors.background,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                  marginBottom: theme.spacing[2],
-                  alignSelf: 'flex-start',
-                  opacity: pressed ? 0.7 : 1,
-                },
-              ]}
+      <ScreenContainer style={{ backgroundColor: theme.colors.surface }}>
+        <View style={styles.headerRow}>
+          <BackButton
+            onPress={() => navigation.goBack()}
+            accessibilityLabel={t('common.back')}
+            style={{
+              width: 35,
+              height: 35,
+              borderRadius: theme.radius.md,
+              backgroundColor: theme.colors.background,
+              borderWidth: 1,
+              borderColor: theme.colors.border,
+              marginBottom: theme.spacing[2],
+              alignSelf: 'flex-start',
+              justifyContent: 'center',
+              alignItems: 'center',
+              elevation: 0,
+              shadowOpacity: 0,
+            }}
+          />
+          <Text variant="h5" style={{ fontWeight: '700' as const }}>
+            {t('title')}
+          </Text>
+          {/* spacer to keep title centered */}
+          <View style={{ width: 40 }} />
+        </View>
+
+        <KeyboardAwareScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{
+            flexGrow: 1,
+            marginTop: theme.spacing[6],
+            gap: theme.spacing[4],
+            paddingBottom: (insets.bottom ?? 0) + theme.spacing[8] + 100,
+          }}
+          keyboardShouldPersistTaps="handled"
+          enableOnAndroid={true}
+          enableAutomaticScroll={true}
+          extraScrollHeight={200}
+          showsVerticalScrollIndicator={false}
+        >
+          <Input
+            label={t('nameLabel')}
+            labelBold
+            placeholder={t('namePlaceholder')}
+            value={title}
+            onChangeText={setTitle}
+          />
+
+          <Input
+            label={t('subjectLabel')}
+            labelBold
+            placeholder={t('subjectPlaceholder')}
+            value={subject}
+            onChangeText={setSubject}
+          />
+
+          <View>
+            <Text
+              variant="h6"
+              style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
             >
-              <ArrowLeft size={18} color={theme.colors.text.primary} />
-            </Pressable>
-            <Text variant="h5" style={{ fontWeight: '700' as const }}>
-              {t('title')}
+              {t('timeDateTitle')}
             </Text>
-            {/* spacer to keep title centered */}
-            <View style={{ width: 40 }} />
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <Pressable
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setShowDatePicker(true);
+                }}
+                style={{ flex: 1 }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: theme.colors.background,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                    borderRadius: theme.radius.md,
+                    paddingHorizontal: theme.spacing[4],
+                    paddingVertical: theme.spacing[3],
+                    gap: theme.spacing[2],
+                  }}
+                >
+                  <Calendar size={20} color={theme.colors.primary[500]} />
+                  <Text
+                    style={{
+                      flex: 1,
+                      color: date ? theme.colors.text.primary : theme.colors.text.tertiary,
+                    }}
+                  >
+                    {date || t('datePlaceholder')}
+                  </Text>
+                </View>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setShowTimePicker(true);
+                }}
+                style={{ width: 130 }}
+              >
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    backgroundColor: theme.colors.background,
+                    borderWidth: 1,
+                    borderColor: theme.colors.border,
+                    borderRadius: theme.radius.md,
+                    paddingHorizontal: theme.spacing[3],
+                    paddingVertical: theme.spacing[3],
+                    gap: theme.spacing[2],
+                  }}
+                >
+                  <Clock size={20} color={theme.colors.primary[500]} />
+                  <Text
+                    style={{
+                      color: time ? theme.colors.text.primary : theme.colors.text.tertiary,
+                    }}
+                  >
+                    {time || t('timePlaceholder')}
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+            {showDatePicker ? (
+              <DateTimePicker
+                value={dateObj || new Date()}
+                mode="date"
+                display={Platform.OS === 'android' ? 'calendar' : 'spinner'}
+                minimumDate={new Date()}
+                onChange={onChangeDate}
+              />
+            ) : null}
+            {showTimePicker ? (
+              <DateTimePicker
+                value={timeObj || new Date()}
+                mode="time"
+                display={Platform.OS === 'android' ? 'spinner' : 'spinner'}
+                is24Hour
+                onChange={onChangeTime}
+              />
+            ) : null}
           </View>
 
-          <KeyboardAwareScrollView
-            contentContainerStyle={{ marginTop: theme.spacing[6], gap: theme.spacing[4] }}
-            keyboardShouldPersistTaps="handled"
-          >
-            <Input
-              label={t('nameLabel')}
-              placeholder={t('namePlaceholder')}
-              value={title}
-              onChangeText={setTitle}
-            />
-
-            <Input
-              label={t('subjectLabel')}
-              placeholder={t('subjectPlaceholder')}
-              value={subject}
-              onChangeText={setSubject}
-            />
-
-            <View>
-              <Text
-                variant="h6"
-                style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+          <View>
+            <Text
+              variant="h6"
+              style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+            >
+              {t('durationTitle')}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 10, flexWrap: 'wrap' }}>
+              {['30', '60', '90', '120', '150', '180'].map((min) => (
+                <Pressable
+                  key={min}
+                  onPress={() => {
+                    setDuration(min);
+                    setCustomDuration('');
+                  }}
+                  style={{
+                    paddingHorizontal: theme.spacing[4],
+                    paddingVertical: theme.spacing[3],
+                    borderRadius: theme.radius.md,
+                    borderWidth: 1.5,
+                    borderColor: duration === min ? theme.colors.primary[500] : theme.colors.border,
+                    backgroundColor:
+                      duration === min ? theme.colors.primary[50] : theme.colors.background,
+                    minWidth: 70,
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text
+                    color={duration === min ? 'primary' : undefined}
+                    style={{
+                      fontWeight: duration === min ? ('600' as const) : ('400' as const),
+                    }}
+                  >
+                    {min} {t('durationUnit')}
+                  </Text>
+                </Pressable>
+              ))}
+              <Pressable
+                onPress={() => setDuration('custom')}
+                style={{
+                  paddingHorizontal: theme.spacing[4],
+                  paddingVertical: theme.spacing[3],
+                  borderRadius: theme.radius.md,
+                  borderWidth: 1.5,
+                  borderColor:
+                    duration === 'custom' ? theme.colors.primary[500] : theme.colors.border,
+                  backgroundColor:
+                    duration === 'custom' ? theme.colors.primary[50] : theme.colors.background,
+                  minWidth: 70,
+                  alignItems: 'center',
+                }}
               >
-                {t('timeDateTitle')}
-              </Text>
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                <View style={{ flex: 1 }}>
-                  <Pressable onPress={() => setShowDatePicker(true)}>
-                    <Input
-                      placeholder={t('datePlaceholder')}
-                      value={date}
-                      onChangeText={setDate}
-                      editable={false}
-                    />
-                  </Pressable>
-                </View>
-                <View style={{ width: 110 }}>
-                  <Pressable onPress={() => setShowTimePicker(true)}>
-                    <Input
-                      placeholder={t('timePlaceholder')}
-                      value={time}
-                      onChangeText={setTime}
-                      editable={false}
-                    />
-                  </Pressable>
-                </View>
-              </View>
-              {showDatePicker ? (
-                <DateTimePicker
-                  value={dateObj || new Date()}
-                  mode="date"
-                  display={Platform.OS === 'android' ? 'calendar' : 'spinner'}
-                  onChange={onChangeDate}
-                />
-              ) : null}
-              {showTimePicker ? (
-                <DateTimePicker
-                  value={timeObj || new Date()}
-                  mode="time"
-                  display={Platform.OS === 'android' ? 'spinner' : 'spinner'}
-                  is24Hour
-                  onChange={onChangeTime}
-                />
-              ) : null}
+                <Text
+                  color={duration === 'custom' ? 'primary' : undefined}
+                  style={{
+                    fontWeight: duration === 'custom' ? ('600' as const) : ('400' as const),
+                  }}
+                >
+                  {t('durationCustom') || 'Khác'}
+                </Text>
+              </Pressable>
             </View>
-
-            <View>
-              <Text
-                variant="h6"
-                style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+            {duration === 'custom' && (
+              <View
+                style={{
+                  marginTop: theme.spacing[3],
+                }}
               >
-                {t('durationTitle')}
-              </Text>
-              <View style={{ flexDirection: 'row', gap: 12, alignItems: 'center' }}>
-                <View style={{ flex: 1 }}>
+                <Text variant="body" color="tertiary" style={{ marginBottom: theme.spacing[2] }}>
+                  {t('customDurationDescription')}
+                </Text>
+                <View style={{ width: 120 }}>
                   <Input
                     placeholder={t('durationPlaceholder')}
                     keyboardType="numeric"
-                    value={duration}
-                    onChangeText={setDuration}
+                    value={customDuration}
+                    onChangeText={setCustomDuration}
+                    right={
+                      <Text color="tertiary" style={{ fontWeight: '500' as const }}>
+                        {t('durationUnit')}
+                      </Text>
+                    }
                   />
                 </View>
-                <Text>{t('durationUnit')}</Text>
               </View>
-            </View>
+            )}
+          </View>
 
-            <Input
-              label={t('descriptionLabel')}
-              placeholder={t('descriptionPlaceholder')}
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              style={{ height: 120, textAlignVertical: 'top' }}
-            />
+          <Input
+            label={t('statusLabel')}
+            labelBold
+            placeholder={t('statusPlaceholder')}
+            value={statusText}
+            onChangeText={setStatusText}
+            multiline
+            style={{ height: 120, textAlignVertical: 'top' }}
+          />
 
-            <View>
-              <Text
-                variant="h6"
-                style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
-              >
-                {t('locationTitle')}
-              </Text>
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                <Pressable onPress={() => setLocationType('online')}>
-                  <View
-                    style={[
-                      styles.locationPill,
-                      locationType === 'online' && {
-                        borderColor: theme.colors.primary[500],
-                        backgroundColor: theme.colors.surface,
-                      },
-                    ]}
-                  >
-                    <Text color={locationType === 'online' ? 'primary' : 'tertiary'}>
-                      {t('online')}
-                    </Text>
-                  </View>
-                </Pressable>
-                <Pressable onPress={() => setLocationType('offline')}>
-                  <View
-                    style={[
-                      styles.locationPill,
-                      locationType === 'offline' && {
-                        borderColor: theme.colors.primary[500],
-                        backgroundColor: theme.colors.surface,
-                      },
-                    ]}
-                  >
-                    <Text color={locationType === 'offline' ? 'primary' : 'tertiary'}>
-                      {t('offline')}
-                    </Text>
-                  </View>
-                </Pressable>
-              </View>
-            </View>
-
-            {locationType === 'online' ? (
-              <Input
-                label={t('linkLabel')}
-                placeholder={t('linkPlaceholder')}
-                value={link}
-                onChangeText={setLink}
-              />
-            ) : null}
-
-            <View>
-              <Text
-                variant="h6"
-                style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
-              >
-                {t('buddiesTitle')}
-              </Text>
-              {buddies.length === 0 ? (
-                <Text variant="caption" color="tertiary">
-                  {t('noBuddies')}
-                </Text>
-              ) : (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={{ paddingVertical: theme.spacing[2] }}
+          <View>
+            <Text
+              variant="h6"
+              style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+            >
+              {t('locationTitle')}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <Pressable onPress={() => setLocationType('online')}>
+                <View
+                  style={[
+                    styles.locationPill,
+                    { borderColor: theme.colors.border },
+                    locationType === 'online' && {
+                      borderColor: theme.colors.primary[500],
+                      backgroundColor: theme.colors.surface,
+                    },
+                  ]}
                 >
-                  {buddies.map((b) => {
+                  <Text color={locationType === 'online' ? 'primary' : 'tertiary'}>
+                    {t('online')}
+                  </Text>
+                </View>
+              </Pressable>
+              <Pressable onPress={() => setLocationType('offline')}>
+                <View
+                  style={[
+                    styles.locationPill,
+                    { borderColor: theme.colors.border },
+                    locationType === 'offline' && {
+                      borderColor: theme.colors.primary[500],
+                      backgroundColor: theme.colors.surface,
+                    },
+                  ]}
+                >
+                  <Text color={locationType === 'offline' ? 'primary' : 'tertiary'}>
+                    {t('offline')}
+                  </Text>
+                </View>
+              </Pressable>
+            </View>
+          </View>
+
+          {locationType === 'online' ? (
+            <Input
+              label={t('linkLabel')}
+              labelBold
+              placeholder={t('linkPlaceholder')}
+              value={link}
+              onChangeText={setLink}
+            />
+          ) : null}
+
+          <View>
+            <Text
+              variant="h6"
+              style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+            >
+              {t('buddiesTitle')}
+            </Text>
+            {acceptedBuddies.length === 0 ? (
+              <Text variant="caption" color="tertiary">
+                {t('noBuddies')}
+              </Text>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ paddingVertical: theme.spacing[2] }}
+              >
+                {[...acceptedBuddies]
+                  .sort((a, b) => {
+                    const aSelected = selectedBuddyIds.includes(a.user_id);
+                    const bSelected = selectedBuddyIds.includes(b.user_id);
+                    if (aSelected && !bSelected) return -1;
+                    if (!aSelected && bSelected) return 1;
+                    return 0;
+                  })
+                  .map((b) => {
                     const selected = selectedBuddyIds.includes(b.user_id);
                     return (
                       <TouchableOpacity
                         key={b.user_id}
                         onPress={() => toggleBuddy(b.user_id)}
-                        style={{ marginRight: theme.spacing[4], alignItems: 'center' }}
+                        style={{ marginRight: theme.spacing[4] }}
                       >
-                        <Avatar
-                          uri={b.avatar_url || undefined}
-                          name={b.display_name}
-                          size="lg"
-                          style={
-                            selected
-                              ? { borderWidth: 2, borderColor: theme.colors.primary[500] }
-                              : undefined
-                          }
-                        />
-                        <Text
-                          variant="caption"
-                          style={{
-                            marginTop: theme.spacing[2],
-                            maxWidth: 80,
-                            textAlign: 'center',
-                          }}
-                        >
-                          {b.display_name}
-                        </Text>
+                        <View style={{ alignItems: 'center' }}>
+                          <View
+                            style={{
+                              borderRadius: 999,
+                              borderWidth: selected ? 3 : 0,
+                              borderColor: selected ? theme.colors.primary[500] : 'transparent',
+                              padding: 2,
+                            }}
+                          >
+                            <Avatar
+                              uri={b.avatar_url || undefined}
+                              name={b.display_name}
+                              size="lg"
+                            />
+                          </View>
+                          <Text
+                            variant="caption"
+                            style={{
+                              marginTop: theme.spacing[2],
+                              maxWidth: 80,
+                              textAlign: 'center',
+                              color: selected ? theme.colors.primary[600] : undefined,
+                              fontWeight: selected ? ('600' as const) : undefined,
+                            }}
+                          >
+                            {b.display_name}
+                          </Text>
+                        </View>
                       </TouchableOpacity>
                     );
                   })}
-                </ScrollView>
-              )}
-            </View>
-          </KeyboardAwareScrollView>
-          {/* Footer fixed at bottom (outside the scrollable content) so it always sits at screen bottom */}
-          <View
-            style={{
-              paddingTop: theme.spacing[2],
-              paddingBottom: (insets.bottom ?? 0) + theme.spacing[2],
-              width: '100%',
-              backgroundColor: theme.colors.surface,
-            }}
-          >
-            <Button label={t('createButton')} onPress={handleCreate} variant="primary" size="lg" />
+                <TouchableOpacity
+                  onPress={() => setShowBuddyModal(true)}
+                  style={{ marginRight: theme.spacing[4] }}
+                >
+                  <View style={{ alignItems: 'center' }}>
+                    <View
+                      style={{
+                        width: theme.sizes.avatar.lg,
+                        height: theme.sizes.avatar.lg,
+                        borderRadius: 999,
+                        backgroundColor: theme.colors.background,
+                        borderWidth: 2,
+                        borderColor: theme.colors.border,
+                        borderStyle: 'dashed',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <Text
+                        style={{ fontSize: 32, color: theme.colors.text.tertiary, lineHeight: 32 }}
+                      >
+                        +
+                      </Text>
+                    </View>
+                    <Text
+                      variant="caption"
+                      color="tertiary"
+                      style={{ marginTop: theme.spacing[2], maxWidth: 80, textAlign: 'center' }}
+                    >
+                      {t('viewAll')}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </ScrollView>
+            )}
           </View>
-        </ScreenContainer>
-      </TouchableWithoutFeedback>
+          {/* Button inside the form at the very end for creating a shared session */}
+          <View style={{ marginTop: theme.spacing[8] }}>
+            <Button
+              label={t('createSharedButton')}
+              onPress={handleCreateShared}
+              variant="primary"
+              size="lg"
+              style={{ width: '100%' }}
+              disabled={isSubmitting}
+            />
+          </View>
+        </KeyboardAwareScrollView>
+        {/* Footer button removed per request */}
+
+        {/* Buddy Selection Modal */}
+        <Modal
+          visible={showBuddyModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowBuddyModal(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setShowBuddyModal(false)}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: theme.colors.border + '80',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+                <View
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: theme.radius.xl,
+                    padding: theme.spacing[6],
+                    width: '85%',
+                    maxHeight: '70%',
+                  }}
+                >
+                  <Text
+                    variant="h5"
+                    style={{ marginBottom: theme.spacing[4], fontWeight: '700' as const }}
+                  >
+                    {t('buddiesTitle')}
+                  </Text>
+
+                  <ScrollView style={{ maxHeight: 400 }}>
+                    {acceptedBuddies.map((b) => {
+                      const selected = selectedBuddyIds.includes(b.user_id);
+                      return (
+                        <TouchableOpacity
+                          key={b.user_id}
+                          onPress={() => toggleBuddy(b.user_id)}
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            paddingVertical: theme.spacing[3],
+                            borderBottomWidth: 1,
+                            borderBottomColor: theme.colors.border,
+                          }}
+                        >
+                          <View
+                            style={{
+                              borderRadius: 999,
+                              borderWidth: selected ? 3 : 0,
+                              borderColor: selected ? theme.colors.primary[500] : 'transparent',
+                              padding: 2,
+                              marginRight: theme.spacing[3],
+                            }}
+                          >
+                            <Avatar
+                              uri={b.avatar_url || undefined}
+                              name={b.display_name}
+                              size="md"
+                            />
+                          </View>
+                          <Text
+                            variant="body"
+                            style={{
+                              flex: 1,
+                              fontWeight: selected ? ('600' as const) : ('400' as const),
+                              color: selected ? theme.colors.primary[600] : undefined,
+                            }}
+                          >
+                            {b.display_name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </ScrollView>
+
+                  <Button
+                    label="OK"
+                    onPress={() => setShowBuddyModal(false)}
+                    variant="primary"
+                    size="md"
+                    style={{ marginTop: theme.spacing[4] }}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+      </ScreenContainer>
     </KeyboardAvoidingView>
   );
 };
@@ -340,7 +790,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#E6E6E6',
+    borderColor: 'transparent',
   },
 });
 

@@ -13,7 +13,7 @@ import { useTheme } from '../../styles';
 import { useAppSelector } from '../../store/hooks';
 import { fetchHomeDashboard, type HomeDashboardData } from '../../services/home';
 import { useTranslation } from 'react-i18next';
-import { useNavigation, type NavigationProp } from '@react-navigation/native';
+import { useNavigation, type NavigationProp, useFocusEffect } from '@react-navigation/native';
 import type { MainTabParamList } from '../../navigation/MainTabsNavigator';
 import { logger } from '../../utils/logger';
 
@@ -67,6 +67,15 @@ export const HomeScreen: React.FC = () => {
       setLoading(false);
     }
   }, [loadDashboard, userId]);
+
+  // Reload dashboard when screen comes back into focus (e.g., after deleting a session)
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        void loadDashboard(false);
+      }
+    }, [loadDashboard, userId]),
+  );
 
   const handleRefresh = useCallback(() => {
     if (!userId) return;
@@ -132,10 +141,18 @@ export const HomeScreen: React.FC = () => {
 
   const handleSessionPress = (sessionId: string) => {
     logger.debug('HomeScreen', 'Session pressed:', sessionId);
+    const parent = (navigation as any).getParent?.();
+    if (parent) {
+      parent.navigate('SessionDetail', { sessionId });
+    }
   };
 
   const handleViewAllPress = () => {
     logger.debug('HomeScreen', 'View all pressed');
+    const parent = (navigation as any).getParent?.();
+    if (parent) {
+      parent.navigate('UpcomingSessionsAll');
+    }
   };
 
   const handleCreateSessionPress = () => {
