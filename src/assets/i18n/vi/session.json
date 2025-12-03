@@ -51,5 +51,49 @@
     "4": "Thứ Năm",
     "5": "Thứ Sáu",
     "6": "Thứ Bảy"
+  },
+  "detail": {
+    "title": "Chi tiết buổi học",
+    "loading": "Đang tải...",
+    "date": "Ngày",
+    "time": "Thời gian",
+    "duration": "Thời lượng",
+    "remaining": "Còn lại",
+    "googleMeet": "Google Meet",
+    "joinMeeting": "Tham gia cuộc họp",
+    "members": "Thành viên",
+    "creator": "Người tạo",
+    "edit": "Chỉnh sửa",
+    "cancel": "Hủy buổi học",
+    "accept": "Chấp nhận",
+    "decline": "Từ chối",
+    "status": {
+      "cancelled": "Đã hủy",
+      "completed": "Đã kết thúc",
+      "ongoing": "Đang diễn ra",
+      "upcoming": "Sắp diễn ra",
+      "accepted": "Đã xác nhận ✓",
+      "invited": "Đã mời",
+      "declined": "Đã từ chối ✗"
+    },
+    "cancelConfirm": {
+      "title": "Hủy buổi học",
+      "message": "Bạn có chắc chắn muốn hủy buổi học này?",
+      "no": "Không",
+      "yes": "Hủy buổi học"
+    },
+    "toast": {
+      "linkCopied": "Đã sao chép link",
+      "cancelled": "Đã hủy buổi học",
+      "cancelFailed": "Không thể hủy buổi học",
+      "accepted": "Đã chấp nhận lời mời!",
+      "declined": "Đã từ chối lời mời!",
+      "meetingLinkNotFound": "Không tìm thấy link cuộc họp",
+      "cannotOpenLink": "Không thể mở link cuộc họp",
+      "sessionNotFound": "Không tìm thấy ID buổi học",
+      "loadFailed": "Không thể tải chi tiết buổi học"
+    },
+    "hours": "giờ",
+    "minutes": "phút"
   }
 }

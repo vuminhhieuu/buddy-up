@@ -586,6 +586,7 @@ export const CreateSessionScreen: React.FC = () => {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 style={{ paddingVertical: theme.spacing[2] }}
+                nestedScrollEnabled={true}
               >
                 {[...acceptedBuddies]
                   .sort((a, b) => {

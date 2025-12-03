@@ -237,7 +237,9 @@ const isRelevantSession = (
 ) => {
   if (session.creator_id === userId) return true;
   const participants = participantsMap.get(session.id) || [];
-  return participants.some((participant) => participant.user_id === userId);
+  return participants.some(
+    (participant) => participant.user_id === userId && participant.status === 'accepted',
+  );
 };
 
 const selectBuddyUserId = (
@@ -480,7 +482,7 @@ export async function fetchUpcomingSessionsAll(userId: string): Promise<HomeSess
   }
 
   const upcomingSessionsAll = safeList<SupabaseSession>(
-    upcomingSessionsResult as ListResult<SupabaseSession>,
+    { data: upcomingSessionsResult, error: upcomingError },
     'upcomingSessionsAll',
   );
 
@@ -577,11 +579,11 @@ export async function fetchAllSessionsForUser(userId: string): Promise<HomeSessi
   }
 
   const recentSessionsAll = safeList<SupabaseSession>(
-    recentSessionsResult as ListResult<SupabaseSession>,
+    { data: recentSessionsResult, error: recentError },
     'recentSessionsAll',
   );
   const upcomingSessionsAll = safeList<SupabaseSession>(
-    upcomingSessionsResult as ListResult<SupabaseSession>,
+    { data: upcomingSessionsResult, error: upcomingError },
     'upcomingSessionsAllFull',
   );
 

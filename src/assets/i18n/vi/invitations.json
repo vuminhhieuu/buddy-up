@@ -1,0 +1,10 @@
+{
+  "title": "Thông báo",
+  "invitedYou": "đã mời bạn tham gia",
+  "accept": "Chấp nhận",
+  "decline": "Từ chối",
+  "accepted": "Đã chấp nhận lời mời!",
+  "declined": "Đã từ chối lời mời!",
+  "noInvitations": "Không có thông báo nào",
+  "invitationText": "Bạn có một lời mời tham gia <1>{{title}}</1> từ <3>{{creatorName}}</3>"
+}

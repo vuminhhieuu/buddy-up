@@ -7,6 +7,7 @@ import { Button } from '../../components/ui/Button/Button';
 import { Avatar } from '../../components/ui/Avatar/Avatar';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Calendar, Clock, Timer, Users, Link as LinkIcon, Copy, X } from 'lucide-react-native';
+import { useTranslation } from 'react-i18next';
 import {
   fetchSessionDetail,
   SessionDetail,
@@ -16,19 +17,26 @@ import {
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
 import { logger } from '../../utils/logger';
 import { useAppSelector } from '../../store/hooks';
+import { useInvitations } from '../../hooks/useInvitations';
+import type { NavigationProp } from '@react-navigation/native';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 
 export const SessionDetailScreen: React.FC = () => {
+  const { t } = useTranslation('session');
   const { theme } = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute();
   const userId = useAppSelector((s) => s.auth.userId);
   const insets = useSafeAreaInsets();
+  const { acceptInvitation, declineInvitation } = useInvitations();
 
   const sessionId = (route.params as any)?.sessionId;
   const fromSuccess = (route.params as any)?.fromSuccess === true;
+  const readOnly = (route.params as any)?.readOnly === true;
 
   const [session, setSession] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     loadSession();
@@ -36,7 +44,7 @@ export const SessionDetailScreen: React.FC = () => {
 
   const loadSession = async () => {
     if (!sessionId) {
-      showErrorToast('Session ID not found');
+      showErrorToast(t('detail.toast.sessionNotFound'));
       navigation.goBack();
       return;
     }
@@ -44,7 +52,7 @@ export const SessionDetailScreen: React.FC = () => {
     setLoading(true);
     const { data, error } = await fetchSessionDetail(sessionId);
     if (error || !data) {
-      showErrorToast('Failed to load session details');
+      showErrorToast(t('detail.toast.loadFailed'));
       logger.error('SessionDetailScreen', 'Load error:', error);
       navigation.goBack();
       return;
@@ -56,12 +64,12 @@ export const SessionDetailScreen: React.FC = () => {
 
   const handleCopyLink = () => {
     // Copy to clipboard
-    showSuccessToast('Link copied to clipboard');
+    showSuccessToast(t('detail.toast.linkCopied'));
   };
 
   const handleJoinMeeting = async () => {
     if (!session?.location) {
-      showErrorToast('Không tìm thấy link cuộc họp');
+      showErrorToast(t('detail.toast.meetingLinkNotFound'));
       return;
     }
 
@@ -76,7 +84,7 @@ export const SessionDetailScreen: React.FC = () => {
       // Check if URL can be opened
       const canOpen = await Linking.canOpenURL(url);
       if (!canOpen) {
-        showErrorToast('Không thể mở link cuộc họp');
+        showErrorToast(t('detail.toast.cannotOpenLink'));
         logger.error('SessionDetailScreen', 'Cannot open URL:', url);
         return;
       }
@@ -84,7 +92,7 @@ export const SessionDetailScreen: React.FC = () => {
       await Linking.openURL(url);
     } catch (error) {
       logger.error('SessionDetailScreen', 'Error opening meeting link:', error);
-      showErrorToast('Không thể mở link cuộc họp');
+      showErrorToast(t('detail.toast.cannotOpenLink'));
     }
   };
 
@@ -96,40 +104,37 @@ export const SessionDetailScreen: React.FC = () => {
     if (fromSuccess) {
       const parent = navigation.getParent?.();
       if (parent) {
-        (parent as any).navigate('MainTabs', { screen: 'Home' });
+        parent.navigate('MainTabs', { screen: 'Home' });
       } else {
-        (navigation as any).navigate('MainTabs', { screen: 'Home' });
+        navigation.navigate('MainTabs', { screen: 'Home' });
       }
     } else {
-      (navigation as any).goBack();
+      navigation.goBack();
     }
   };
 
   const handleCancel = () => {
-    Alert.alert('Hủy buổi học', 'Bạn có chắc chắn muốn hủy buổi học này?', [
-      { text: 'Không', style: 'cancel' },
+    Alert.alert(t('detail.cancelConfirm.title'), t('detail.cancelConfirm.message'), [
+      { text: t('detail.cancelConfirm.no'), style: 'cancel' },
       {
-        text: 'Hủy buổi học',
+        text: t('detail.cancelConfirm.yes'),
         style: 'destructive',
         onPress: async () => {
           const { error } = await deleteSession(sessionId);
           if (error) {
-            showErrorToast('Không thể hủy buổi học');
+            showErrorToast(t('detail.toast.cancelFailed'));
             logger.error('SessionDetailScreen', 'Delete error:', error);
             return;
           }
-          showSuccessToast('Đã hủy buổi học');
+          showSuccessToast(t('detail.toast.cancelled'));
 
-          // Small delay to ensure database is updated before navigating back
-          setTimeout(() => {
-            // Navigate to MainTabs Home to force reload
-            const parent = navigation.getParent();
-            if (parent) {
-              parent.navigate('MainTabs', { screen: 'Home' });
-            } else {
-              navigation.goBack();
-            }
-          }, 300);
+          // Navigate to Home tab in MainTabs
+          const parent = navigation.getParent?.();
+          if (parent) {
+            parent.navigate('MainTabs', { screen: 'Home' });
+          } else {
+            navigation.navigate('MainTabs', { screen: 'Home' });
+          }
         },
       },
     ]);
@@ -145,7 +150,7 @@ export const SessionDetailScreen: React.FC = () => {
           alignItems: 'center',
         }}
       >
-        <Text>Loading...</Text>
+        <Text>{t('detail.loading')}</Text>
       </View>
     );
   }
@@ -167,11 +172,18 @@ export const SessionDetailScreen: React.FC = () => {
   const durationHours = Math.floor(durationMinutes / 60);
   const durationMins = durationMinutes % 60;
   const durationText =
-    durationHours > 0 ? `${durationHours} giờ ${durationMins} phút` : `${durationMinutes} phút`;
+    durationHours > 0
+      ? `${durationHours} ${t('detail.hours')} ${durationMins} ${t('detail.minutes')}`
+      : `${durationMinutes} ${t('detail.minutes')}`;
 
   const acceptedParticipants = session.participants.filter((p) => p.status === 'accepted');
   const invitedParticipants = session.participants.filter((p) => p.status === 'invited');
-  const allParticipants = [...acceptedParticipants, ...invitedParticipants];
+  const declinedParticipants = session.participants.filter((p) => p.status === 'declined');
+  const allParticipants = [
+    ...acceptedParticipants,
+    ...invitedParticipants,
+    ...declinedParticipants,
+  ];
   const invitedCount = invitedParticipants.length;
 
   // Calculate actual status based on time
@@ -184,19 +196,19 @@ export const SessionDetailScreen: React.FC = () => {
   let statusTextColor: string;
 
   if (session.status === 'cancelled') {
-    actualStatus = 'Đã hủy';
+    actualStatus = t('detail.status.cancelled');
     statusBgColor = '#FFCDD2';
     statusTextColor = '#C62828';
   } else if (now >= endTime) {
-    actualStatus = 'Đã kết thúc';
+    actualStatus = t('detail.status.completed');
     statusBgColor = '#E0E0E0';
     statusTextColor = '#616161';
   } else if (now >= startTime && now < endTime) {
-    actualStatus = 'Đang diễn ra';
+    actualStatus = t('detail.status.ongoing');
     statusBgColor = '#FFF9C4';
     statusTextColor = '#F57F17';
   } else {
-    actualStatus = 'Sắp diễn ra';
+    actualStatus = t('detail.status.upcoming');
     statusBgColor = '#C8E6C9';
     statusTextColor = '#2E7D32';
   }
@@ -205,7 +217,57 @@ export const SessionDetailScreen: React.FC = () => {
   const diffMs = startDate.getTime() - Date.now();
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-  const countdownText = diffHours > 0 ? `${diffHours} giờ ${diffMins} phút` : `${diffMins} phút`;
+  const countdownText =
+    diffHours > 0
+      ? `${diffHours} ${t('detail.hours')} ${diffMins} ${t('detail.minutes')}`
+      : `${diffMins} ${t('detail.minutes')}`;
+
+  // Accept/Decline invitation logic
+  const isInvited = session.participants.some(
+    (p) => p.user_id === userId && p.status === 'invited',
+  );
+
+  const handleAcceptInvitation = async () => {
+    setActionLoading(true);
+    const ok = await acceptInvitation(sessionId);
+    setActionLoading(false);
+    if (ok) {
+      showSuccessToast(t('detail.toast.accepted'));
+      setSession({
+        ...session,
+        participants: session.participants.map((p) =>
+          p.user_id === userId ? { ...p, status: 'accepted' } : p,
+        ),
+      });
+      const parent = navigation.getParent?.();
+      if (parent) {
+        parent.navigate('MainTabs', { screen: 'Home' });
+      } else {
+        navigation.navigate('MainTabs', { screen: 'Home' });
+      }
+    }
+  };
+
+  const handleDeclineInvitation = async () => {
+    setActionLoading(true);
+    const ok = await declineInvitation(sessionId);
+    setActionLoading(false);
+    if (ok) {
+      showSuccessToast(t('detail.toast.declined'));
+      setSession({
+        ...session,
+        participants: session.participants.map((p) =>
+          p.user_id === userId ? { ...p, status: 'declined' } : p,
+        ),
+      });
+      const parent = navigation.getParent?.();
+      if (parent) {
+        parent.navigate('MainTabs', { screen: 'Home' });
+      } else {
+        navigation.navigate('MainTabs', { screen: 'Home' });
+      }
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
@@ -237,7 +299,7 @@ export const SessionDetailScreen: React.FC = () => {
             }}
           />
           <Text variant="h5" style={{ fontWeight: '700', flex: 1, textAlign: 'center' }}>
-            Chi tiết buổi học
+            {t('detail.title')}
           </Text>
           <Pressable
             accessibilityRole="button"
@@ -359,7 +421,7 @@ export const SessionDetailScreen: React.FC = () => {
               <Calendar size={20} color={theme.colors.primary[500]} />
               <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
                 <Text variant="caption" color="tertiary">
-                  Ngày
+                  {t('detail.date')}
                 </Text>
                 <Text variant="body" style={{ fontWeight: '600', marginTop: 4 }}>
                   {weekday}, {dateStr}
@@ -371,7 +433,7 @@ export const SessionDetailScreen: React.FC = () => {
               <Clock size={20} color={theme.colors.primary[500]} />
               <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
                 <Text variant="caption" color="tertiary">
-                  Thời gian
+                  {t('detail.time')}
                 </Text>
                 <Text variant="body" style={{ fontWeight: '600', marginTop: 4 }}>
                   {timeStr} - {endTimeStr}
@@ -383,7 +445,7 @@ export const SessionDetailScreen: React.FC = () => {
               <Timer size={20} color={theme.colors.primary[500]} />
               <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
                 <Text variant="caption" color="tertiary">
-                  Thời lượng
+                  {t('detail.duration')}
                 </Text>
                 <Text variant="body" style={{ fontWeight: '600', marginTop: 4 }}>
                   {durationText}
@@ -396,7 +458,7 @@ export const SessionDetailScreen: React.FC = () => {
                 <Users size={20} color="#F59E0B" />
                 <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
                   <Text variant="caption" color="tertiary">
-                    Còn lại
+                    {t('detail.remaining')}
                   </Text>
                   <Text
                     variant="body"
@@ -417,7 +479,7 @@ export const SessionDetailScreen: React.FC = () => {
             ]}
           >
             <Text variant="h6" style={{ fontWeight: '700' }}>
-              Google Meet
+              {t('detail.googleMeet')}
             </Text>
 
             <Pressable
@@ -447,7 +509,7 @@ export const SessionDetailScreen: React.FC = () => {
             </Pressable>
 
             <Button
-              label="Tham gia cuộc họp"
+              label={t('detail.joinMeeting')}
               onPress={handleJoinMeeting}
               variant="primary"
               size="lg"
@@ -463,7 +525,7 @@ export const SessionDetailScreen: React.FC = () => {
             ]}
           >
             <Text variant="h6" style={{ fontWeight: '700' }}>
-              Thành viên ({allParticipants.length})
+              {t('detail.members')} ({allParticipants.length})
             </Text>
 
             {allParticipants.map((participant, index) => (
@@ -485,7 +547,7 @@ export const SessionDetailScreen: React.FC = () => {
                   </Text>
                   {participant.is_creator && (
                     <Text variant="caption" color="tertiary">
-                      Người tạo
+                      {t('detail.creator')}
                     </Text>
                   )}
                 </View>
@@ -503,7 +565,7 @@ export const SessionDetailScreen: React.FC = () => {
                     <Text
                       style={{ color: theme.colors.primary[500], fontSize: 12, fontWeight: '600' }}
                     >
-                      Đã xác nhận ✓
+                      {t('detail.status.accepted')}
                     </Text>
                   </View>
                 )}
@@ -515,7 +577,19 @@ export const SessionDetailScreen: React.FC = () => {
                     ]}
                   >
                     <Text style={{ color: '#F59E0B', fontSize: 12, fontWeight: '600' }}>
-                      Đã mời
+                      {t('detail.status.invited')}
+                    </Text>
+                  </View>
+                )}
+                {participant.status === 'declined' && (
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      { backgroundColor: '#F8BBD0', paddingVertical: 4, paddingHorizontal: 12 },
+                    ]}
+                  >
+                    <Text style={{ color: '#C2185B', fontSize: 12, fontWeight: '600' }}>
+                      {t('detail.status.declined')}
                     </Text>
                   </View>
                 )}
@@ -523,8 +597,8 @@ export const SessionDetailScreen: React.FC = () => {
             ))}
           </View>
 
-          {/* Bottom Actions - Only show for creator and if session is scheduled */}
-          {isCreator && session.status === 'scheduled' && (
+          {/* Bottom Actions - Accept/Decline for invited user in readOnly mode */}
+          {readOnly && isInvited && (
             <View
               style={{
                 flexDirection: 'row',
@@ -534,14 +608,42 @@ export const SessionDetailScreen: React.FC = () => {
               }}
             >
               <Button
-                label="Chỉnh sửa"
+                label={t('detail.decline')}
+                onPress={handleDeclineInvitation}
+                variant="secondary"
+                size="lg"
+                style={{ flex: 1 }}
+                loading={actionLoading}
+              />
+              <Button
+                label={t('detail.accept')}
+                onPress={handleAcceptInvitation}
+                variant="primary"
+                size="lg"
+                style={{ flex: 1 }}
+                loading={actionLoading}
+              />
+            </View>
+          )}
+          {/* Bottom Actions - Only show for creator and if session is scheduled */}
+          {!readOnly && isCreator && session.status === 'scheduled' && (
+            <View
+              style={{
+                flexDirection: 'row',
+                marginTop: theme.spacing[6],
+                gap: theme.spacing[3],
+                paddingHorizontal: theme.spacing[5],
+              }}
+            >
+              <Button
+                label={t('detail.edit')}
                 onPress={handleEdit}
                 variant="secondary"
                 size="lg"
                 style={{ flex: 1 }}
               />
               <Button
-                label="Hủy buổi học"
+                label={t('detail.cancel')}
                 onPress={handleCancel}
                 variant="primary"
                 size="lg"
