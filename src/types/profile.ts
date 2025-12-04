@@ -15,6 +15,16 @@ export type UserProfile = {
   streak: number;
   totalTime: number;
   xp: number;
+  bio?: string;
+  interests?: string[];
+};
+
+export type EditProfileData = {
+  displayName: string;
+  bio: string;
+  availableTimes?: string[];
+  learningStyle?: string;
+  interests?: string[];
 };
 
 export type Achievement = {

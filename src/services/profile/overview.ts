@@ -29,7 +29,7 @@ export async function fetchProfileOverview(userId: string): Promise<UserProfile>
       await Promise.all([
         supabase
           .from('profiles')
-          .select('display_name,bio,avatar_url')
+          .select('display_name,bio,avatar_url,interests')
           .eq('user_id', userId)
           .maybeSingle(),
         supabase
@@ -72,6 +72,7 @@ export async function fetchProfileOverview(userId: string): Promise<UserProfile>
       streak: progressRow?.streak ?? 0,
       totalTime: Number(totalHours.toFixed(1)),
       xp: progressRow?.xp ?? 0,
+      interests: profileRow?.interests ?? [],
     };
   } catch (error) {
     logger.warn('fetchProfileOverview', 'Failed:', error);
