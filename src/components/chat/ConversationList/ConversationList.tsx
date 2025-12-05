@@ -4,7 +4,7 @@
  */
 
 import React, { useCallback } from 'react';
-import { FlatList, ListRenderItem, Pressable, View, ViewStyle } from 'react-native';
+import { FlatList, ListRenderItem, Pressable, View, ViewStyle, StyleProp } from 'react-native';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
 import { Avatar } from '../../ui/Avatar/Avatar';
@@ -19,6 +19,9 @@ export type ConversationListProps = {
   onSelectConversation: (conversation: ChatConversation) => void;
   loading?: boolean;
   emptyMessage?: string;
+  header?: React.ReactNode;
+  contentContainerStyle?: StyleProp<ViewStyle>;
+  refreshControl?: React.ReactElement;
 };
 
 const ConversationItem: React.FC<{
@@ -114,6 +117,9 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   onSelectConversation,
   loading = false,
   emptyMessage = 'Chưa có cuộc trò chuyện nào',
+  header,
+  contentContainerStyle,
+  refreshControl,
 }) => {
   const { theme } = useTheme();
 
@@ -126,22 +132,31 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
   const keyExtractor = useCallback((item: ChatConversation) => item.chatId, []);
 
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (conversations.length === 0) {
-    return <EmptyState title={emptyMessage} description="Bắt đầu trò chuyện với bạn học của bạn" />;
-  }
+  const renderEmptyState = () => (
+    <View style={{ paddingVertical: theme.spacing[10] }}>
+      {loading ? (
+        <Loading />
+      ) : (
+        <EmptyState title={emptyMessage} description="Bắt đầu trò chuyện với bạn học của bạn" />
+      )}
+    </View>
+  );
 
   return (
     <FlatList
       data={conversations}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
-      contentContainerStyle={{
-        backgroundColor: theme.colors.background,
-      }}
+      ListHeaderComponent={header ? <View>{header}</View> : null}
+      ListEmptyComponent={renderEmptyState}
+      contentContainerStyle={[
+        {
+          backgroundColor: theme.colors.background,
+          paddingBottom: theme.spacing[16],
+        },
+        contentContainerStyle,
+      ]}
+      refreshControl={refreshControl}
       removeClippedSubviews
       initialNumToRender={10}
       maxToRenderPerBatch={10}
