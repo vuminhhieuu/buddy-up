@@ -26,3 +26,6 @@ export const profileStep2Schema = Yup.object().shape({
     .required(VALIDATION_MESSAGES.availableTimesRequired),
   learningStyle: Yup.string().required(VALIDATION_MESSAGES.learningStyleRequired),
 });
+
+// Re-export group validation schemas
+export * from './validation/groupValidation';
