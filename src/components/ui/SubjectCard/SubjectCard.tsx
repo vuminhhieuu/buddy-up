@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, ViewStyle, Pressable } from 'react-native';
 import { useTheme } from '../../../styles';
 import { Text } from '../Text/Text';
+import { useTranslation } from 'react-i18next';
 import { Card } from '../Card/Card';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
 import type { Subject } from '../../../types/profile';
@@ -58,6 +59,8 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, style, onPres
     return subject.badgeColor;
   };
 
+  const { t } = useTranslation('session');
+
   return (
     <Pressable
       onPress={onPress}
@@ -92,8 +95,18 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, style, onPres
               {subject.name}
             </Text>
           </View>
-          <Text variant="bodySmall" color="secondary" style={styles.hours}>
-            {subject.totalHours} giờ
+          <Text
+            variant="bodySmall"
+            color="secondary"
+            style={[styles.hours, { flexShrink: 0 }]}
+            numberOfLines={1}
+          >
+            {/* Format hours consistently and prevent unit wrapping by using a non-breaking space */}
+            {Number.isInteger(subject.totalHours)
+              ? `${subject.totalHours}`
+              : subject.totalHours.toFixed(1)}
+            {'\u00A0'}
+            {t('hours')}
           </Text>
         </View>
         <View style={styles.progressContainer}>

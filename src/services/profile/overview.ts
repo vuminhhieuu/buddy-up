@@ -46,10 +46,28 @@ export async function fetchProfileOverview(userId: string): Promise<UserProfile>
       logger.warn('fetchProfileOverview', 'progress error:', progressError);
     }
 
-    const sessionsResponse = await supabase
-      .from('study_sessions')
-      .select('scheduled_start,scheduled_end,status')
-      .eq('creator_id', userId);
+    // Only include sessions where this user is a participant and has marked them completed
+    const { data: participantRows, error: participantsError } = await supabase
+      .from('study_session_participants')
+      .select('session_id')
+      .eq('user_id', userId)
+      .eq('status', 'completed');
+
+    if (participantsError) {
+      logger.warn('fetchProfileOverview', 'participants error:', participantsError);
+    }
+
+    const sessionIds = (participantRows || []).map((r: any) => r.session_id).filter(Boolean);
+
+    let sessionsResponse;
+    if (sessionIds.length > 0) {
+      sessionsResponse = await supabase
+        .from('study_sessions')
+        .select('scheduled_start,scheduled_end,status')
+        .in('id', sessionIds);
+    } else {
+      sessionsResponse = { data: [], error: null } as any;
+    }
 
     if (sessionsResponse.error) {
       logger.warn('fetchProfileOverview', 'sessions error:', sessionsResponse.error);

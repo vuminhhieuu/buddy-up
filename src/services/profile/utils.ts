@@ -8,6 +8,7 @@ import {
   SESSION_STATUS_ONGOING,
   BADGE_EMOJI_MAP,
   FALLBACK_EMOJI_ARRAY,
+  HOURS_FALLBACK,
 } from '../../constants/profile';
 
 /**
@@ -28,24 +29,39 @@ export const calculateSessionHours = (
   end?: string | null,
   status?: string | null,
 ) => {
+  // Align calculation with Home service rules so totals are consistent across screens.
+  // Behavior:
+  // - If start is missing or invalid -> return 0
+  // - If end exists and is valid and after start: compute raw hours
+  //   - If raw < 1 hour, treat it as at least 1/3 hour
+  // - If end is missing but status === 'ongoing' -> use now as end
+  // - If end missing/invalid (and not ongoing) -> fallback to HOURS_FALLBACK
   if (!start) return 0;
   const startDate = new Date(start);
   if (isNaN(startDate.getTime())) return 0;
 
-  let endDate: Date;
+  let endDate: Date | null = null;
+
   if (end) {
-    endDate = new Date(end);
-    if (isNaN(endDate.getTime())) return 0;
-    if (endDate.getTime() <= startDate.getTime()) return 0;
+    const parsed = new Date(end);
+    if (!isNaN(parsed.getTime()) && parsed.getTime() > startDate.getTime()) {
+      endDate = parsed;
+    }
   } else if (status === SESSION_STATUS_ONGOING) {
-    endDate = new Date();
-    if (endDate.getTime() <= startDate.getTime()) return 0;
-  } else {
-    return 0;
+    const now = new Date();
+    if (now.getTime() > startDate.getTime()) endDate = now;
+  }
+
+  if (!endDate) {
+    // If we couldn't determine a valid end date, use a safe fallback to avoid
+    // undercounting small/unfinished sessions. This matches Home's behavior.
+    return HOURS_FALLBACK;
   }
 
   const diff = (endDate.getTime() - startDate.getTime()) / MS_PER_HOUR;
-  return diff > 0 ? diff : 0;
+  if (!(diff > 0)) return 0;
+  if (diff < 1) return Math.max(diff, 1 / 3);
+  return diff;
 };
 
 /**

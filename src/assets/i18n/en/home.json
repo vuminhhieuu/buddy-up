@@ -30,6 +30,9 @@
     "countdownMinutes": "{{count}} min left",
     "countdownHours": "{{count}} hrs left",
     "countdownDays": "{{count}} days left",
+    "statusUpcoming": "Upcoming",
+    "statusOngoing": "Ongoing",
+    "statusCompleted": "Completed",
     "accessibilityLabel": "Session with {{name}} at {{time}}",
     "emptyTitle": "No sessions yet",
     "emptySubtitle": "Create a study session or find a buddy to get started."

@@ -35,7 +35,7 @@ export const WEEKLY_STREAK_GOAL = 7;
 /**
  * Number of upcoming sessions to display on home screen
  */
-export const UPCOMING_SESSIONS_DISPLAY_LIMIT = 3;
+export const UPCOMING_SESSIONS_DISPLAY_LIMIT = 2;
 
 /**
  * Number of recent sessions to fetch

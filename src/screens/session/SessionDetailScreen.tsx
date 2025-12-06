@@ -6,7 +6,16 @@ import { Text } from '../../components/ui/Text/Text';
 import { Button } from '../../components/ui/Button/Button';
 import { Avatar } from '../../components/ui/Avatar/Avatar';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Calendar, Clock, Timer, Users, Link as LinkIcon, Copy, X } from 'lucide-react-native';
+import {
+  Calendar,
+  Clock,
+  Timer,
+  Users,
+  Link as LinkIcon,
+  Copy,
+  X,
+  FileText,
+} from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import {
   fetchSessionDetail,
@@ -14,12 +23,14 @@ import {
   updateSessionStatus,
   deleteSession,
 } from '../../services/session/detail';
+import { markSessionCompleted } from '../../services/session/completion';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
 import { logger } from '../../utils/logger';
 import { useAppSelector } from '../../store/hooks';
 import { useInvitations } from '../../hooks/useInvitations';
 import type { NavigationProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
+import { SessionCompletionModal } from '../../components/session/SessionCompletionModal';
 
 export const SessionDetailScreen: React.FC = () => {
   const { t } = useTranslation('session');
@@ -37,14 +48,42 @@ export const SessionDetailScreen: React.FC = () => {
   const [session, setSession] = useState<SessionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   useEffect(() => {
     loadSession();
   }, [sessionId]);
 
+  useEffect(() => {
+    if (!session || !userId) return;
+
+    const now = Date.now();
+    const startTime = new Date(session.scheduled_start).getTime();
+    const DEFAULT_SESSION_DURATION_MS = 60 * 60 * 1000;
+    const endTime = session.scheduled_end
+      ? new Date(session.scheduled_end).getTime()
+      : startTime + DEFAULT_SESSION_DURATION_MS;
+
+    // Check if session is completed (ended)
+    const isCompleted = now >= endTime && session.status !== 'cancelled';
+
+    // Check if user has already marked this session as completed
+    const userParticipant = session.participants.find((p) => p.user_id === userId);
+    const alreadyMarkedComplete = userParticipant?.status === 'completed';
+
+    if (isCompleted && !alreadyMarkedComplete) {
+      const timer = setTimeout(() => {
+        setShowCompletionModal(true);
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [session, userId]);
+
   const loadSession = async () => {
     if (!sessionId) {
       showErrorToast(t('detail.toast.sessionNotFound'));
+      showErrorToast(t('detail.sessionIdNotFound'));
       navigation.goBack();
       return;
     }
@@ -53,6 +92,7 @@ export const SessionDetailScreen: React.FC = () => {
     const { data, error } = await fetchSessionDetail(sessionId);
     if (error || !data) {
       showErrorToast(t('detail.toast.loadFailed'));
+      showErrorToast(t('detail.loadFailed'));
       logger.error('SessionDetailScreen', 'Load error:', error);
       navigation.goBack();
       return;
@@ -65,26 +105,26 @@ export const SessionDetailScreen: React.FC = () => {
   const handleCopyLink = () => {
     // Copy to clipboard
     showSuccessToast(t('detail.toast.linkCopied'));
+    showSuccessToast(t('detail.linkCopied'));
   };
 
   const handleJoinMeeting = async () => {
     if (!session?.location) {
       showErrorToast(t('detail.toast.meetingLinkNotFound'));
+      showErrorToast(t('detail.meetingLinkNotFound'));
       return;
     }
 
     try {
       let url = session.location.trim();
 
-      // Add https:// if missing protocol
       if (!url.startsWith('http://') && !url.startsWith('https://')) {
         url = 'https://' + url;
       }
-
-      // Check if URL can be opened
       const canOpen = await Linking.canOpenURL(url);
       if (!canOpen) {
         showErrorToast(t('detail.toast.cannotOpenLink'));
+        showErrorToast(t('detail.cannotOpenLink'));
         logger.error('SessionDetailScreen', 'Cannot open URL:', url);
         return;
       }
@@ -93,14 +133,15 @@ export const SessionDetailScreen: React.FC = () => {
     } catch (error) {
       logger.error('SessionDetailScreen', 'Error opening meeting link:', error);
       showErrorToast(t('detail.toast.cannotOpenLink'));
+      showErrorToast(t('detail.cannotOpenLink'));
     }
   };
 
   const handleEdit = () => {
-    showSuccessToast('Edit feature coming soon');
+    showSuccessToast(t('detail.editComingSoon'));
   };
 
-  const handleClose = () => {
+  const handleClose = async () => {
     if (fromSuccess) {
       const parent = navigation.getParent?.();
       if (parent) {
@@ -110,6 +151,34 @@ export const SessionDetailScreen: React.FC = () => {
       }
     } else {
       navigation.goBack();
+    }
+    setShowCompletionModal(false);
+    // Refresh session after closing if needed
+    try {
+      await loadSession();
+    } catch (e) {
+      // ignore
+    }
+  };
+
+  const handleMarkComplete = async (rating?: number) => {
+    if (!userId) return;
+    const { error } = await markSessionCompleted({ sessionId, userId, rating });
+
+    // If the operation had a non-fatal error (e.g. missing RPC but fallback used),
+    // log it for debugging but do not show an error toast to the user.
+    if (error) {
+      logger.warn('SessionDetailScreen', 'Mark complete encountered non-fatal error:', error);
+    }
+
+    // Close the completion modal and refresh session data in place. Do NOT
+    // navigate away — the user stays on the session detail screen per request.
+    showSuccessToast(t('detail.markCompleteSuccess'));
+    setShowCompletionModal(false);
+    try {
+      await loadSession();
+    } catch (e) {
+      // ignore
     }
   };
 
@@ -123,12 +192,13 @@ export const SessionDetailScreen: React.FC = () => {
           const { error } = await deleteSession(sessionId);
           if (error) {
             showErrorToast(t('detail.toast.cancelFailed'));
+            showErrorToast(t('detail.cancelFailed'));
             logger.error('SessionDetailScreen', 'Delete error:', error);
             return;
           }
+          showSuccessToast(t('detail.cancelSuccess'));
           showSuccessToast(t('detail.toast.cancelled'));
 
-          // Navigate to Home tab in MainTabs
           const parent = navigation.getParent?.();
           if (parent) {
             parent.navigate('MainTabs', { screen: 'Home' });
@@ -173,7 +243,9 @@ export const SessionDetailScreen: React.FC = () => {
   const durationMins = durationMinutes % 60;
   const durationText =
     durationHours > 0
-      ? `${durationHours} ${t('detail.hours')} ${durationMins} ${t('detail.minutes')}`
+      ? durationMins > 0
+        ? `${durationHours} ${t('detail.hours')} ${durationMins} ${t('detail.minutes')}`
+        : `${durationHours} ${t('detail.hours')}`
       : `${durationMinutes} ${t('detail.minutes')}`;
 
   const acceptedParticipants = session.participants.filter((p) => p.status === 'accepted');
@@ -184,12 +256,13 @@ export const SessionDetailScreen: React.FC = () => {
     ...invitedParticipants,
     ...declinedParticipants,
   ];
+
   const invitedCount = invitedParticipants.length;
 
-  // Calculate actual status based on time
   const now = Date.now();
   const startTime = startDate.getTime();
-  const endTime = endDate?.getTime() || startTime;
+  const DEFAULT_SESSION_DURATION_MS = 60 * 60 * 1000;
+  const endTime = endDate?.getTime() || startTime + DEFAULT_SESSION_DURATION_MS;
 
   let actualStatus: string;
   let statusBgColor: string;
@@ -201,8 +274,8 @@ export const SessionDetailScreen: React.FC = () => {
     statusTextColor = '#C62828';
   } else if (now >= endTime) {
     actualStatus = t('detail.status.completed');
-    statusBgColor = '#E0E0E0';
-    statusTextColor = '#616161';
+    statusBgColor = theme.colors.neutral[200];
+    statusTextColor = theme.colors.neutral[600];
   } else if (now >= startTime && now < endTime) {
     actualStatus = t('detail.status.ongoing');
     statusBgColor = '#FFF9C4';
@@ -213,13 +286,44 @@ export const SessionDetailScreen: React.FC = () => {
     statusTextColor = '#2E7D32';
   }
 
-  // Calculate countdown
+  // Consider the session ended if the scheduled end time has passed OR the
+  // session row explicitly has status 'completed'. Exclude cancelled.
+  const isSessionEnded =
+    (now >= endTime || session.status === 'completed') && session.status !== 'cancelled';
+
+  // When the session has ended, show only accepted participants (attendees).
+  // When the session has ended, prefer showing only accepted participants
+  // (attendees). If there are no accepted participants, show only the creator
+  // (host) if present. This avoids showing the full invite/invitees list
+  // (invited/declined) after the session finished.
+  let displayedParticipants: typeof session.participants = [];
+  if (isSessionEnded) {
+    if (acceptedParticipants.length > 0) {
+      displayedParticipants = acceptedParticipants.slice();
+      const creator = session.participants.find((p) => p.is_creator);
+      if (creator && !displayedParticipants.some((p) => p.user_id === creator.user_id)) {
+        displayedParticipants.unshift(creator);
+      }
+    } else {
+      const creator = session.participants.find((p) => p.is_creator);
+      if (creator) {
+        displayedParticipants = [creator];
+      } else {
+        displayedParticipants = [];
+      }
+    }
+  } else {
+    displayedParticipants = allParticipants.slice();
+  }
+
   const diffMs = startDate.getTime() - Date.now();
   const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
   const diffMins = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
   const countdownText =
     diffHours > 0
-      ? `${diffHours} ${t('detail.hours')} ${diffMins} ${t('detail.minutes')}`
+      ? diffMins > 0
+        ? `${diffHours} ${t('detail.hours')} ${diffMins} ${t('detail.minutes')}`
+        : `${diffHours} ${t('detail.hours')}`
       : `${diffMins} ${t('detail.minutes')}`;
 
   // Accept/Decline invitation logic
@@ -268,6 +372,12 @@ export const SessionDetailScreen: React.FC = () => {
       }
     }
   };
+
+  // Only show countdown if session is upcoming AND there is some remaining time (> 0 minutes)
+  const isUpcoming =
+    now < startTime && session.status !== 'cancelled' && (diffHours > 0 || diffMins > 0);
+  const isOngoing = now >= startTime && now < endTime && session.status !== 'cancelled';
+  const isCompletedLocal = now >= endTime && session.status !== 'cancelled';
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
@@ -453,7 +563,24 @@ export const SessionDetailScreen: React.FC = () => {
               </View>
             </View>
 
-            {invitedCount > 0 && (
+            {/* Description section styled like other info rows */}
+            {session.description && (
+              <View style={[styles.infoRow, { marginTop: theme.spacing[4] }]}>
+                {/* Use FileText icon for description */}
+                <FileText size={20} color={theme.colors.primary[500]} />
+                <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
+                  <Text variant="caption" color="tertiary">
+                    {t('statusLabel')}
+                  </Text>
+                  <Text variant="body" style={{ fontWeight: '600', marginTop: 4 }}>
+                    {session.description}
+                  </Text>
+                </View>
+              </View>
+            )}
+
+            {/* Always show countdown/remaining for upcoming sessions */}
+            {isUpcoming && (
               <View style={[styles.infoRow, { marginTop: theme.spacing[4] }]}>
                 <Users size={20} color="#F59E0B" />
                 <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
@@ -469,6 +596,7 @@ export const SessionDetailScreen: React.FC = () => {
                 </View>
               </View>
             )}
+            {/* For ongoing/completed/cancelled, do not show countdown/remaining */}
           </View>
 
           {/* Google Meet Card */}
@@ -496,11 +624,7 @@ export const SessionDetailScreen: React.FC = () => {
               <LinkIcon size={18} color={theme.colors.primary[500]} />
               <Text
                 variant="body"
-                style={{
-                  marginLeft: theme.spacing[2],
-                  color: theme.colors.primary[500],
-                  flex: 1,
-                }}
+                style={{ marginLeft: theme.spacing[2], color: theme.colors.primary[500], flex: 1 }}
                 numberOfLines={1}
               >
                 {session.location}
@@ -525,10 +649,10 @@ export const SessionDetailScreen: React.FC = () => {
             ]}
           >
             <Text variant="h6" style={{ fontWeight: '700' }}>
-              {t('detail.members')} ({allParticipants.length})
+              {t('detail.members')} ({displayedParticipants.length})
             </Text>
 
-            {allParticipants.map((participant, index) => (
+            {displayedParticipants.map((participant, index) => (
               <View
                 key={participant.user_id}
                 style={[
@@ -565,7 +689,7 @@ export const SessionDetailScreen: React.FC = () => {
                     <Text
                       style={{ color: theme.colors.primary[500], fontSize: 12, fontWeight: '600' }}
                     >
-                      {t('detail.status.accepted')}
+                      {t('detail.participantState.accepted')}
                     </Text>
                   </View>
                 )}
@@ -589,7 +713,7 @@ export const SessionDetailScreen: React.FC = () => {
                     ]}
                   >
                     <Text style={{ color: '#C2185B', fontSize: 12, fontWeight: '600' }}>
-                      {t('detail.status.declined')}
+                      {t('detail.participantState.declined')}
                     </Text>
                   </View>
                 )}
@@ -625,8 +749,8 @@ export const SessionDetailScreen: React.FC = () => {
               />
             </View>
           )}
-          {/* Bottom Actions - Only show for creator and if session is scheduled */}
-          {!readOnly && isCreator && session.status === 'scheduled' && (
+          {/* Bottom Actions - Only show for creator and if session hasn't started yet */}
+          {!readOnly && isCreator && session.status !== 'cancelled' && now < startTime && (
             <View
               style={{
                 flexDirection: 'row',
@@ -653,6 +777,16 @@ export const SessionDetailScreen: React.FC = () => {
           )}
         </View>
       </ScrollView>
+
+      {/* Completion Modal */}
+      <SessionCompletionModal
+        visible={showCompletionModal}
+        onClose={() => setShowCompletionModal(false)}
+        onMarkComplete={handleMarkComplete}
+        sessionTitle={session.title || session.subject || 'Buổi học'}
+        duration={durationText}
+        participantCount={allParticipants.length}
+      />
     </View>
   );
 };

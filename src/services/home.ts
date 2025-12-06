@@ -96,7 +96,12 @@ function calculateDurationHours(session: SupabaseSession) {
   const start = new Date(session.scheduled_start).getTime();
   const end = session.scheduled_end ? new Date(session.scheduled_end).getTime() : NaN;
   if (!Number.isNaN(end) && end > start) {
-    return (end - start) / MS_PER_HOUR;
+    const rawHours = (end - start) / MS_PER_HOUR;
+    // Nếu buổi học < 1h thì làm tròn tối thiểu 1/3h
+    if (rawHours < 1) {
+      return Math.max(rawHours, 1 / 3);
+    }
+    return rawHours;
   }
   return HOURS_FALLBACK;
 }
@@ -322,11 +327,11 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     'progress',
   );
   const recentSessionsAll = safeList<SupabaseSession>(
-    recentSessionsResult as ListResult<SupabaseSession>,
+    recentSessionsResult as unknown as ListResult<SupabaseSession>,
     'recentSessions',
   );
   const upcomingSessionsAll = safeList<SupabaseSession>(
-    upcomingSessionsResult as ListResult<SupabaseSession>,
+    upcomingSessionsResult as unknown as ListResult<SupabaseSession>,
     'upcomingSessions',
   );
 
@@ -433,15 +438,37 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     };
   };
 
-  const weeklyStudyHours = userWeekSessions.reduce(
-    (hours, session) => hours + calculateDurationHours(session),
-    0,
-  );
+  // Only count hours for sessions where this user has marked completed
+  const weeklyStudyHours = userWeekSessions.reduce((hours, session) => {
+    const participants = participantsMap.get(session.id) || [];
+    const userParticipant = participants.find((p) => p.user_id === userId);
+    if (userParticipant?.status === 'completed') {
+      return hours + calculateDurationHours(session);
+    }
+    return hours;
+  }, 0);
 
-  const completedSessions = userWeekSessions.filter(
-    (session) => session.status === 'completed',
-  ).length;
-  const sessionGoal = userUpcomingSessions.length;
+  // Count completed sessions based on user's participant status, not session status
+  const completedSessions = userWeekSessions.filter((session) => {
+    const participants = participantsMap.get(session.id) || [];
+    const userParticipant = participants.find((p) => p.user_id === userId);
+    return userParticipant?.status === 'completed';
+  }).length;
+
+  // Count all accepted sessions (both recent and upcoming) as the goal
+  // Use a Map to deduplicate sessions by ID before counting
+  const allUserSessionsMap = new Map<string, SupabaseSession>();
+  [...userRecentSessions, ...userUpcomingSessions].forEach((session) => {
+    allUserSessionsMap.set(session.id, session);
+  });
+  const allUserSessions = Array.from(allUserSessionsMap.values());
+
+  const sessionGoal = allUserSessions.filter((session) => {
+    const participants = participantsMap.get(session.id) || [];
+    const userParticipant = participants.find((p) => p.user_id === userId);
+    // Count if user is creator or has accepted
+    return session.creator_id === userId || userParticipant?.status === 'accepted';
+  }).length;
 
   const normalizedWeekStart = toStartOfDay(weekStart);
   const normalizedNow = toStartOfDay(now);
@@ -450,6 +477,52 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     Math.floor((normalizedNow.getTime() - normalizedWeekStart.getTime()) / MS_PER_DAY) + 1,
   );
   const weeklyActiveDays = Math.min(resolvedStreak, daysIntoWeek);
+
+  // Filter out completed sessions and sort by priority: ongoing → upcoming
+  const nowTime = now.getTime();
+  const DEFAULT_SESSION_DURATION_MS = 60 * 60 * 1000;
+  const activeSessions = allUserSessions.filter((session) => {
+    const start = new Date(session.scheduled_start).getTime();
+    const end = session.scheduled_end
+      ? new Date(session.scheduled_end).getTime()
+      : start + DEFAULT_SESSION_DURATION_MS;
+    // Only show sessions that haven't ended yet
+    return nowTime < end;
+  });
+
+  const sortedSessions = activeSessions.sort((a, b) => {
+    const aStart = new Date(a.scheduled_start).getTime();
+    const bStart = new Date(b.scheduled_start).getTime();
+    const aEnd = a.scheduled_end
+      ? new Date(a.scheduled_end).getTime()
+      : aStart + DEFAULT_SESSION_DURATION_MS;
+    const bEnd = b.scheduled_end
+      ? new Date(b.scheduled_end).getTime()
+      : bStart + DEFAULT_SESSION_DURATION_MS;
+
+    // Determine status: ongoing (0), upcoming (1)
+    const getStatusPriority = (start: number, end: number) => {
+      if (nowTime >= start && nowTime < end) return 0; // ongoing
+      return 1; // upcoming
+    };
+
+    const aPriority = getStatusPriority(aStart, aEnd);
+    const bPriority = getStatusPriority(bStart, bEnd);
+
+    // Sort by status priority first
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+
+    // Within same status, sort by closest time to now
+    if (aPriority === 0) {
+      // ongoing: sort by start time (most recent first)
+      return bStart - aStart;
+    } else {
+      // upcoming: sort by start time (soonest first)
+      return aStart - bStart;
+    }
+  });
 
   return {
     profileName: profileData?.display_name ?? '',
@@ -461,7 +534,7 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     weeklyGoalDays: WEEKLY_STREAK_GOAL,
     weeklyActiveDays,
     sessionGoal,
-    sessions: userUpcomingSessions.slice(0, UPCOMING_SESSIONS_DISPLAY_LIMIT).map(toHomeSession),
+    sessions: sortedSessions.slice(0, UPCOMING_SESSIONS_DISPLAY_LIMIT).map(toHomeSession),
   };
 }
 
@@ -482,7 +555,7 @@ export async function fetchUpcomingSessionsAll(userId: string): Promise<HomeSess
   }
 
   const upcomingSessionsAll = safeList<SupabaseSession>(
-    { data: upcomingSessionsResult, error: upcomingError },
+    { data: upcomingSessionsResult, error: upcomingError } as ListResult<SupabaseSession>,
     'upcomingSessionsAll',
   );
 
@@ -580,9 +653,11 @@ export async function fetchAllSessionsForUser(userId: string): Promise<HomeSessi
 
   const recentSessionsAll = safeList<SupabaseSession>(
     { data: recentSessionsResult, error: recentError },
+    { data: recentSessionsResult, error: recentError },
     'recentSessionsAll',
   );
   const upcomingSessionsAll = safeList<SupabaseSession>(
+    { data: upcomingSessionsResult, error: upcomingError },
     { data: upcomingSessionsResult, error: upcomingError },
     'upcomingSessionsAllFull',
   );
@@ -628,6 +703,88 @@ export async function fetchAllSessionsForUser(userId: string): Promise<HomeSessi
     if (buddyProfilesError) {
       logger.warn(
         'fetchAllSessionsForUser.profiles',
+        buddyProfilesError.message,
+        buddyProfilesError,
+      );
+    }
+    buddyProfilesData?.forEach((profile) => {
+      buddyProfiles.set(profile.user_id, profile);
+    });
+  }
+
+  const toHomeSessionFull = (session: SupabaseSession): HomeSessionFull => {
+    const buddyId = selectBuddyUserId(session, participantsMap, userId);
+    const buddyProfile = buddyId ? buddyProfiles.get(buddyId) : undefined;
+    return {
+      id: session.id,
+      title: session.title,
+      subject: session.subject,
+      scheduledStart: session.scheduled_start,
+      scheduledEnd: session.scheduled_end,
+      buddyName: buddyProfile?.display_name || undefined,
+      buddyAvatar: buddyProfile?.avatar_url || undefined,
+      status: (session.status as any) ?? 'scheduled',
+    };
+  };
+
+  return filtered.map(toHomeSessionFull);
+}
+
+/**
+ * Fetch ALL sessions for user without time limits
+ * Returns sessions ordered by scheduled_start descending (newest first)
+ */
+export async function fetchAllUserSessionsUnfiltered(userId: string): Promise<HomeSessionFull[]> {
+  // Get ALL sessions from database
+  const { data: allSessionsResult, error: sessionsError } = await supabase
+    .from('study_sessions')
+    .select('id, title, subject, scheduled_start, scheduled_end, status, creator_id')
+    .order('scheduled_start', { ascending: false });
+
+  if (sessionsError) {
+    logger.warn('fetchAllUserSessionsUnfiltered.sessions', sessionsError.message, sessionsError);
+    return [];
+  }
+
+  const allSessions = (allSessionsResult || []) as SupabaseSession[];
+
+  const sessionIds = allSessions.map((s) => s.id);
+
+  // Build participants map
+  const participantsMap = new Map<string, SessionParticipant[]>();
+  if (sessionIds.length > 0) {
+    const { data: participantsData } = await supabase
+      .from('study_session_participants')
+      .select('session_id, user_id, status')
+      .in('session_id', sessionIds);
+    participantsData?.forEach((participant) => {
+      const list = participantsMap.get(participant.session_id) || [];
+      list.push(participant);
+      participantsMap.set(participant.session_id, list);
+    });
+  }
+
+  // Filter sessions relevant to the user
+  const filtered = allSessions.filter((session) =>
+    isRelevantSession(session as SupabaseSession, participantsMap, userId),
+  ) as SupabaseSession[];
+
+  // Collect buddy profiles
+  const buddyUserIds = new Set<string>();
+  filtered.forEach((session) => {
+    const buddyId = selectBuddyUserId(session, participantsMap, userId);
+    if (buddyId) buddyUserIds.add(buddyId);
+  });
+
+  const buddyProfiles = new Map<string, ProfilePreview>();
+  if (buddyUserIds.size > 0) {
+    const { data: buddyProfilesData, error: buddyProfilesError } = await supabase
+      .from('profiles')
+      .select('user_id, display_name, avatar_url')
+      .in('user_id', Array.from(buddyUserIds));
+    if (buddyProfilesError) {
+      logger.warn(
+        'fetchAllUserSessionsUnfiltered.profiles',
         buddyProfilesError.message,
         buddyProfilesError,
       );

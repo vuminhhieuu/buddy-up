@@ -16,6 +16,7 @@ export interface SessionDetail {
   creator_avatar: string | null;
   title: string;
   subject: string | null;
+  description?: string | null;
   scheduled_start: string;
   scheduled_end: string | null;
   status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
@@ -110,6 +111,7 @@ export async function fetchSessionDetail(sessionId: string): Promise<{
       creator_avatar: creatorProfile?.avatar_url || null,
       title: session.title,
       subject: session.subject,
+      description: session.description ?? null,
       scheduled_start: session.scheduled_start,
       scheduled_end: session.scheduled_end,
       status: session.status,
