@@ -1,0 +1,18 @@
+{
+  "title": "Messages",
+  "searchPlaceholder": "Search buddies or groups",
+  "buddiesTab": "Buddies",
+  "groupsTab": "Groups",
+  "createGroupTitle": "Create a new study group",
+  "createGroupDescription": "Learn together with multiple friends",
+  "createGroupCta": "Create group",
+  "emptyDirect": "You have no conversations yet",
+  "emptyGroup": "You have not joined any study group yet",
+  "onlineSection": "Active now",
+  "newConversation": "New chat",
+  "unreadBadge": "{{count}} unread messages",
+  "seeAll": "See all",
+  "filterAccessibility": "Filter chat list",
+  "createChatError": "Unable to open conversation",
+  "createChatErrorDescription": "Please try again in a moment."
+}

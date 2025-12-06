@@ -1,0 +1,18 @@
+{
+  "title": "Tin nhắn",
+  "searchPlaceholder": "Tìm kiếm bạn học hoặc nhóm",
+  "buddiesTab": "Bạn học",
+  "groupsTab": "Nhóm",
+  "createGroupTitle": "Tạo nhóm học tập mới",
+  "createGroupDescription": "Học cùng nhiều bạn cùng lúc",
+  "createGroupCta": "Tạo nhóm",
+  "emptyDirect": "Bạn chưa có cuộc trò chuyện nào",
+  "emptyGroup": "Bạn chưa tham gia nhóm nào",
+  "onlineSection": "Đang hoạt động",
+  "newConversation": "Nhắn mới",
+  "unreadBadge": "{{count}} tin nhắn chưa đọc",
+  "seeAll": "Xem tất cả",
+  "filterAccessibility": "Bộ lọc danh sách chat",
+  "createChatError": "Không thể mở cuộc trò chuyện",
+  "createChatErrorDescription": "Vui lòng thử lại sau."
+}
