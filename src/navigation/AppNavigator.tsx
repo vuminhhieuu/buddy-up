@@ -16,7 +16,7 @@ import { useTranslation } from 'react-i18next';
 export type RootStackParamList = {
   Onboarding: undefined;
   Auth: { profileSetupInProgress: boolean };
-  MainTabs: undefined;
+  MainTabs: { screen?: string } | undefined;
   CreateSession: undefined;
   CreateSessionSuccess:
     | {
@@ -27,8 +27,14 @@ export type RootStackParamList = {
         duration?: string;
       }
     | undefined;
-  SessionDetail: { sessionId: string };
+  SessionDetail: {
+    sessionId: string;
+    readOnly?: boolean;
+    fromNotification?: boolean;
+    fromSuccess?: boolean;
+  };
   UpcomingSessionsAll: undefined;
+  Notifications: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -67,6 +73,10 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen
               name="UpcomingSessionsAll"
               component={require('../screens/session/UpcomingSessionsAllScreen').default}
+            />
+            <Stack.Screen
+              name="Notifications"
+              component={require('../screens/invitations/NotificationsScreen').default}
             />
           </>
         ) : (

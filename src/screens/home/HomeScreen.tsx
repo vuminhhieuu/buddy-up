@@ -14,10 +14,12 @@ import { useAppSelector } from '../../store/hooks';
 import { fetchHomeDashboard, type HomeDashboardData } from '../../services/home';
 import { useTranslation } from 'react-i18next';
 import { useNavigation, type NavigationProp, useFocusEffect } from '@react-navigation/native';
+import { useInvitations } from '../../hooks/useInvitations';
 import type { MainTabParamList } from '../../navigation/MainTabsNavigator';
 import { logger } from '../../utils/logger';
 
 export const HomeScreen: React.FC = () => {
+  const { pendingCount, loadPendingCount } = useInvitations();
   const { theme } = useTheme();
   const { t } = useTranslation('home');
   const userId = useAppSelector((state) => state.auth.userId);
@@ -63,18 +65,20 @@ export const HomeScreen: React.FC = () => {
   useEffect(() => {
     if (userId) {
       void loadDashboard(true);
+      void loadPendingCount();
     } else {
       setLoading(false);
     }
-  }, [loadDashboard, userId]);
+  }, [loadDashboard, loadPendingCount, userId]);
 
   // Reload dashboard when screen comes back into focus (e.g., after deleting a session)
   useFocusEffect(
     useCallback(() => {
       if (userId) {
         void loadDashboard(false);
+        void loadPendingCount();
       }
-    }, [loadDashboard, userId]),
+    }, [loadDashboard, loadPendingCount, userId]),
   );
 
   const handleRefresh = useCallback(() => {
@@ -133,6 +137,10 @@ export const HomeScreen: React.FC = () => {
 
   const handleNotificationPress = () => {
     logger.debug('HomeScreen', 'Notification pressed');
+    const parent = (navigation as any).getParent?.();
+    if (parent) {
+      parent.navigate('Notifications');
+    }
   };
 
   const handleAvatarPress = () => {
@@ -211,6 +219,7 @@ export const HomeScreen: React.FC = () => {
         <HomeHeader
           name={dashboard?.profileName || authDisplayName || undefined}
           avatarUrl={profileData?.avatarUrl || dashboard?.avatarUrl}
+          notificationsCount={pendingCount}
           onNotificationPress={handleNotificationPress}
           onAvatarPress={handleAvatarPress}
         />

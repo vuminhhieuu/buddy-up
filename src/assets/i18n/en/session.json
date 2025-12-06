@@ -51,5 +51,49 @@
     "4": "Thursday",
     "5": "Friday",
     "6": "Saturday"
+  },
+  "detail": {
+    "title": "Session Details",
+    "loading": "Loading...",
+    "date": "Date",
+    "time": "Time",
+    "duration": "Duration",
+    "remaining": "Time remaining",
+    "googleMeet": "Google Meet",
+    "joinMeeting": "Join meeting",
+    "members": "Members",
+    "creator": "Creator",
+    "edit": "Edit",
+    "cancel": "Cancel session",
+    "accept": "Accept",
+    "decline": "Decline",
+    "status": {
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "upcoming": "Upcoming",
+      "accepted": "Accepted ✓",
+      "invited": "Invited",
+      "declined": "Declined ✗"
+    },
+    "cancelConfirm": {
+      "title": "Cancel Session",
+      "message": "Are you sure you want to cancel this session?",
+      "no": "No",
+      "yes": "Cancel Session"
+    },
+    "toast": {
+      "linkCopied": "Link copied to clipboard",
+      "cancelled": "Session cancelled",
+      "cancelFailed": "Cannot cancel session",
+      "accepted": "Invitation accepted!",
+      "declined": "Invitation declined!",
+      "meetingLinkNotFound": "Meeting link not found",
+      "cannotOpenLink": "Cannot open meeting link",
+      "sessionNotFound": "Session ID not found",
+      "loadFailed": "Failed to load session details"
+    },
+    "hours": "hours",
+    "minutes": "minutes"
   }
 }
