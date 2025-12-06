@@ -41,6 +41,7 @@ export type IconName =
   | 'buddy'
   | 'chat'
   | 'profile'
+  | 'community'
   | 'bell'
   | 'calendar'
   | 'plus'
@@ -74,6 +75,7 @@ const NAME_TO_ICON: Record<IconName, LucideIcon> = {
   buddy: Users,
   chat: MessageCircle,
   profile: User,
+  community: Globe,
   bell: Bell,
   calendar: Calendar,
   plus: Plus,

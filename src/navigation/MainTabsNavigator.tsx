@@ -11,10 +11,12 @@ import { BuddyStackNavigator } from './BuddyStackNavigator';
 import { logger } from '../utils/logger';
 import { ChatStackNavigator } from './ChatStackNavigator';
 import { selectUnreadCount, fetchConversationsAsync } from '../store/slices/chatSlice';
+import { CommunityScreen } from '../screens/community/CommunityScreen';
 export type MainTabParamList = {
   Home: undefined;
   Buddy: undefined;
   Chat: undefined;
+  Community: undefined;
   Profile: undefined;
 };
 
@@ -69,7 +71,9 @@ export const MainTabsNavigator: React.FC = () => {
                     ? 'Buddy'
                     : key === 'chat'
                       ? 'Chat'
-                      : 'Profile';
+                      : key === 'community'
+                        ? 'Community'
+                        : 'Profile';
               navigation.navigate(routeName as keyof MainTabParamList);
             }}
             tabs={[
@@ -96,6 +100,7 @@ export const MainTabsNavigator: React.FC = () => {
                       ? chatUnreadCount
                       : undefined,
               },
+              { key: 'community', label: t('navigation.community'), icon: 'community' },
               { key: 'profile', label: t('navigation.profile'), icon: 'profile' },
             ]}
           />
@@ -105,6 +110,7 @@ export const MainTabsNavigator: React.FC = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Buddy" component={BuddyStackNavigator} />
       <Tab.Screen name="Chat" component={ChatStackNavigator} />
+      <Tab.Screen name="Community" component={CommunityScreen} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );
