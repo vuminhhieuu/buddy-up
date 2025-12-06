@@ -11,6 +11,7 @@ import enLanguage from '../assets/i18n/en/language.json';
 import enSession from '../assets/i18n/en/session.json';
 import enInvitations from '../assets/i18n/en/invitations.json';
 import enChat from '../assets/i18n/en/chat.json';
+import enGroups from '../assets/i18n/en/groups.json';
 import viCommon from '../assets/i18n/vi/common.json';
 import viAuth from '../assets/i18n/vi/auth.json';
 import viBuddy from '../assets/i18n/vi/buddy.json';
@@ -20,6 +21,7 @@ import viLanguage from '../assets/i18n/vi/language.json';
 import viSession from '../assets/i18n/vi/session.json';
 import viInvitations from '../assets/i18n/vi/invitations.json';
 import viChat from '../assets/i18n/vi/chat.json';
+import viGroups from '../assets/i18n/vi/groups.json';
 
 i18n.use(initReactI18next).init({
   compatibilityJSON: 'v3',
@@ -36,6 +38,7 @@ i18n.use(initReactI18next).init({
       session: enSession,
       invitations: enInvitations,
       chat: enChat,
+      groups: enGroups,
     },
     vi: {
       common: viCommon,
@@ -47,9 +50,21 @@ i18n.use(initReactI18next).init({
       session: viSession,
       invitations: viInvitations,
       chat: viChat,
+      groups: viGroups,
     },
   },
-  ns: ['common', 'auth', 'buddy', 'home', 'profile', 'language', 'session', 'invitations', 'chat'],
+  ns: [
+    'common',
+    'auth',
+    'buddy',
+    'home',
+    'profile',
+    'language',
+    'session',
+    'invitations',
+    'chat',
+    'groups',
+  ],
   defaultNS: 'common',
   interpolation: { escapeValue: false },
 });
