@@ -14,5 +14,56 @@
   "seeAll": "Xem tất cả",
   "filterAccessibility": "Bộ lọc danh sách chat",
   "createChatError": "Không thể mở cuộc trò chuyện",
-  "createChatErrorDescription": "Vui lòng thử lại sau."
+  "createChatErrorDescription": "Vui lòng thử lại sau.",
+  "statusOnline": "Đang hoạt động",
+  "typingIndicator": "{{name}} đang nhập...",
+  "emptyChatTitle": "Hãy mở lời với bạn học",
+  "emptyChatDescription": "Chia sẻ kế hoạch học tập hoặc bắt đầu câu chuyện mới.",
+  "startConversationCta": "Soạn tin nhắn",
+  "inputPlaceholder": "Nhắn tin...",
+  "quickReplies": [
+    "Được nha 👍",
+    "Gửi link giúp mình",
+    "Giải thích thêm nhé?",
+    "Chốt lịch học nào!"
+  ],
+  "todayLabel": "Hôm nay",
+  "moreActionsTitle": "Chia sẻ nhanh",
+  "actionSendPhoto": "Gửi ảnh",
+  "actionSendFile": "Gửi tệp",
+  "actionVoiceNote": "Ghi âm",
+  "actionCreateSchedule": "Tạo lịch học",
+  "quickStartMessage": "Xin chào 👋",
+  "chatInfo": {
+    "back": "Thông tin cuộc trò chuyện",
+    "streak": "🔥 {{days}} ngày liên tiếp",
+    "stats": {
+      "sessions": "Buổi học",
+      "hours": "Giờ",
+      "rating": "Đánh giá"
+    },
+    "quickActions": {
+      "call": "Gọi thoại",
+      "video": "Gọi video",
+      "schedule": "Đặt lịch",
+      "profile": "Hồ sơ"
+    },
+    "notifications": {
+      "title": "Thông báo",
+      "toggle": "Thông báo",
+      "sound": "Âm thanh"
+    },
+    "conversation": {
+      "title": "Cuộc trò chuyện",
+      "pin": "Ghim cuộc trò chuyện",
+      "archive": "Lưu trữ",
+      "deleteHistory": "Xóa lịch sử"
+    },
+    "privacy": {
+      "title": "Quyền riêng tư",
+      "block": "Chặn người dùng",
+      "report": "Báo cáo"
+    },
+    "leaveChat": "Rời khỏi cuộc trò chuyện"
+  }
 }

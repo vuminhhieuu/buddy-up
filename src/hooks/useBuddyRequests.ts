@@ -5,11 +5,13 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '../config/supabase';
 import { useAppDispatch } from '../store/hooks';
-import { addIncomingRequest } from '../store/slices/buddySlice';
+import { addIncomingRequest, fetchIncomingRequestsAsync } from '../store/slices/buddySlice';
 import type { ConnectionRequest, BuddyProfile } from '../types/buddy';
 import { showSuccessToast, showInfoToast } from '../utils/toast';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../utils/logger';
+
+const SYNC_INTERVAL_MS = 10000;
 
 /**
  * Type guard to validate ConnectionRequest payload from Supabase Realtime
@@ -70,6 +72,12 @@ export const useBuddyRequests = (userId: string | null) => {
     }
 
     logger.debug('useBuddyRequests', `Setting up Realtime subscription for user: ${userId}`);
+
+    const syncIncomingRequests = () => {
+      void dispatch(fetchIncomingRequestsAsync());
+    };
+
+    syncIncomingRequests();
 
     // Create channel for this user
     const channelName = `connections:${userId}`;
@@ -190,6 +198,7 @@ export const useBuddyRequests = (userId: string | null) => {
             logger.debug('useBuddyRequests', 'Showing toast with message:', toastMessage);
             showSuccessToast(toastMessage);
             logger.debug('useBuddyRequests', 'Toast.show() called');
+            syncIncomingRequests();
           } catch (error) {
             logger.error('useBuddyRequests', 'Error processing incoming request:', error);
           }
@@ -285,6 +294,7 @@ export const useBuddyRequests = (userId: string | null) => {
               );
             }
 
+            syncIncomingRequests();
             logger.debug('useBuddyRequests', 'Toast notification shown for status update');
           } catch (error) {
             logger.error('useBuddyRequests', 'Error processing status update:', error);
@@ -300,12 +310,15 @@ export const useBuddyRequests = (userId: string | null) => {
 
         if (status === 'SUBSCRIBED') {
           logger.info('useBuddyRequests', '✅ Successfully subscribed to connection requests');
+          syncIncomingRequests();
         } else if (status === 'CHANNEL_ERROR') {
           logger.error('useBuddyRequests', '❌ Channel error:', err);
           logger.warn('useBuddyRequests', 'Attempting to reconnect...');
+          syncIncomingRequests();
           // Supabase SDK will automatically attempt to reconnect
         } else if (status === 'TIMED_OUT') {
           logger.warn('useBuddyRequests', '⚠️ Channel timed out, attempting to reconnect...');
+          syncIncomingRequests();
         } else if (status === 'CLOSED') {
           logger.debug('useBuddyRequests', 'Channel closed');
         } else {
@@ -315,11 +328,14 @@ export const useBuddyRequests = (userId: string | null) => {
 
     subscriptionRef.current = channel;
 
+    const intervalId = setInterval(syncIncomingRequests, SYNC_INTERVAL_MS);
+
     // Cleanup: unsubscribe when component unmounts or userId changes
     // Capture channel in closure to prevent race condition when userId changes rapidly
     return () => {
       logger.debug('useBuddyRequests', `Cleaning up subscription for user: ${userId}`);
       // Use channel from closure instead of subscriptionRef.current to avoid race condition
+      clearInterval(intervalId);
       supabase.removeChannel(channel);
       // Only clear ref if this is still the current channel
       if (subscriptionRef.current === channel) {

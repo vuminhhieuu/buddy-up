@@ -24,6 +24,15 @@ import {
   ChevronRight,
   Star,
   Key,
+  Phone,
+  Video,
+  Info,
+  MoreHorizontal,
+  Smile,
+  Send,
+  Image,
+  Paperclip,
+  Mic,
   type LucideIcon,
 } from 'lucide-react-native';
 
@@ -49,7 +58,16 @@ export type IconName =
   | 'pencil'
   | 'chevronRight'
   | 'star'
-  | 'key';
+  | 'key'
+  | 'phone'
+  | 'video'
+  | 'info'
+  | 'more'
+  | 'smile'
+  | 'send'
+  | 'image'
+  | 'paperclip'
+  | 'mic';
 
 const NAME_TO_ICON: Record<IconName, LucideIcon> = {
   home: Home,
@@ -74,6 +92,15 @@ const NAME_TO_ICON: Record<IconName, LucideIcon> = {
   chevronRight: ChevronRight,
   star: Star,
   key: Key,
+  phone: Phone,
+  video: Video,
+  info: Info,
+  more: MoreHorizontal,
+  smile: Smile,
+  send: Send,
+  image: Image,
+  paperclip: Paperclip,
+  mic: Mic,
 };
 
 export type IconProps = {

@@ -44,6 +44,11 @@ export const COLORS = {
     warning: '#FF9600',
     info: '#1CB0F6',
   },
+  code: {
+    background: '#1F1F1F',
+    text: '#F7F7F7',
+    border: '#2E2E2E',
+  },
   gradients: {
     primary: 'linear-gradient(135deg, #58CC02 0%, #45A802 100%)',
     secondary: 'linear-gradient(135deg, #1CB0F6 0%, #0EA5E9 100%)',
@@ -143,6 +148,11 @@ export const TYPOGRAPHY = {
     '5xl': 40,
   },
   lineHeights: { tight: 1.2, normal: 1.5, relaxed: 1.6 },
+  code: {
+    fontFamily: 'Courier',
+    fontSize: 13,
+    lineHeight: 20,
+  },
 } as const;
 
 export const TRANSITIONS = {

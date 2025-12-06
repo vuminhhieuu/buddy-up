@@ -356,8 +356,10 @@ export const {
 // Selectors
 export const selectConversations = (state: RootState) => state.chat.conversations;
 
+const EMPTY_MESSAGES: Message[] = [];
+
 export const selectMessagesForChat = (chatId: string) => (state: RootState) =>
-  state.chat.messagesByChatId[chatId] || [];
+  state.chat.messagesByChatId[chatId] ?? EMPTY_MESSAGES;
 
 export const selectActiveChat = (state: RootState) => {
   const activeChatId = state.chat.activeChatId;

@@ -14,5 +14,56 @@
   "seeAll": "See all",
   "filterAccessibility": "Filter chat list",
   "createChatError": "Unable to open conversation",
-  "createChatErrorDescription": "Please try again in a moment."
+  "createChatErrorDescription": "Please try again in a moment.",
+  "statusOnline": "Online",
+  "typingIndicator": "{{name}} is typing...",
+  "emptyChatTitle": "Say hi to your buddy",
+  "emptyChatDescription": "Share your study plan or start a new conversation.",
+  "startConversationCta": "Compose a message",
+  "inputPlaceholder": "Type a message...",
+  "quickReplies": [
+    "Nice!",
+    "Send me the link 👍",
+    "Can you explain more?",
+    "Let’s book a session!"
+  ],
+  "todayLabel": "Today",
+  "moreActionsTitle": "More actions",
+  "actionSendPhoto": "Send photo",
+  "actionSendFile": "Send file",
+  "actionVoiceNote": "Voice note",
+  "actionCreateSchedule": "Create study session",
+  "quickStartMessage": "Hello 👋",
+  "chatInfo": {
+    "back": "Chat details",
+    "streak": "🔥 {{days}} day streak",
+    "stats": {
+      "sessions": "Sessions",
+      "hours": "Hours",
+      "rating": "Rating"
+    },
+    "quickActions": {
+      "call": "Voice call",
+      "video": "Video call",
+      "schedule": "Schedule",
+      "profile": "Profile"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "toggle": "Notifications",
+      "sound": "Sound"
+    },
+    "conversation": {
+      "title": "Conversation",
+      "pin": "Pin conversation",
+      "archive": "Archive",
+      "deleteHistory": "Delete history"
+    },
+    "privacy": {
+      "title": "Privacy",
+      "block": "Block user",
+      "report": "Report"
+    },
+    "leaveChat": "Leave conversation"
+  }
 }

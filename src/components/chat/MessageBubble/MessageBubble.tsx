@@ -3,8 +3,8 @@
  * Displays a single chat message with different styling for sent/received messages
  */
 
-import React from 'react';
-import { View, ViewStyle } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, ViewStyle, useWindowDimensions } from 'react-native';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
 import { Avatar } from '../../ui/Avatar/Avatar';
@@ -12,33 +12,68 @@ import { Spacer } from '../../ui/Spacer/Spacer';
 import { formatRelativeTime } from '../../../utils/date';
 import type { Message } from '../../../services/chat';
 
+type BubbleVariant = 'text' | 'code' | 'status';
+
 export type MessageBubbleProps = {
   message: Message;
-  isSent: boolean; // true if message is from current user
-  showAvatar?: boolean; // show avatar (for received messages)
-  showTimestamp?: boolean; // show timestamp
-  senderName?: string; // sender name for received messages
-  senderAvatar?: string | null; // sender avatar URL
+  isSent: boolean;
+  variant?: BubbleVariant;
+  showAvatar?: boolean;
+  showTimestamp?: boolean;
+  senderName?: string;
+  senderAvatar?: string | null;
+  statusIcon?: string;
+  isSelected?: boolean;
 };
 
 export const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
   isSent,
+  variant = 'text',
   showAvatar = false,
   showTimestamp = true,
   senderName,
   senderAvatar,
+  statusIcon = '✓',
+  isSelected = false,
 }) => {
   const { theme } = useTheme();
+  const { width: windowWidth } = useWindowDimensions();
+
+  const maxBubbleWidth = useMemo(() => {
+    const horizontalPadding = theme.spacing[6]; // tighter spacing to keep avatar + bubble gọn
+    const cappedWidth = Math.max(windowWidth - horizontalPadding, 0);
+    return Math.min(windowWidth * 0.6, cappedWidth);
+  }, [theme.spacing, windowWidth]);
+
+  const bubbleBackground =
+    variant === 'code'
+      ? theme.colors.code.background
+      : variant === 'status'
+        ? theme.colors.surface
+        : isSent
+          ? isSelected
+            ? theme.colors.primary[400]
+            : theme.colors.primary[500]
+          : isSelected
+            ? theme.colors.neutral[100]
+            : theme.colors.surface;
 
   const bubbleStyle: ViewStyle = {
-    maxWidth: '75%',
-    paddingHorizontal: theme.spacing[4],
+    maxWidth: maxBubbleWidth,
+    paddingHorizontal: variant === 'code' ? theme.spacing[5] : theme.spacing[4],
     paddingVertical: theme.spacing[3],
-    borderRadius: theme.radius.lg,
-    backgroundColor: isSent ? theme.colors.primary[500] : theme.colors.surface,
-    borderWidth: isSent ? 0 : 1.5,
-    borderColor: theme.colors.border,
+    borderRadius: 24,
+    borderTopRightRadius: isSent ? 12 : 24,
+    borderTopLeftRadius: isSent ? 24 : 12,
+    backgroundColor: bubbleBackground,
+    borderWidth: variant === 'code' ? 1 : variant === 'status' || isSent ? 0 : 1,
+    borderColor: variant === 'code' ? theme.colors.code.border : theme.colors.border,
+    shadowColor: theme.shadows.md.shadowColor,
+    shadowOpacity: variant === 'status' ? 0 : theme.shadows.md.shadowOpacity,
+    shadowRadius: theme.shadows.md.shadowRadius,
+    shadowOffset: theme.shadows.md.shadowOffset,
+    elevation: variant === 'status' ? 0 : theme.shadows.md.elevation,
   };
 
   const containerStyle: ViewStyle = {
@@ -46,15 +81,20 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
     alignItems: 'flex-end',
     justifyContent: isSent ? 'flex-end' : 'flex-start',
     marginVertical: theme.spacing[1],
-    paddingHorizontal: theme.spacing[4],
+    paddingHorizontal: theme.spacing[1],
   };
 
   return (
     <View style={containerStyle}>
       {!isSent && showAvatar && (
         <>
-          <Avatar uri={senderAvatar || undefined} name={senderName} size="sm" />
-          <Spacer size={2} horizontal />
+          <Avatar
+            uri={senderAvatar || undefined}
+            name={senderName}
+            size="sm"
+            style={{ marginRight: theme.spacing[1] }}
+          />
+          <Spacer size={0} horizontal />
         </>
       )}
       <View style={{ alignItems: isSent ? 'flex-end' : 'flex-start' }}>
@@ -66,12 +106,33 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           </>
         )}
         <View style={bubbleStyle}>
-          {message.content ? (
-            <Text variant="body" color={isSent ? 'inverse' : 'primary'} style={{ lineHeight: 20 }}>
+          {variant === 'status' ? (
+            <Text variant="bodySmall" color="secondary">
+              {statusIcon} {message.content}
+            </Text>
+          ) : variant === 'code' ? (
+            <Text
+              style={{
+                color: theme.colors.code.text,
+                fontFamily: theme.typography.code.fontFamily,
+                fontSize: theme.typography.code.fontSize,
+                lineHeight: theme.typography.code.lineHeight,
+              }}
+            >
               {message.content}
             </Text>
-          ) : null}
-          {message.attachments && message.attachments.length > 0 ? (
+          ) : (
+            message.content && (
+              <Text
+                variant="body"
+                color={isSent ? 'inverse' : 'primary'}
+                style={{ lineHeight: 20 }}
+              >
+                {message.content}
+              </Text>
+            )
+          )}
+          {variant === 'text' && message.attachments && message.attachments.length > 0 ? (
             <Text variant="caption" color={isSent ? 'inverse' : 'secondary'}>
               📎 {message.attachments.length} file đính kèm
             </Text>
@@ -89,8 +150,13 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       </View>
       {isSent && showAvatar && (
         <>
-          <Spacer size={2} horizontal />
-          <Avatar uri={senderAvatar || undefined} name={senderName} size="sm" />
+          <Spacer size={0} horizontal />
+          <Avatar
+            uri={senderAvatar || undefined}
+            name={senderName}
+            size="sm"
+            style={{ marginLeft: theme.spacing[1] }}
+          />
         </>
       )}
     </View>

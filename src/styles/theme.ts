@@ -12,6 +12,9 @@ export const lightTheme = {
       inverse: '#FFFFFF',
     },
     border: COLORS.neutral[300],
+    code: {
+      ...COLORS.code,
+    },
   },
   spacing: SPACING,
   radius: RADIUS,
@@ -34,6 +37,11 @@ export const darkTheme = {
       inverse: '#0D1117',
     },
     border: '#30363D',
+    code: {
+      background: '#111827',
+      text: '#E6EDF3',
+      border: '#1F2937',
+    },
   },
   spacing: SPACING,
   radius: RADIUS,
