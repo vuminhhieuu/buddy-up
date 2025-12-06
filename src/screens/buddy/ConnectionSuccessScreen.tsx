@@ -184,11 +184,22 @@ export const ConnectionSuccessScreen: React.FC = () => {
     try {
       setChatLoading(true);
       const chatId = await ensureChat();
-      showSuccessToast(t('connectionSuccess.actions.chatReady'));
-      // Navigate to Chat tab
       const parent = navigation.getParent();
       if (parent) {
-        parent.navigate('Chat' as never);
+        parent.navigate(
+          'Chat' as never,
+          {
+            screen: 'ChatRoom',
+            params: {
+              chatId,
+              type: 'direct',
+              participant: {
+                name: sender.display_name,
+                avatar: sender.avatar_url,
+              },
+            },
+          } as never,
+        );
       }
     } catch (error) {
       const message = formatErrorMessage(error) || t('connectionSuccess.errors.chatFailed');
@@ -196,7 +207,7 @@ export const ConnectionSuccessScreen: React.FC = () => {
     } finally {
       setChatLoading(false);
     }
-  }, [ensureChat, navigation, t]);
+  }, [ensureChat, navigation, sender.avatar_url, sender.display_name, t]);
 
   const handleQuickMessage = useCallback(
     async (message: string) => {

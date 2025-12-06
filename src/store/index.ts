@@ -9,6 +9,12 @@ export const store = configureStore({
     buddy: buddyReducer,
     chat: chatReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      immutableCheck: {
+        warnAfter: 200,
+      },
+    }),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

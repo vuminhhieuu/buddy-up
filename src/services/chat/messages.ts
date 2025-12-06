@@ -5,12 +5,7 @@
 
 import { supabase } from '../../config/supabase';
 import { logger } from '../../utils/logger';
-import {
-  isRlsError,
-  formatErrorMessage,
-  handleSupabaseError,
-  handleUnknownError,
-} from '../helpers';
+import { isRlsError, handleSupabaseError, handleUnknownError } from '../helpers';
 import type { Message, SendMessageResponse, FetchMessagesResponse } from './types';
 
 /**
@@ -320,5 +315,26 @@ export async function sendQuickMessage(
       error: errorResponse.error,
       errorCode: errorResponse.errorCode,
     };
+  }
+}
+
+/**
+ * Mark messages as read for the current user in a chat
+ * @param chatId - Chat room ID
+ * @param userId - Current user ID
+ */
+export async function markMessagesRead(chatId: string, userId: string): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('chat_participants')
+      .update({ last_read_at: new Date().toISOString() })
+      .eq('chat_id', chatId)
+      .eq('user_id', userId);
+
+    if (error && !isRlsError(error)) {
+      logger.warn('markMessagesRead', 'Failed to update last_read_at', error);
+    }
+  } catch (error) {
+    logger.warn('markMessagesRead', 'Unexpected error', error);
   }
 }

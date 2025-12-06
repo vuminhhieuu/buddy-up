@@ -100,7 +100,13 @@ export const ChatListScreen: React.FC = () => {
     (conversation: ChatConversation) => {
       navigation.navigate('ChatRoom', {
         chatId: conversation.chatId,
-        title: conversation.participantName || conversation.title || undefined,
+        type: conversation.type,
+        title: conversation.title,
+        participant: {
+          name: conversation.participantName,
+          avatar: conversation.participantAvatar,
+          tags: conversation.type === 'direct' ? [] : undefined,
+        },
       });
     },
     [navigation],
@@ -126,7 +132,11 @@ export const ChatListScreen: React.FC = () => {
           await dispatch(fetchConversationsAsync());
           navigation.navigate('ChatRoom', {
             chatId: response.chat.id,
-            title: buddy.display_name,
+            type: 'direct',
+            participant: {
+              name: buddy.display_name,
+              avatar: buddy.avatar_url,
+            },
           });
         } else {
           logger.warn('ChatListScreen', 'Unable to create chat', response.error);
