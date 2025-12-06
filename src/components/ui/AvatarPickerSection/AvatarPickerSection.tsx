@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Pressable } from 'react-native';
-import { Camera, User } from 'lucide-react-native';
+import { Pencil, User } from 'lucide-react-native';
 import { Avatar } from '../Avatar/Avatar';
 import { Text } from '../Text/Text';
 import { ImagePickerModal } from '../ImagePickerModal/ImagePickerModal';
@@ -66,7 +66,7 @@ export const AvatarPickerSection: React.FC<AvatarPickerSectionProps> = ({
             )}
           </Pressable>
 
-          {/* Camera Badge */}
+          {/* Edit Badge */}
           <Pressable
             onPress={handleOpenPicker}
             disabled={loading}
@@ -74,17 +74,22 @@ export const AvatarPickerSection: React.FC<AvatarPickerSectionProps> = ({
             onPressOut={() => setCameraPressed(false)}
             style={{
               position: 'absolute',
-              bottom: -4,
-              right: -4,
-              backgroundColor: theme.colors.primary[500],
+              bottom: -6,
+              right: -6,
+              backgroundColor: theme.colors.surface,
               borderRadius: 50,
-              padding: theme.spacing[2],
+              padding: theme.spacing[1],
               borderWidth: 2,
-              borderColor: theme.colors.surface,
+              borderColor: theme.colors.primary[500],
               opacity: cameraPressed ? 0.7 : 1,
+              elevation: 2,
+              shadowColor: '#000',
+              shadowOpacity: 0.12,
+              shadowRadius: 2,
+              shadowOffset: { width: 0, height: 1 },
             }}
           >
-            <Camera size={18} color="white" />
+            <Pencil size={16} color={theme.colors.primary[500]} />
           </Pressable>
         </View>
 

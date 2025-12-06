@@ -112,7 +112,12 @@
     "permissionDenied": "Từ chối quyền",
     "cameraPermissionRequired": "Cần quyền truy cập máy ảnh để chụp ảnh.",
     "libraryPermissionRequired": "Cần quyền truy cập thư viện để chọn ảnh.",
-    "back": "Quay lại"
+    "back": "Quay lại",
+    "confirmDelete": "Hành động này không thể hoàn tác",
+    "ok": "OK",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "success": "Thành công"
   },
   "onboarding": {
     "welcome": {

@@ -287,7 +287,7 @@ export const ProfileScreen: React.FC = () => {
         id: 'edit-profile',
         label: t('settings.editProfile'),
         icon: 'userEdit',
-        onPress: () => handleOpenSettingsSection('profile'),
+        onPress: () => navigation.navigate('EditProfile'),
       },
       {
         id: 'manage-friends',

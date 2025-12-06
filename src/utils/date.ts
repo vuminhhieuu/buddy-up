@@ -162,3 +162,48 @@ export function parseSessionDateTime(sessionDateTime?: string, scheduledIso?: st
 
   return null;
 }
+
+/**
+ * Format timestamp to relative time string (e.g., "Vừa xong", "5 phút trước")
+ * @param timestamp - ISO timestamp string
+ * @param format - Format type: 'full' (with "trước") or 'short' (without "trước")
+ * @param locale - Locale string (default: 'vi-VN')
+ * @returns Formatted time string
+ */
+export function formatRelativeTime(
+  timestamp: string | null,
+  format: 'full' | 'short' = 'full',
+  locale = 'vi-VN',
+): string {
+  if (!timestamp) return '';
+
+  const date = new Date(timestamp);
+  const now = new Date();
+
+  if (isNaN(date.getTime())) return '';
+
+  const diffMs = now.getTime() - date.getTime();
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) {
+    return 'Vừa xong';
+  }
+  if (diffMins < 60) {
+    return format === 'full' ? `${diffMins} phút trước` : `${diffMins} phút`;
+  }
+  if (diffHours < 24) {
+    return format === 'full' ? `${diffHours} giờ trước` : `${diffHours} giờ`;
+  }
+  if (diffDays < 7) {
+    return format === 'full' ? `${diffDays} ngày trước` : `${diffDays} ngày`;
+  }
+
+  // Format as date
+  return date.toLocaleDateString(locale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
+  });
+}

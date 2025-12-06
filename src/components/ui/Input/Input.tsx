@@ -24,6 +24,7 @@ export const Input: React.FC<InputProps> = ({
 }) => {
   const { theme } = useTheme();
   const [focused, setFocused] = useState(false);
+  const isDisabled = rest.editable === false;
   const borderColor = errorText
     ? theme.colors.semantic.error
     : focused
@@ -49,9 +50,9 @@ export const Input: React.FC<InputProps> = ({
           alignItems: 'center',
           borderWidth: 1.5,
           borderRadius: theme.radius.md,
-          backgroundColor: theme.colors.surface,
+          backgroundColor: isDisabled ? theme.colors.primary[50] : theme.colors.surface,
           minHeight: theme.sizes.input.md,
-          borderColor,
+          borderColor: isDisabled ? theme.colors.primary[200] : borderColor,
         }}
       >
         {left ? <View style={{ marginLeft: theme.spacing[4] }}>{left}</View> : null}

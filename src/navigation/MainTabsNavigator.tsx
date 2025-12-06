@@ -5,10 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '../store/hooks';
 import { selectUnreadRequestsCount } from '../store/slices/buddySlice';
 import { HomeScreen } from '../screens/home/HomeScreen';
-import { ChatScreen } from '../screens/chat/ChatScreen';
 import { ProfileStackNavigator } from './ProfileStackNavigator';
 import { BuddyStackNavigator } from './BuddyStackNavigator';
 import { logger } from '../utils/logger';
+import { ChatStackNavigator } from './ChatStackNavigator';
+import { selectUnreadCount } from '../store/slices/chatSlice';
 export type MainTabParamList = {
   Home: undefined;
   Buddy: undefined;
@@ -21,6 +22,7 @@ const Tab = createBottomTabNavigator<MainTabParamList>();
 export const MainTabsNavigator: React.FC = () => {
   const { t } = useTranslation();
   const unreadRequestsCount = useAppSelector(selectUnreadRequestsCount);
+  const chatUnreadCount = useAppSelector(selectUnreadCount);
 
   // Debug log
   if (__DEV__) {
@@ -57,7 +59,17 @@ export const MainTabsNavigator: React.FC = () => {
                     ? unreadRequestsCount
                     : undefined,
             },
-            { key: 'chat', label: t('navigation.chat'), icon: 'chat' },
+            {
+              key: 'chat',
+              label: t('navigation.chat'),
+              icon: 'chat',
+              badge:
+                state.routeNames[state.index].toLowerCase() === 'chat'
+                  ? undefined
+                  : chatUnreadCount > 0
+                    ? chatUnreadCount
+                    : undefined,
+            },
             { key: 'profile', label: t('navigation.profile'), icon: 'profile' },
           ]}
         />
@@ -65,7 +77,7 @@ export const MainTabsNavigator: React.FC = () => {
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Buddy" component={BuddyStackNavigator} />
-      <Tab.Screen name="Chat" component={ChatScreen} />
+      <Tab.Screen name="Chat" component={ChatStackNavigator} />
       <Tab.Screen name="Profile" component={ProfileStackNavigator} />
     </Tab.Navigator>
   );

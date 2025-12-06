@@ -113,7 +113,12 @@
     "permissionDenied": "Permission denied",
     "cameraPermissionRequired": "Camera permission is required to take photos.",
     "libraryPermissionRequired": "Library permission is required to choose a photo.",
-    "back": "Back"
+    "back": "Back",
+    "confirmDelete": "This action cannot be undone",
+    "ok": "OK",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "success": "Success"
   },
   "onboarding": {
     "welcome": {

@@ -5,6 +5,7 @@
 
 import { supabase } from '../../config/supabase';
 import { formatErrorMessage } from '../helpers';
+import type { EditProfileData } from '../../types/profile';
 
 /**
  * Update profile avatar URL
@@ -68,6 +69,34 @@ export async function updateProfileStep1(
         display_name: displayName,
         bio: studyGoal,
         avatar_url: avatarUrl || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('user_id', userId);
+
+    if (error) {
+      throw new Error(`Update failed: ${formatErrorMessage(error)}`);
+    }
+  } catch (err) {
+    throw new Error(`Failed to update profile: ${formatErrorMessage(err)}`);
+  }
+}
+
+/**
+ * Update full user profile with all editable fields
+ * @param userId - User ID
+ * @param profileData - Profile data to update
+ */
+export async function updateFullProfile(
+  userId: string,
+  profileData: EditProfileData,
+): Promise<void> {
+  try {
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        display_name: profileData.displayName,
+        bio: profileData.bio,
+        interests: profileData.interests || [],
         updated_at: new Date().toISOString(),
       })
       .eq('user_id', userId);
