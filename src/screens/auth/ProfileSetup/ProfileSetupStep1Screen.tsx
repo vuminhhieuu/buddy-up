@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Alert, Dimensions } from 'react-native';
+import { View, Alert, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
 import { Formik } from 'formik';
 import { useTranslation } from 'react-i18next';
 import {
@@ -80,226 +80,243 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
 
   return (
     <ScreenContainer>
-      <View style={{ flex: 1 }}>
-        {/* Header */}
-        <View style={styles.header}>
-          {/* Title Row */}
-          <View style={styles.titleRow}>
-            <Text
-              variant="body"
-              color="primary"
-              style={{
-                fontWeight: '700' as const,
-                fontSize: theme.typography.scale.sm,
-                color: theme.colors.primary[500],
-              }}
-            >
-              {t('profileSetup.step', { current: 1 })}
-            </Text>
-            <Text variant="body" color="tertiary" style={{ fontSize: theme.typography.scale.sm }}>
-              {t('profileSetup.basicInfo')}
-            </Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+        <View style={{ flex: 1 }}>
+          {/* Header */}
+          <View style={styles.header}>
+            {/* Title Row */}
+            <View style={styles.titleRow}>
+              <Text
+                variant="body"
+                color="primary"
+                style={{
+                  fontWeight: '700' as const,
+                  fontSize: theme.typography.scale.sm,
+                  color: theme.colors.primary[500],
+                }}
+              >
+                {t('profileSetup.step', { current: 1 })}
+              </Text>
+              <Text variant="body" color="tertiary" style={{ fontSize: theme.typography.scale.sm }}>
+                {t('profileSetup.basicInfo')}
+              </Text>
+            </View>
+
+            {/* Progress Bar */}
+            <View style={styles.progressBarContainer}>
+              <View style={styles.progressBar} />
+            </View>
           </View>
 
-          {/* Progress Bar */}
-          <View style={styles.progressBarContainer}>
-            <View style={styles.progressBar} />
-          </View>
-        </View>
+          {/* Content - Fixed */}
+          <View
+            style={{
+              flex: 1,
+              paddingHorizontal: theme.spacing[4],
+              paddingVertical: theme.spacing[3],
+              justifyContent: 'space-between',
+            }}
+          >
+            {/* Top Section */}
+            <View>
+              {/* Title */}
+              <Text
+                variant="h5"
+                style={{ fontWeight: '600' as const, textAlign: 'center' as const }}
+              >
+                {t('profileSetup.step1Title')}
+              </Text>
+              <Spacer size={1} />
+              <Text variant="body" color="tertiary" style={{ textAlign: 'center' as const }}>
+                {t('profileSetup.step1Subtitle')}
+              </Text>
 
-        {/* Content - Fixed */}
-        <View
-          style={{
-            flex: 1,
-            paddingHorizontal: theme.spacing[4],
-            paddingVertical: theme.spacing[3],
-            justifyContent: 'space-between',
-          }}
-        >
-          {/* Top Section */}
-          <View>
-            {/* Title */}
-            <Text variant="h5" style={{ fontWeight: '600' as const, textAlign: 'center' as const }}>
-              {t('profileSetup.step1Title')}
-            </Text>
-            <Spacer size={1} />
-            <Text variant="body" color="tertiary" style={{ textAlign: 'center' as const }}>
-              {t('profileSetup.step1Subtitle')}
-            </Text>
+              <Spacer size={3} />
 
-            <Spacer size={3} />
+              {/* Avatar Picker */}
+              <AvatarPickerSection
+                avatarUri={avatarUri}
+                displayName={registeredDisplayName || profileDisplayName}
+                onAvatarSelected={handleAvatarSelected}
+                loading={submitting}
+              />
 
-            {/* Avatar Picker */}
-            <AvatarPickerSection
-              avatarUri={avatarUri}
-              displayName={registeredDisplayName || profileDisplayName}
-              onAvatarSelected={handleAvatarSelected}
-              loading={submitting}
-            />
+              <Spacer size={3} />
 
-            <Spacer size={3} />
-
-            {/* Form and Button */}
-            <Formik
-              initialValues={{
-                displayName: registeredDisplayName || profileDisplayName || '',
-                studyGoal: profileStudyGoal || '',
-              }}
-              validationSchema={profileStep1Schema}
-              onSubmit={async (values, { setStatus }) => {
-                setStatus(undefined);
-                if (!userId) {
-                  setStatus(t('common.error'));
-                  return;
-                }
-
-                try {
-                  setSubmitting(true);
-
-                  let uploadedAvatarUrl: string | undefined;
-
-                  if (avatarUri && !avatarUri.startsWith('http')) {
-                    uploadedAvatarUrl = await uploadAvatarToStorage(userId, avatarUri);
+              {/* Form and Button */}
+              <Formik
+                initialValues={{
+                  displayName: registeredDisplayName || profileDisplayName || '',
+                  studyGoal: profileStudyGoal || '',
+                }}
+                validationSchema={profileStep1Schema}
+                onSubmit={async (values, { setStatus }) => {
+                  setStatus(undefined);
+                  if (!userId) {
+                    setStatus(t('common.error'));
+                    return;
                   }
 
-                  await updateProfileStep1(
-                    userId,
-                    values.displayName,
-                    values.studyGoal,
-                    uploadedAvatarUrl || avatarUri,
-                  );
-
-                  dispatch(
-                    setProfileData({
-                      displayName: values.displayName,
-                      studyGoal: values.studyGoal,
-                      avatarUrl: uploadedAvatarUrl || avatarUri,
-                    }),
-                  );
-
                   try {
-                    const r = await saveStepForUser(
+                    setSubmitting(true);
+
+                    let uploadedAvatarUrl: string | undefined;
+
+                    if (avatarUri && !avatarUri.startsWith('http')) {
+                      uploadedAvatarUrl = await uploadAvatarToStorage(userId, avatarUri);
+                    }
+
+                    await updateProfileStep1(
                       userId,
-                      {
-                        display_name: values.displayName,
-                        bio: values.studyGoal,
-                        avatar_url: uploadedAvatarUrl || avatarUri,
-                      },
-                      true,
+                      values.displayName,
+                      values.studyGoal,
+                      uploadedAvatarUrl || avatarUri,
                     );
-                    if (r?.error) {
-                      const errorMessage = r.error?.message || 'Failed to save step 1';
+
+                    dispatch(
+                      setProfileData({
+                        displayName: values.displayName,
+                        studyGoal: values.studyGoal,
+                        avatarUrl: uploadedAvatarUrl || avatarUri,
+                      }),
+                    );
+
+                    try {
+                      const r = await saveStepForUser(
+                        userId,
+                        {
+                          display_name: values.displayName,
+                          bio: values.studyGoal,
+                          avatar_url: uploadedAvatarUrl || avatarUri,
+                        },
+                        true,
+                      );
+                      if (r?.error) {
+                        const errorMessage = r.error?.message || 'Failed to save step 1';
+                        setStatus(errorMessage);
+                        Alert.alert(t('common.error'), errorMessage);
+                        return;
+                      }
+                    } catch (err) {
+                      const errorMessage = err instanceof Error ? err.message : t('common.error');
                       setStatus(errorMessage);
                       Alert.alert(t('common.error'), errorMessage);
                       return;
                     }
+
+                    dispatch(setCurrentProfileStep(2));
+
+                    onNext?.({
+                      displayName: values.displayName,
+                      studyGoal: values.studyGoal,
+                      avatarUri: uploadedAvatarUrl || avatarUri,
+                    });
                   } catch (err) {
                     const errorMessage = err instanceof Error ? err.message : t('common.error');
                     setStatus(errorMessage);
                     Alert.alert(t('common.error'), errorMessage);
-                    return;
+                  } finally {
+                    setSubmitting(false);
                   }
-
-                  dispatch(setCurrentProfileStep(2));
-
-                  onNext?.({
-                    displayName: values.displayName,
-                    studyGoal: values.studyGoal,
-                    avatarUri: uploadedAvatarUrl || avatarUri,
-                  });
-                } catch (err) {
-                  const errorMessage = err instanceof Error ? err.message : t('common.error');
-                  setStatus(errorMessage);
-                  Alert.alert(t('common.error'), errorMessage);
-                } finally {
-                  setSubmitting(false);
-                }
-              }}
-            >
-              {({ handleChange, handleBlur, handleSubmit, values, errors, touched, status }) => (
-                <>
-                  <View>
-                    {/* Display Name Input - with required indicator */}
-                    <View style={{ marginBottom: theme.spacing[3] }}>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          marginBottom: theme.spacing[1],
-                        }}
-                      >
-                        <Text variant="body" style={{ fontWeight: '600' as const }}>
-                          {t('profileSetup.displayNameLabel')}
-                        </Text>
-                        <Text variant="body" color="error" style={{ marginLeft: theme.spacing[1] }}>
-                          *
-                        </Text>
+                }}
+              >
+                {({ handleChange, handleBlur, handleSubmit, values, errors, touched, status }) => (
+                  <>
+                    <View>
+                      {/* Display Name Input - with required indicator */}
+                      <View style={{ marginBottom: theme.spacing[3] }}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginBottom: theme.spacing[1],
+                          }}
+                        >
+                          <Text variant="body" style={{ fontWeight: '600' as const }}>
+                            {t('profileSetup.displayNameLabel')}
+                          </Text>
+                          <Text
+                            variant="body"
+                            color="error"
+                            style={{ marginLeft: theme.spacing[1] }}
+                          >
+                            *
+                          </Text>
+                        </View>
+                        <Input
+                          placeholder={t('profileSetup.displayNamePlaceholder')}
+                          value={values.displayName}
+                          onChangeText={handleChange('displayName')}
+                          onBlur={handleBlur('displayName')}
+                          autoCapitalize="words"
+                          autoCorrect={false}
+                          editable={!submitting}
+                          errorText={
+                            touched.displayName && errors.displayName
+                              ? t(errors.displayName)
+                              : undefined
+                          }
+                        />
                       </View>
-                      <Input
-                        placeholder={t('profileSetup.displayNamePlaceholder')}
-                        value={values.displayName}
-                        onChangeText={handleChange('displayName')}
-                        onBlur={handleBlur('displayName')}
-                        autoCapitalize="words"
-                        autoCorrect={false}
-                        editable={!submitting}
-                        errorText={
-                          touched.displayName && errors.displayName
-                            ? t(errors.displayName)
-                            : undefined
-                        }
+
+                      {/* Study Goal Input - with required indicator */}
+                      <View style={{ marginBottom: theme.spacing[2] }}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginBottom: theme.spacing[1],
+                          }}
+                        >
+                          <Text variant="body" style={{ fontWeight: '600' as const }}>
+                            {t('profileSetup.studyGoalLabel')}
+                          </Text>
+                          <Text
+                            variant="body"
+                            color="error"
+                            style={{ marginLeft: theme.spacing[1] }}
+                          >
+                            *
+                          </Text>
+                        </View>
+                        <Input
+                          placeholder={t('profileSetup.studyGoalPlaceholder')}
+                          value={values.studyGoal}
+                          onChangeText={handleChange('studyGoal')}
+                          onBlur={handleBlur('studyGoal')}
+                          maxLength={200}
+                          editable={!submitting}
+                          errorText={
+                            touched.studyGoal && errors.studyGoal ? t(errors.studyGoal) : undefined
+                          }
+                        />
+                      </View>
+
+                      {/* Status Error */}
+                      {status ? (
+                        <Text variant="caption" color="error">
+                          {status}
+                        </Text>
+                      ) : null}
+                    </View>
+                    <View>
+                      <ProfileSetupNextButton
+                        onPress={() => handleSubmit()}
+                        loading={submitting}
+                        disabled={!values.displayName || !values.studyGoal || submitting}
                       />
                     </View>
-
-                    {/* Study Goal Input - with required indicator */}
-                    <View style={{ marginBottom: theme.spacing[2] }}>
-                      <View
-                        style={{
-                          flexDirection: 'row',
-                          alignItems: 'center',
-                          marginBottom: theme.spacing[1],
-                        }}
-                      >
-                        <Text variant="body" style={{ fontWeight: '600' as const }}>
-                          {t('profileSetup.studyGoalLabel')}
-                        </Text>
-                        <Text variant="body" color="error" style={{ marginLeft: theme.spacing[1] }}>
-                          *
-                        </Text>
-                      </View>
-                      <Input
-                        placeholder={t('profileSetup.studyGoalPlaceholder')}
-                        value={values.studyGoal}
-                        onChangeText={handleChange('studyGoal')}
-                        onBlur={handleBlur('studyGoal')}
-                        maxLength={200}
-                        editable={!submitting}
-                        errorText={
-                          touched.studyGoal && errors.studyGoal ? t(errors.studyGoal) : undefined
-                        }
-                      />
-                    </View>
-
-                    {/* Status Error */}
-                    {status ? (
-                      <Text variant="caption" color="error">
-                        {status}
-                      </Text>
-                    ) : null}
-                  </View>
-                  <View>
-                    <ProfileSetupNextButton
-                      onPress={() => handleSubmit()}
-                      loading={submitting}
-                      disabled={!values.displayName || !values.studyGoal || submitting}
-                    />
-                  </View>
-                </>
-              )}
-            </Formik>
+                  </>
+                )}
+              </Formik>
+            </View>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </ScreenContainer>
   );
 };
