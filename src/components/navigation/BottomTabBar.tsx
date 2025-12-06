@@ -41,7 +41,8 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ tabs, activeKey, onT
       <View style={[styles.container, { paddingHorizontal: theme.spacing[4] }]}>
         {tabs.map((tab) => {
           const isActive = activeKey === tab.key;
-          const iconColor = isActive ? theme.colors.text.inverse : theme.colors.text.secondary;
+          const iconColor = isActive ? theme.colors.primary[500] : theme.colors.text.secondary;
+          const textColor = isActive ? theme.colors.primary[500] : theme.colors.text.secondary;
           return (
             <Pressable
               key={tab.key}
@@ -51,46 +52,31 @@ export const BottomTabBar: React.FC<BottomTabBarProps> = ({ tabs, activeKey, onT
               onPress={() => onTabPress(tab.key)}
               style={styles.tab}
             >
-              {isActive ? (
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: theme.spacing[2],
-                    backgroundColor: theme.colors.primary[500],
-                    paddingHorizontal: theme.spacing[4],
-                    minHeight: 40,
-                    borderRadius: theme.radius.base,
-                  }}
-                >
+              <View style={styles.tabContent}>
+                <View style={styles.iconContainer}>
                   <Icon name={tab.icon} color={iconColor} size={theme.sizes.icon.lg} />
-                  <Text
-                    variant="caption"
-                    color="inverse"
-                    style={{
-                      fontFamily: theme.typography.families.display,
-                      fontWeight: '600' as const,
-                    }}
-                  >
-                    {tab.label}
-                  </Text>
+                  {tab.badge && tab.badge > 0 ? (
+                    <View style={[styles.badge, { backgroundColor: theme.colors.semantic.error }]}>
+                      <Text variant="caption" color="inverse">
+                        {tab.badge > 99 ? '99+' : String(tab.badge)}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
-              ) : (
-                <Icon name={tab.icon} color={iconColor} size={theme.sizes.icon.lg} />
-              )}
-              {tab.badge && tab.badge > 0 ? (
-                <View
+                <Text
+                  variant="caption"
                   style={[
-                    styles.badge,
-                    { backgroundColor: theme.colors.semantic.error },
-                    isActive ? { right: '22%' } : { right: '28%' },
+                    styles.label,
+                    {
+                      color: textColor,
+                      fontFamily: theme.typography.families.display,
+                      fontWeight: isActive ? '600' : '400',
+                    },
                   ]}
                 >
-                  <Text variant="caption" color="inverse">
-                    {tab.badge > 99 ? '99+' : String(tab.badge)}
-                  </Text>
-                </View>
-              ) : null}
+                  {tab.label}
+                </Text>
+              </View>
             </Pressable>
           );
         })}
@@ -103,6 +89,28 @@ const styles = StyleSheet.create({
   wrapper: {
     borderTopWidth: StyleSheet.hairlineWidth,
   },
+  container: {
+    flexDirection: 'row',
+    overflow: 'hidden',
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+  tab: {
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  tabContent: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  iconContainer: {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   badge: {
     alignItems: 'center',
     borderRadius: 9,
@@ -111,18 +119,11 @@ const styles = StyleSheet.create({
     minWidth: 18,
     paddingHorizontal: 4,
     position: 'absolute',
-    right: '28%',
-    top: 4,
+    right: -8,
+    top: -4,
   },
-  container: {
-    flexDirection: 'row',
-    overflow: 'hidden',
-    paddingTop: 8,
-  },
-  tab: {
-    alignItems: 'center',
-    flex: 1,
-    justifyContent: 'center',
-    position: 'relative',
+  label: {
+    fontSize: 11,
+    textAlign: 'center',
   },
 });
