@@ -120,6 +120,9 @@
     "delete": "Xóa",
     "success": "Thành công"
   },
+  "community": {
+    "underDevelopment": "Trang cộng đồng đang được phát triển"
+  },
   "onboarding": {
     "welcome": {
       "tagline": "Nền tảng học tập cộng đồng",

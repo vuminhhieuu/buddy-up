@@ -1,13 +1,27 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { ScreenContainer, Text, Spacer } from '../../components/ui';
+import { useNavigation } from '@react-navigation/native';
+import { ScreenContainer, Text, Spacer, Button } from '../../components/ui';
 import { useTheme } from '../../styles';
 import { useTranslation } from 'react-i18next';
 import { Icon } from '../../components/ui/Icon/Icon';
+import type { NavigationProp } from '@react-navigation/native';
+import type { MainTabParamList } from '../../navigation/MainTabsNavigator';
+import { logger } from '../../utils/logger';
 
 export const CommunityScreen: React.FC = () => {
   const { theme } = useTheme();
   const { t } = useTranslation('common');
+  const navigation = useNavigation<NavigationProp<MainTabParamList>>();
+
+  const handleCreateGroup = () => {
+    const parent = (navigation as any).getParent?.();
+    if (parent) {
+      parent.navigate('CreateGroupType');
+    } else {
+      logger.debug('CommunityScreen', 'Create group pressed - no parent navigator');
+    }
+  };
 
   return (
     <ScreenContainer>
@@ -21,8 +35,16 @@ export const CommunityScreen: React.FC = () => {
           </Text>
           <Spacer size={2} />
           <Text variant="body" color="secondary" style={styles.subtitle}>
-            Trang cộng đồng đang được phát triển
+            {t('community.underDevelopment', { ns: 'common' })}
           </Text>
+          <Spacer size={6} />
+          <Button
+            label={t('groups:createGroup')}
+            onPress={handleCreateGroup}
+            style={{
+              minWidth: 200,
+            }}
+          />
         </View>
       </View>
     </ScreenContainer>

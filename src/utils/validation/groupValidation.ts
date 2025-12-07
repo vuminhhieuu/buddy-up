@@ -54,7 +54,6 @@ export const groupStep2Schema = Yup.object().shape({
       VALIDATION_MESSAGES.groupStudentLevelInvalid,
     )
     .required(VALIDATION_MESSAGES.groupStudentLevelRequired),
-  main_language: Yup.string().required(VALIDATION_MESSAGES.groupMainLanguageRequired),
   expected_activity_frequency: Yup.string()
     .oneOf(
       ['daily', 'few_times_week', 'weekly', 'flexible'],

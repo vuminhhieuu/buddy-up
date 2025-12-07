@@ -19,10 +19,10 @@
   "createPublicGroup": "Tạo nhóm công khai",
   "createPrivateGroup": "Tạo nhóm riêng tư",
   "step": "Bước {{current}}/{{total}}",
-  "step1": "Bước 1/4",
-  "step2": "Bước 2/4",
-  "step3": "Bước 3/4",
-  "step4": "Bước 4/4",
+  "stepIndicator1": "Bước 1/4",
+  "stepIndicator2": "Bước 2/4",
+  "stepIndicator3": "Bước 3/4",
+  "stepIndicator4": "Bước 4/4",
   "basicInfo": "Thông tin cơ bản",
   "topicsAndFields": "Chủ đề & Lĩnh vực",
   "rulesAndSettings": "Quy tắc & Cài đặt",
@@ -71,7 +71,11 @@
     "weeklyDescription": "Gặp gỡ hoặc tương tác 1-2 lần/tuần",
     "flexible": "Linh hoạt",
     "flexibleDescription": "Không có lịch trình cố định, tùy thành viên",
-    "canChangeLater": "Bạn có thể thay đổi sau trong cài đặt nhóm"
+    "canChangeLater": "Bạn có thể thay đổi lại sau trong cài đặt nhóm",
+    "addCustomTopic": "Thêm chủ đề tùy chỉnh",
+    "addCustomTopicPlaceholder": "Nhập tên chủ đề mới...",
+    "add": "Thêm",
+    "cancel": "Hủy"
   },
   "step3": {
     "title": "Quy tắc & Cài đặt",
@@ -109,7 +113,12 @@
     "members": "Thành viên",
     "activity": "Hoạt động",
     "level": "Cấp độ",
-    "public": "Công khai"
+    "public": "Công khai",
+    "private": "Riêng tư",
+    "studentLevelAll": "Tất cả",
+    "studentLevelBeginner": "Mới bắt đầu",
+    "studentLevelIntermediate": "Trung cấp",
+    "studentLevelAdvanced": "Nâng cao"
   },
   "validation": {
     "nameMin": "Tên nhóm phải có ít nhất 3 ký tự",
@@ -143,7 +152,14 @@
     "slugExists": "Đường dẫn này đã được sử dụng",
     "slugExistsDescription": "Vui lòng chọn một đường dẫn khác",
     "uploadCoverFailed": "Không thể tải ảnh bìa",
-    "uploadCoverFailedDescription": "Đã xảy ra lỗi khi tải ảnh lên. Vui lòng thử lại."
+    "uploadCoverFailedDescription": "Đã xảy ra lỗi khi tải ảnh lên. Vui lòng thử lại.",
+    "invalidTopic": "Lỗi",
+    "topicMinLength": "Tên chủ đề phải có ít nhất 2 ký tự",
+    "topicRequired": "Vui lòng nhập tên chủ đề",
+    "maxTopicsReached": "Lỗi",
+    "maxTopicsReachedDescription": "Bạn chỉ có thể chọn tối đa {{max}} chủ đề",
+    "topicExists": "Lỗi",
+    "topicExistsDescription": "Chủ đề này đã tồn tại"
   },
   "success": {
     "groupCreated": "Tạo nhóm thành công",

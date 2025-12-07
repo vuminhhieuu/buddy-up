@@ -109,7 +109,6 @@ export const VALIDATION_MESSAGES = {
   groupTopicsRequired: 'groups:validation.topicsRequired',
   groupStudentLevelRequired: 'groups:validation.studentLevelRequired',
   groupStudentLevelInvalid: 'groups:validation.studentLevelInvalid',
-  groupMainLanguageRequired: 'groups:validation.mainLanguageRequired',
   groupActivityFrequencyRequired: 'groups:validation.activityFrequencyRequired',
   groupActivityFrequencyInvalid: 'groups:validation.activityFrequencyInvalid',
   groupSlugFormat: 'groups:validation.slugFormat',

@@ -8,6 +8,8 @@ import { OnboardingNavigator } from './OnboardingNavigator';
 import { CreateSessionScreen } from '../screens/session/CreateSessionScreen';
 import CreateSessionSuccessScreen from '../screens/session/CreateSessionSuccessScreen';
 import SessionDetailScreen from '../screens/session/SessionDetailScreen';
+import { CreateGroupTypeScreen } from '../screens/groups/CreateGroupTypeScreen';
+import { CreatePublicGroupScreen } from '../screens/groups/CreatePublicGroupScreen';
 import { useAppSelector } from '../store/hooks';
 import { useFirstLaunch } from '../hooks/useFirstLaunch';
 import { useTheme } from '../styles';
@@ -35,6 +37,8 @@ export type RootStackParamList = {
   };
   UpcomingSessionsAll: undefined;
   Notifications: undefined;
+  CreateGroupType: undefined;
+  CreatePublicGroup: { step?: number } | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -78,6 +82,8 @@ export const AppNavigator: React.FC = () => {
               name="Notifications"
               component={require('../screens/invitations/NotificationsScreen').default}
             />
+            <Stack.Screen name="CreateGroupType" component={CreateGroupTypeScreen} />
+            <Stack.Screen name="CreatePublicGroup" component={CreatePublicGroupScreen} />
           </>
         ) : (
           <Stack.Screen

@@ -17,6 +17,7 @@ export const Card: React.FC<CardProps> = ({
   ...rest
 }) => {
   const { theme } = useTheme();
+  const shadowStyle = theme.shadows?.[elevation] || theme.shadows.none;
   return (
     <View
       style={[
@@ -25,9 +26,9 @@ export const Card: React.FC<CardProps> = ({
           borderRadius: theme.radius.lg,
           borderWidth: 1,
           borderColor: theme.colors.border,
-          padding: theme.spacing[padding],
+          padding: theme.spacing?.[padding] || 0,
         },
-        theme.shadows[elevation],
+        shadowStyle,
         style,
       ]}
       {...rest}
