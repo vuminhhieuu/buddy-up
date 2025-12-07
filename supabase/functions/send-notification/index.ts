@@ -1,0 +1,180 @@
+/**
+ * Send Notification Edge Function
+ * Sends push notifications via Expo Push Notification Service
+ */
+
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send';
+
+interface NotificationRequest {
+  type: string;
+  userIds: string[];
+  title: string;
+  body: string;
+  data: Record<string, any>;
+  sound?: string;
+}
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  // CORS preflight
+  if (req.method === 'OPTIONS') {
+    return new Response(null, {
+      headers: corsHeaders,
+    });
+  }
+
+  try {
+    // Get authorization header
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Missing authorization header' }),
+        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+      );
+    }
+
+    // Get Supabase URL and keys from environment
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
+
+    if (!supabaseUrl || !supabaseAnonKey) {
+      return new Response(
+        JSON.stringify({ error: 'Missing Supabase configuration' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+      );
+    }
+
+    // Create Supabase client
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        headers: { Authorization: authHeader },
+      },
+    });
+
+    // Parse request body
+    const request: NotificationRequest = await req.json();
+    const { userIds, title, body, data, sound = 'default' } = request;
+
+    if (!userIds || userIds.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'userIds is required' }),
+        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+      );
+    }
+
+    // Get push tokens for all users
+    const { data: tokens, error: tokensError } = await supabase
+      .from('push_tokens')
+      .select('token, user_id, platform')
+      .in('user_id', userIds);
+
+    if (tokensError) {
+      console.error('Error fetching push tokens:', tokensError);
+      return new Response(
+        JSON.stringify({ error: 'Failed to fetch push tokens' }),
+        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+      );
+    }
+
+    if (!tokens || tokens.length === 0) {
+      return new Response(
+        JSON.stringify({ message: 'No push tokens found', sent: 0 }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+      );
+    }
+
+    // Check notification preferences
+    const { data: preferences } = await supabase
+      .from('notification_preferences')
+      .select('user_id, chat_enabled, buddy_enabled, session_enabled, sound_enabled')
+      .in('user_id', userIds);
+
+    const preferencesMap = new Map(
+      preferences?.map((p) => [p.user_id, p]) || [],
+    );
+
+    // Filter tokens based on preferences
+    const notificationType = data.type;
+    const enabledTokens = tokens.filter((token) => {
+      const pref = preferencesMap.get(token.user_id);
+      if (!pref) return true; // Default to enabled if no preferences
+
+      switch (notificationType) {
+        case 'chat_message':
+          return pref.chat_enabled;
+        case 'buddy_request':
+        case 'buddy_accepted':
+        case 'buddy_rejected':
+          return pref.buddy_enabled;
+        case 'session_reminder':
+        case 'session_invitation':
+          return pref.session_enabled;
+        default:
+          return true;
+      }
+    });
+
+    if (enabledTokens.length === 0) {
+      return new Response(
+        JSON.stringify({ message: 'No enabled tokens found', sent: 0 }),
+        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+      );
+    }
+
+    // Prepare notifications
+    const notifications = enabledTokens.map((token) => {
+      const pref = preferencesMap.get(token.user_id);
+      return {
+        to: token.token,
+        sound: pref?.sound_enabled !== false ? sound : undefined,
+        title,
+        body,
+        data,
+        priority: 'high' as const,
+        channelId: notificationType === 'chat_message' ? 'chat' : 'default',
+      };
+    });
+
+    // Send to Expo Push Notification Service
+    const response = await fetch(EXPO_PUSH_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'Accept-Encoding': 'gzip, deflate',
+      },
+      body: JSON.stringify(notifications),
+    });
+
+    const result = await response.json();
+
+    return new Response(
+      JSON.stringify({
+        message: 'Notifications sent',
+        sent: Array.isArray(result.data) ? result.data.length : 0,
+        receipts: result.data,
+      }),
+      {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          ...corsHeaders,
+        },
+      },
+    );
+  } catch (error) {
+    console.error('Error in send-notification function:', error);
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
+    );
+  }
+});
+

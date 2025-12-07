@@ -8,3 +8,4 @@ export * from './pushTokens';
 export * from './permissions';
 export * from './notificationPreferences';
 export * from './NotificationRouter';
+export * from './sendNotification';
