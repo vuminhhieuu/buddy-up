@@ -278,9 +278,9 @@ export const CreateSessionScreen: React.FC = () => {
             onPress={() => navigation.goBack()}
             accessibilityLabel={t('common.back')}
             style={{
-              width: 35,
-              height: 35,
-              borderRadius: theme.radius.md,
+              width: 40,
+              height: 40,
+              borderRadius: 999,
               backgroundColor: theme.colors.background,
               borderWidth: 1,
               borderColor: theme.colors.border,

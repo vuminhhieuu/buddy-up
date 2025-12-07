@@ -1,4 +1,6 @@
 {
+  "day_calendar": "Day calendar",
+  "week_schedule": "Week calendar",
   "welcome": "Welcome to Buddy Up",
   "appName": "Buddy Up",
   "loading": "Loading",
@@ -120,6 +122,17 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "success": "Success"
+  },
+  "tabs": {
+    "list": "List",
+    "month": "Month",
+    "week": "Week",
+    "day": "Day"
+  },
+  "upcoming": {
+    "title": "Upcoming Sessions",
+    "notLoggedIn": "You are not logged in",
+    "notImplemented": "This feature is under development"
   },
   "community": {
     "underDevelopment": "Community page is under development"

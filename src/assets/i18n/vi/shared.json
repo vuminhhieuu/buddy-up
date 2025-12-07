@@ -1,0 +1,44 @@
+{
+  "session": {
+    "defaultTitle": "Buổi học",
+    "status": {
+      "cancelled": "Đã hủy",
+      "completed": "Đã kết thúc",
+      "ongoing": "Đang diễn ra",
+      "scheduled": "Sắp diễn ra"
+    }
+  },
+  "calendar": {
+    "dayNames": ["TH 2", "TH 3", "TH 4", "TH 5", "TH 6", "TH 7", "CN"],
+    "fullDayNames": ["Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật"],
+    "month": "Tháng",
+    "year": "năm",
+    "monthNames": [
+      "Tháng 1",
+      "Tháng 2",
+      "Tháng 3",
+      "Tháng 4",
+      "Tháng 5",
+      "Tháng 6",
+      "Tháng 7",
+      "Tháng 8",
+      "Tháng 9",
+      "Tháng 10",
+      "Tháng 11",
+      "Tháng 12"
+    ],
+    "chooseYear": "Chọn năm",
+    "close": "Đóng",
+    "scheduleFor": "Lịch học ngày {{date}}"
+  },
+  "tabs": {
+    "list": "Danh sách",
+    "month": "Tháng",
+    "week": "Tuần",
+    "day": "Ngày"
+  },
+  "upcoming": {
+    "title": "Lịch học sắp tới",
+    "notLoggedIn": "Bạn chưa đăng nhập"
+  }
+}

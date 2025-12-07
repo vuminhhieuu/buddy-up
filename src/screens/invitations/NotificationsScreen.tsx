@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../styles';
 import { Text } from '../../components/ui/Text/Text';
 import { ArrowLeft } from 'lucide-react-native';
+import { BackButton } from '../../components/navigation/BackButton';
 import { useTranslation } from 'react-i18next';
 
 const NotificationsScreen: React.FC = () => {
@@ -20,23 +21,22 @@ const NotificationsScreen: React.FC = () => {
   return (
     <View style={themedStyles.container}>
       <View style={[themedStyles.header, { paddingTop: insets.top + 8 }]}>
-        <Pressable
-          accessibilityRole="button"
+        <BackButton
           onPress={handleBack}
+          accessibilityLabel={t('common.back')}
           style={{
-            width: 35,
-            height: 35,
-            borderRadius: theme.radius.md,
+            width: 40,
+            height: 40,
+            borderRadius: 999,
             backgroundColor: theme.colors.background,
             borderWidth: 1,
             borderColor: theme.colors.border,
             justifyContent: 'center',
             alignItems: 'center',
+            elevation: 0,
+            shadowOpacity: 0,
           }}
-          hitSlop={8}
-        >
-          <ArrowLeft size={18} color={theme.colors.text.primary} />
-        </Pressable>
+        />
         <Text variant="h5" style={{ fontWeight: '700', flex: 1, textAlign: 'center' }}>
           {t('title')}
         </Text>
