@@ -3,7 +3,7 @@ import { Pressable, ViewStyle } from 'react-native';
 import { ArrowLeft } from 'lucide-react-native';
 import { useTheme } from '../../styles';
 
-type BackButtonProps = {
+export type BackButtonProps = {
   onPress?: () => void;
   accessibilityLabel?: string;
   style?: ViewStyle;

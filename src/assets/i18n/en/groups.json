@@ -19,10 +19,10 @@
   "createPublicGroup": "Create Public Group",
   "createPrivateGroup": "Create Private Group",
   "step": "Step {{current}}/{{total}}",
-  "step1": "Step 1/4",
-  "step2": "Step 2/4",
-  "step3": "Step 3/4",
-  "step4": "Step 4/4",
+  "stepIndicator1": "Step 1/4",
+  "stepIndicator2": "Step 2/4",
+  "stepIndicator3": "Step 3/4",
+  "stepIndicator4": "Step 4/4",
   "basicInfo": "Basic Information",
   "topicsAndFields": "Topics & Fields",
   "rulesAndSettings": "Rules & Settings",
@@ -71,7 +71,11 @@
     "weeklyDescription": "Meets or interacts 1-2 times/week",
     "flexible": "Flexible",
     "flexibleDescription": "No fixed schedule, depends on members",
-    "canChangeLater": "You can change this later in group settings"
+    "canChangeLater": "You can change this again later in group settings",
+    "addCustomTopic": "Add custom topic",
+    "addCustomTopicPlaceholder": "Enter new topic name...",
+    "add": "Add",
+    "cancel": "Cancel"
   },
   "step3": {
     "title": "Rules & Settings",
@@ -109,7 +113,12 @@
     "members": "Members",
     "activity": "Activity",
     "level": "Level",
-    "public": "Public"
+    "public": "Public",
+    "private": "Private",
+    "studentLevelAll": "All",
+    "studentLevelBeginner": "Beginner",
+    "studentLevelIntermediate": "Intermediate",
+    "studentLevelAdvanced": "Advanced"
   },
   "validation": {
     "nameMin": "Group name must be at least 3 characters",
@@ -143,7 +152,14 @@
     "slugExists": "This link is already in use",
     "slugExistsDescription": "Please choose a different link",
     "uploadCoverFailed": "Failed to upload cover photo",
-    "uploadCoverFailedDescription": "An error occurred while uploading. Please try again."
+    "uploadCoverFailedDescription": "An error occurred while uploading. Please try again.",
+    "invalidTopic": "Error",
+    "topicMinLength": "Topic name must be at least 2 characters",
+    "topicRequired": "Please enter topic name",
+    "maxTopicsReached": "Error",
+    "maxTopicsReachedDescription": "You can only select up to {{max}} topics",
+    "topicExists": "Error",
+    "topicExistsDescription": "This topic already exists"
   },
   "success": {
     "groupCreated": "Group created successfully",

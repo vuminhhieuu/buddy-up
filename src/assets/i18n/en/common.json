@@ -121,6 +121,9 @@
     "delete": "Delete",
     "success": "Success"
   },
+  "community": {
+    "underDevelopment": "Community page is under development"
+  },
   "onboarding": {
     "welcome": {
       "tagline": "Community learning platform",
