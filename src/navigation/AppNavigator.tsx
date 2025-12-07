@@ -36,7 +36,7 @@ export type RootStackParamList = {
     fromNotification?: boolean;
     fromSuccess?: boolean;
   };
-  UpcomingSessionsAll: undefined;
+  UpcomingSessionsAll: { initialTab?: number } | undefined;
   Notifications: undefined;
   CreateGroupType: undefined;
   CreatePublicGroup: { step?: number } | undefined;

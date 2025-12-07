@@ -1,81 +1,73 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
-import { ScreenContainer, Spacer, Loading, Card } from '../../components/ui';
+﻿import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import { View, StyleSheet, Pressable, FlatList } from 'react-native';
+import { ScreenContainer, Spacer, Loading } from '../../components/ui';
 import { useTheme } from '../../styles';
+import { COLORS } from '../../styles/tokens';
 import { useAppSelector } from '../../store/hooks';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, RouteProp, useRoute } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { fetchAllSessionsForUser, type HomeSessionFull } from '../../services/home';
 import { Text } from '../../components/ui/Text/Text';
-import { Avatar } from '../../components/ui';
-import { formatWeekdayDate, formatStartEndTimes } from '../../utils/date';
+import { SessionCard } from '../../components/session/SessionCard';
 import { BackButton } from '../../components/navigation/BackButton';
+import MonthView from './MonthView';
+import { useTranslation } from 'react-i18next';
+
+type RouteProps = RouteProp<RootStackParamList, 'UpcomingSessionsAll'>;
 
 const UpcomingSessionsAllScreen: React.FC = () => {
+  const { t } = useTranslation('common');
   const { theme } = useTheme();
-  const navigation = useNavigation();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route = useRoute<RouteProps>();
+  const initialTab = route.params?.initialTab ?? 0;
   const userId = useAppSelector((s) => s.auth.userId);
   const [sessions, setSessions] = useState<HomeSessionFull[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const tabLabels = [t('tabs.list'), t('tabs.month'), t('tabs.week'), t('tabs.day')];
+  const [activeTab, setActiveTab] = useState<number>(initialTab);
+
   const load = useCallback(async () => {
     if (!userId) return;
     setLoading(true);
-    const all = await fetchAllSessionsForUser(userId);
-    setSessions(all);
-    setLoading(false);
+    try {
+      const resp = await fetchAllSessionsForUser(userId);
+      setSessions(resp || []);
+    } catch (e) {
+      console.warn('Failed to load sessions', e);
+      setSessions([]);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
 
   useEffect(() => {
     void load();
   }, [load]);
-
-  const handleSessionPress = (sessionId: string) => {
-    const parent = (navigation as any).getParent?.();
-    if (parent) {
-      parent.navigate('SessionDetail', { sessionId });
-    }
-  };
-
-  const getStatusBadge = (s: HomeSessionFull) => {
-    const start = new Date(s.scheduledStart).getTime();
-    const end = s.scheduledEnd ? new Date(s.scheduledEnd).getTime() : start;
-    const now = Date.now();
-    const raw = s.status === 'canceled' ? 'cancelled' : s.status;
-    if (raw === 'cancelled') {
-      return { label: 'Đã hủy', bg: '#FFCDD2', fg: '#C62828' };
-    }
-    if (now >= end) {
-      return { label: 'Đã kết thúc', bg: '#E0E0E0', fg: '#616161' };
-    }
-    if (now >= start && now < end) {
-      return { label: 'Đang diễn ra', bg: '#FFF9C4', fg: '#F57F17' };
-    }
-    return { label: 'Sắp diễn ra', bg: '#C8E6C9', fg: '#2E7D32' };
-  };
-
-  if (!userId) {
-    return (
-      <ScreenContainer>
-        <Text variant="body">Bạn chưa đăng nhập</Text>
-      </ScreenContainer>
-    );
-  }
+  const sortedSessions = useMemo(
+    () =>
+      [...sessions].sort(
+        (a, b) => new Date(a.scheduledStart).getTime() - new Date(b.scheduledStart).getTime(),
+      ),
+    [sessions],
+  );
 
   if (loading) {
     return (
       <ScreenContainer>
-        <Loading fullScreen />
+        <Loading />
       </ScreenContainer>
     );
   }
 
   return (
-    <ScreenContainer scroll contentContainerStyle={styles.scrollContent}>
-      <View
-        style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8 }}
-      >
+    <ScreenContainer>
+      <View style={styles.headerRow}>
         <BackButton
-          onPress={() => (navigation as any).goBack()}
+          onPress={() => navigation.goBack()}
+          accessibilityLabel={t('common.back')}
           style={{
             width: 35,
             height: 35,
@@ -83,127 +75,111 @@ const UpcomingSessionsAllScreen: React.FC = () => {
             backgroundColor: theme.colors.background,
             borderWidth: 1,
             borderColor: theme.colors.border,
+            marginBottom: theme.spacing[2],
+            alignSelf: 'flex-start',
             justifyContent: 'center',
             alignItems: 'center',
+            elevation: 0,
+            shadowOpacity: 0,
           }}
         />
-        <Text variant="h5" style={{ fontWeight: '700', marginLeft: theme.spacing[3] }}>
-          Lịch học sắp tới
+        <Text variant="h2" style={{ fontWeight: '700' }}>
+          {t('upcoming.title')}
         </Text>
+        <View style={{ width: 40 }} />
       </View>
-      <Spacer size={3} />
-      <View style={styles.sessionsList}>
-        {sessions.map((s) => {
-          const badge = getStatusBadge(s);
+      <Spacer size={12} />
+      <View style={styles.tabBar}>
+        {tabLabels.map((label, idx) => {
+          const isActive = activeTab === idx;
           return (
             <Pressable
-              key={s.id}
-              onPress={() => handleSessionPress(s.id)}
-              style={styles.sessionWrapper}
+              key={label}
+              onPress={() => setActiveTab(idx)}
+              style={[
+                styles.tabButton,
+                isActive
+                  ? {
+                      backgroundColor: theme.colors.primary[500],
+                    }
+                  : {
+                      backgroundColor: 'transparent',
+                    },
+              ]}
             >
-              <Card padding={4} elevation="sm" style={styles.sessionCard}>
-                <View style={styles.sessionHeader}>
-                  <Text variant="body" style={styles.sessionTitle} numberOfLines={1}>
-                    {s.title || s.subject || 'Buổi học'}
-                  </Text>
-                  <View style={[styles.statusBadge, { backgroundColor: badge.bg }]}>
-                    <Text variant="caption" style={{ color: badge.fg, fontWeight: '600' }}>
-                      {badge.label}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.sessionBody}>
-                  <Avatar
-                    size="md"
-                    uri={s.buddyAvatar || undefined}
-                    name={s.buddyName}
-                    style={styles.avatar}
-                  />
-                  <View style={styles.sessionInfo}>
-                    <Text variant="body" style={styles.dateLine} numberOfLines={1}>
-                      {formatWeekdayDate(s.scheduledStart, 'vi')}
-                    </Text>
-                    <Text variant="bodySmall" style={styles.timeLine} numberOfLines={1}>
-                      {formatStartEndTimes(s.scheduledStart, s.scheduledEnd ?? null, 'vi')}
-                    </Text>
-                    {s.subject ? (
-                      <View
-                        style={[styles.subjectTag, { backgroundColor: theme.colors.secondary[50] }]}
-                      >
-                        <Text
-                          variant="caption"
-                          style={{ color: theme.colors.secondary[500], fontWeight: '600' }}
-                        >
-                          {s.subject}
-                        </Text>
-                      </View>
-                    ) : null}
-                  </View>
-                </View>
-              </Card>
+              <Text
+                variant="bodySmall"
+                style={{
+                  color: isActive ? theme.colors.text.inverse : theme.colors.text.secondary,
+                  fontWeight: isActive ? 'bold' : 'normal',
+                }}
+              >
+                {label}
+              </Text>
             </Pressable>
           );
         })}
+      </View>
+      <Spacer size={16} />
+      <View style={styles.content}>
+        {activeTab === 0 && (
+          <FlatList
+            data={sortedSessions}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <SessionCard
+                session={item as HomeSessionFull}
+                onPress={() => {
+                  navigation.navigate('SessionDetail', { sessionId: item.id });
+                }}
+                style={{
+                  marginBottom: 14,
+                  borderRadius: 16,
+                  marginHorizontal: 0,
+                  // If you want to match the CreateSessionScreen's full width, ensure parent padding is correct
+                }}
+              />
+            )}
+          />
+        )}
+        {activeTab === 1 && <MonthView sessions={sessions} />}
+        {activeTab > 1 && <Text>{t('upcoming.notImplemented')}</Text>}
       </View>
     </ScreenContainer>
   );
 };
 
 const styles = StyleSheet.create({
-  scrollContent: {
-    paddingBottom: 100,
-  },
-  sessionsList: {
-    paddingHorizontal: 16,
-    gap: 12,
-  },
-  sessionWrapper: {
-    marginBottom: 0,
-  },
-  sessionCard: {
-    padding: 16,
-  },
-  sessionHeader: {
+  headerRow: {
     flexDirection: 'row',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  sessionTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  sessionBody: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    marginBottom: 8,
     gap: 12,
   },
-  avatar: {
-    flexShrink: 0,
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: COLORS.neutral[100],
+    borderRadius: 999,
+    padding: 4,
+    alignSelf: 'center',
+    marginBottom: 8,
+    gap: 0,
   },
-  sessionInfo: {
+  tabButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 999,
+    marginHorizontal: 0,
+    borderWidth: 0,
+    backgroundColor: 'transparent',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 60,
+  },
+  content: {
+    marginTop: 8,
     flex: 1,
-  },
-  subjectTag: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-    alignSelf: 'flex-start',
-    marginTop: 6,
-  },
-  dateLine: {
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  timeLine: {
-    fontSize: 14,
-    color: '#6b7280',
   },
 });
 

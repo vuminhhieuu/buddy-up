@@ -1,0 +1,30 @@
+{
+  "session": {
+    "defaultTitle": "Session",
+    "status": {
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "scheduled": "Upcoming"
+    }
+  },
+  "calendar": {
+    "dayNames": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    "fullDayNames": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    "month": "Month",
+    "year": "Year",
+    "chooseYear": "Choose year",
+    "close": "Close",
+    "scheduleFor": "Schedule for {{date}}"
+  },
+  "tabs": {
+    "list": "List",
+    "month": "Month",
+    "week": "Week",
+    "day": "Day"
+  },
+  "upcoming": {
+    "title": "Upcoming Sessions",
+    "notLoggedIn": "You are not logged in"
+  }
+}

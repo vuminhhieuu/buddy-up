@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 
 // Load default namespaces (can be replaced by dynamic import if needed)
 import enCommon from '../assets/i18n/en/common.json';
+import enShared from '../assets/i18n/en/shared.json';
 import enAuth from '../assets/i18n/en/auth.json';
 import enBuddy from '../assets/i18n/en/buddy.json';
 import enHome from '../assets/i18n/en/home.json';
@@ -13,6 +14,7 @@ import enInvitations from '../assets/i18n/en/invitations.json';
 import enChat from '../assets/i18n/en/chat.json';
 import enGroups from '../assets/i18n/en/groups.json';
 import viCommon from '../assets/i18n/vi/common.json';
+import viShared from '../assets/i18n/vi/shared.json';
 import viAuth from '../assets/i18n/vi/auth.json';
 import viBuddy from '../assets/i18n/vi/buddy.json';
 import viHome from '../assets/i18n/vi/home.json';
@@ -30,6 +32,7 @@ i18n.use(initReactI18next).init({
   resources: {
     en: {
       common: enCommon,
+      shared: enShared,
       auth: enAuth,
       buddy: enBuddy,
       home: enHome,
@@ -42,6 +45,7 @@ i18n.use(initReactI18next).init({
     },
     vi: {
       common: viCommon,
+      shared: viShared,
       auth: viAuth,
       buddy: viBuddy,
       home: viHome,
@@ -54,6 +58,7 @@ i18n.use(initReactI18next).init({
     },
   },
   ns: [
+    'shared',
     'common',
     'auth',
     'buddy',
