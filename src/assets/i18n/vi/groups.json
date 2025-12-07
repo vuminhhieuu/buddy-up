@@ -83,7 +83,8 @@
     "groupRules": "Quy tắc nhóm",
     "rulesDescription": "Đặt ra quy tắc giúp nhóm hoạt động hiệu quả và văn minh",
     "addRule": "Thêm quy tắc",
-    "rulesMaxInfo": "Tối đa 10 quy tắc. Quy tắc đầu tiên không thể xóa.",
+    "rulesMaxInfo": "Tối đa 10 quy tắc.",
+    "noRulesYet": "Chưa có quy tắc nào. Hãy thêm quy tắc đầu tiên.",
     "approvalSettings": "Cài đặt phê duyệt",
     "newMemberApproval": "Phê duyệt thành viên mới",
     "approvalDescription": "Admin phê duyệt trước khi người mới tham gia nhóm",
@@ -97,7 +98,8 @@
     "groupLink": "Đường dẫn nhóm",
     "groupLinkDescription": "Tạo đường dẫn dễ nhớ để chia sẻ nhóm",
     "groupLinkPrefix": "buddyup.vn/g/",
-    "groupLinkInfo": "Chỉ sử dụng chữ thường, số và dấu gạch ngang"
+    "groupLinkInfo": "Chỉ sử dụng chữ thường, số và dấu gạch ngang",
+    "groupLinkPreview": "Link nhóm của bạn:"
   },
   "step4": {
     "title": "Xem trước & Tạo nhóm",
@@ -164,5 +166,32 @@
   "success": {
     "groupCreated": "Tạo nhóm thành công",
     "groupCreatedDescription": "Nhóm của bạn đã được tạo và sẵn sàng để mọi người tham gia!"
+  },
+  "creating": "Đang tạo...",
+  "viewGroup": "Xem nhóm",
+  "goHome": "Về trang chủ",
+  "community": {
+    "myGroups": "Nhóm học của bạn",
+    "joinedGroups": "Nhóm học đã tham gia",
+    "publicGroups": "Các nhóm học công khai",
+    "noGroups": "Chưa có nhóm nào",
+    "noGroupsDescription": "Hãy tạo nhóm học đầu tiên của bạn",
+    "noJoinedGroups": "Bạn chưa tham gia nhóm nào",
+    "noJoinedGroupsDescription": "Khám phá và tham gia các nhóm học công khai",
+    "noPublicGroups": "Chưa có nhóm công khai nào",
+    "noPublicGroupsDescription": "Hãy là người đầu tiên tạo nhóm công khai",
+    "createGroup": "Tạo nhóm học",
+    "loading": "Đang tải...",
+    "searchPlaceholder": "Tìm nhóm học...",
+    "filterAll": "Tất cả",
+    "viewAll": "Xem tất cả",
+    "roleAdmin": "Admin",
+    "groupCount": "nhóm",
+    "members": "thành viên",
+    "messages": "tin nhắn",
+    "activityVeryActive": "Rất hoạt động",
+    "activityActive": "Hoạt động",
+    "activityModerate": "Bình thường",
+    "joinGroup": "Tham gia nhóm"
   }
 }

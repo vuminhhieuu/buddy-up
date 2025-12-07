@@ -1,1 +1,2 @@
 export const BASE_HORIZONTAL_PADDING = 20;
+export const BOTTOM_NAVIGATION_HEIGHT = 80;

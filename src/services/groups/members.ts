@@ -145,6 +145,82 @@ export async function getGroupMembers(groupId: string): Promise<GroupMember[]> {
 }
 
 /**
+ * Get group members with their profile information (avatars, names)
+ */
+export interface GroupMemberWithProfile extends GroupMember {
+  profile?: {
+    avatar_url?: string | null;
+    display_name?: string | null;
+  };
+}
+
+export async function getGroupMembersWithProfiles(
+  groupId: string,
+  limit?: number,
+): Promise<GroupMemberWithProfile[]> {
+  try {
+    let query = supabase
+      .from('group_members')
+      .select(
+        `
+        *,
+        profiles:user_id (
+          avatar_url,
+          display_name
+        )
+      `,
+      )
+      .eq('group_id', groupId)
+      .eq('status', 'active')
+      .order('joined_at', { ascending: true });
+
+    if (limit) {
+      query = query.limit(limit);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      logger.error('getGroupMembersWithProfiles', error.message, error);
+      return [];
+    }
+
+    return (data || []).map((item: any) => ({
+      ...item,
+      profile: item.profiles || null,
+    })) as GroupMemberWithProfile[];
+  } catch (err: any) {
+    logger.error('getGroupMembersWithProfiles', 'Unexpected error', err);
+    return [];
+  }
+}
+
+/**
+ * Check if user is a member of a group
+ */
+export async function isUserMemberOfGroup(groupId: string, userId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('group_members')
+      .select('id')
+      .eq('group_id', groupId)
+      .eq('user_id', userId)
+      .eq('status', 'active')
+      .maybeSingle();
+
+    if (error) {
+      logger.error('isUserMemberOfGroup', error.message, error);
+      return false;
+    }
+
+    return !!data;
+  } catch (err: any) {
+    logger.error('isUserMemberOfGroup', 'Unexpected error', err);
+    return false;
+  }
+}
+
+/**
  * Join a public group
  */
 export async function joinPublicGroup(

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput, ViewStyle, ScrollView, Pressable, Alert } from 'react-native';
 import { Search, Plus } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,7 @@ import { Text } from '../../ui/Text/Text';
 import { Chip } from '../../ui/Chip/Chip';
 import { Spacer } from '../../ui/Spacer/Spacer';
 import { Button } from '../../ui/Button/Button';
+import { getAllCustomTopics, saveCustomTopic } from '../../../utils/topicsStorage';
 
 export type Topic = {
   id: string;
@@ -51,6 +52,15 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
   const [showAddInput, setShowAddInput] = useState(false);
   const [newTopicName, setNewTopicName] = useState('');
 
+  // Load custom topics from storage on mount
+  useEffect(() => {
+    const loadTopics = async () => {
+      const storedTopics = await getAllCustomTopics();
+      setCustomTopics(storedTopics);
+    };
+    loadTopics();
+  }, []);
+
   // Combine available topics with custom topics
   const allTopics = [...AVAILABLE_TOPICS, ...customTopics];
 
@@ -70,7 +80,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
     }
   };
 
-  const handleAddCustomTopic = () => {
+  const handleAddCustomTopic = async () => {
     const trimmedName = newTopicName.trim();
     if (!trimmedName) {
       Alert.alert(t('errors.invalidTopic'), t('errors.topicRequired'));
@@ -106,6 +116,10 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
       label: trimmedName,
     };
 
+    // Save to storage
+    await saveCustomTopic(newTopic);
+
+    // Update local state
     setCustomTopics([...customTopics, newTopic]);
     onTopicsChange([...selectedTopics, newTopicId]);
     setNewTopicName('');

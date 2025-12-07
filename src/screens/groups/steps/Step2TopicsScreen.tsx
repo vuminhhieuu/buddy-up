@@ -173,68 +173,68 @@ export const Step2TopicsScreen: React.FC<Step2TopicsScreenProps> = ({
                         onPress={() => setFieldValue('student_level', 'all')}
                         label={t('step2.allLevels')}
                       />
-                      <Text
-                        variant="bodySmall"
-                        color="secondary"
+                      <View
                         style={{
-                          marginLeft: theme.spacing[8],
+                          paddingLeft: theme.spacing[3],
                           marginTop: -theme.spacing[1],
                           marginBottom: theme.spacing[2],
                         }}
                       >
-                        {t('step2.allLevelsDescription')}
-                      </Text>
+                        <Text variant="bodySmall" color="secondary">
+                          {t('step2.allLevelsDescription')}
+                        </Text>
+                      </View>
 
                       <RadioButton
                         selected={values.student_level === 'beginner'}
                         onPress={() => setFieldValue('student_level', 'beginner')}
                         label={t('step2.beginner')}
                       />
-                      <Text
-                        variant="bodySmall"
-                        color="secondary"
+                      <View
                         style={{
-                          marginLeft: theme.spacing[8],
+                          paddingLeft: theme.spacing[3],
                           marginTop: -theme.spacing[1],
                           marginBottom: theme.spacing[2],
                         }}
                       >
-                        {t('step2.beginnerDescription')}
-                      </Text>
+                        <Text variant="bodySmall" color="secondary">
+                          {t('step2.beginnerDescription')}
+                        </Text>
+                      </View>
 
                       <RadioButton
                         selected={values.student_level === 'intermediate'}
                         onPress={() => setFieldValue('student_level', 'intermediate')}
                         label={t('step2.intermediate')}
                       />
-                      <Text
-                        variant="bodySmall"
-                        color="secondary"
+                      <View
                         style={{
-                          marginLeft: theme.spacing[8],
+                          paddingLeft: theme.spacing[3],
                           marginTop: -theme.spacing[1],
                           marginBottom: theme.spacing[2],
                         }}
                       >
-                        {t('step2.intermediateDescription')}
-                      </Text>
+                        <Text variant="bodySmall" color="secondary">
+                          {t('step2.intermediateDescription')}
+                        </Text>
+                      </View>
 
                       <RadioButton
                         selected={values.student_level === 'advanced'}
                         onPress={() => setFieldValue('student_level', 'advanced')}
                         label={t('step2.advanced')}
                       />
-                      <Text
-                        variant="bodySmall"
-                        color="secondary"
+                      <View
                         style={{
-                          marginLeft: theme.spacing[8],
+                          paddingLeft: theme.spacing[3],
                           marginTop: -theme.spacing[1],
                           marginBottom: theme.spacing[2],
                         }}
                       >
-                        {t('step2.advancedDescription')}
-                      </Text>
+                        <Text variant="bodySmall" color="secondary">
+                          {t('step2.advancedDescription')}
+                        </Text>
+                      </View>
                     </View>
                     {touched.student_level && errors.student_level && (
                       <Text variant="caption" color="error" style={{ marginTop: theme.spacing[1] }}>
@@ -264,17 +264,17 @@ export const Step2TopicsScreen: React.FC<Step2TopicsScreenProps> = ({
                         onPress={() => setFieldValue('expected_activity_frequency', 'daily')}
                         label={t('step2.daily')}
                       />
-                      <Text
-                        variant="bodySmall"
-                        color="secondary"
+                      <View
                         style={{
-                          marginLeft: theme.spacing[8],
+                          paddingLeft: theme.spacing[3],
                           marginTop: -theme.spacing[1],
                           marginBottom: theme.spacing[2],
                         }}
                       >
-                        {t('step2.dailyDescription')}
-                      </Text>
+                        <Text variant="bodySmall" color="secondary">
+                          {t('step2.dailyDescription')}
+                        </Text>
+                      </View>
 
                       <RadioButton
                         selected={values.expected_activity_frequency === 'few_times_week'}
@@ -283,51 +283,51 @@ export const Step2TopicsScreen: React.FC<Step2TopicsScreenProps> = ({
                         }
                         label={t('step2.fewTimesWeek')}
                       />
-                      <Text
-                        variant="bodySmall"
-                        color="secondary"
+                      <View
                         style={{
-                          marginLeft: theme.spacing[8],
+                          paddingLeft: theme.spacing[3],
                           marginTop: -theme.spacing[1],
                           marginBottom: theme.spacing[2],
                         }}
                       >
-                        {t('step2.fewTimesWeekDescription')}
-                      </Text>
+                        <Text variant="bodySmall" color="secondary">
+                          {t('step2.fewTimesWeekDescription')}
+                        </Text>
+                      </View>
 
                       <RadioButton
                         selected={values.expected_activity_frequency === 'weekly'}
                         onPress={() => setFieldValue('expected_activity_frequency', 'weekly')}
                         label={t('step2.weekly')}
                       />
-                      <Text
-                        variant="bodySmall"
-                        color="secondary"
+                      <View
                         style={{
-                          marginLeft: theme.spacing[8],
+                          paddingLeft: theme.spacing[3],
                           marginTop: -theme.spacing[1],
                           marginBottom: theme.spacing[2],
                         }}
                       >
-                        {t('step2.weeklyDescription')}
-                      </Text>
+                        <Text variant="bodySmall" color="secondary">
+                          {t('step2.weeklyDescription')}
+                        </Text>
+                      </View>
 
                       <RadioButton
                         selected={values.expected_activity_frequency === 'flexible'}
                         onPress={() => setFieldValue('expected_activity_frequency', 'flexible')}
                         label={t('step2.flexible')}
                       />
-                      <Text
-                        variant="bodySmall"
-                        color="secondary"
+                      <View
                         style={{
-                          marginLeft: theme.spacing[8],
+                          paddingLeft: theme.spacing[3],
                           marginTop: -theme.spacing[1],
                           marginBottom: theme.spacing[2],
                         }}
                       >
-                        {t('step2.flexibleDescription')}
-                      </Text>
+                        <Text variant="bodySmall" color="secondary">
+                          {t('step2.flexibleDescription')}
+                        </Text>
+                      </View>
                     </View>
                     {touched.expected_activity_frequency && errors.expected_activity_frequency && (
                       <Text variant="caption" color="error" style={{ marginTop: theme.spacing[1] }}>
