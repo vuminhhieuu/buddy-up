@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, View } from 'react-native';
 import { MainTabsNavigator } from './MainTabsNavigator';
@@ -14,6 +14,7 @@ import { useAppSelector } from '../store/hooks';
 import { useFirstLaunch } from '../hooks/useFirstLaunch';
 import { useTheme } from '../styles';
 import { useTranslation } from 'react-i18next';
+import { notificationRouter } from '../services/notifications/NotificationRouter';
 
 export type RootStackParamList = {
   Onboarding: undefined;
@@ -48,6 +49,14 @@ export const AppNavigator: React.FC = () => {
   const { isFirstLaunch, isLoading, completeOnboarding } = useFirstLaunch();
   const { theme } = useTheme();
   const { t } = useTranslation('common');
+  const navigationRef = useNavigationContainerRef();
+
+  // Set navigation ref for notification router
+  React.useEffect(() => {
+    if (navigationRef) {
+      notificationRouter.setNavigationRef(navigationRef);
+    }
+  }, [navigationRef]);
 
   if (isLoading) {
     return (
@@ -62,7 +71,7 @@ export const AppNavigator: React.FC = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {isFirstLaunch ? (
           <Stack.Screen name="Onboarding">

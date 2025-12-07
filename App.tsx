@@ -22,6 +22,7 @@ import { AppNavigator } from './src/navigation/AppNavigator';
 import { store } from './src/store';
 import { useAuthSession } from './src/hooks/useAuthSession';
 import { useBuddyRequests } from './src/hooks/useBuddyRequests';
+import { useNotifications } from './src/hooks/useNotifications';
 import { initializeLanguage } from './src/services/language';
 import { buddyToastConfig } from './src/components/ui/BuddyToast/config';
 import { TOAST_POSITION, TOAST_BOTTOM_OFFSET, TOAST_VISIBILITY_TIME } from './src/constants/toast';
@@ -35,6 +36,9 @@ const AppContent = () => {
   
   // Listen for incoming connection requests via Realtime
   useBuddyRequests(userId);
+  
+  // Initialize notification system
+  useNotifications();
 
   useEffect(() => {
     // Initialize language from storage when app starts
