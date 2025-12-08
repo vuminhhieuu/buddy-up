@@ -83,7 +83,8 @@
     "groupRules": "Group Rules",
     "rulesDescription": "Set rules to help the group operate effectively and civilly",
     "addRule": "Add rule",
-    "rulesMaxInfo": "Maximum 10 rules. The first rule cannot be deleted.",
+    "rulesMaxInfo": "Maximum 10 rules.",
+    "noRulesYet": "No rules yet. Add the first rule.",
     "approvalSettings": "Approval Settings",
     "newMemberApproval": "New Member Approval",
     "approvalDescription": "Admin approves before new members join the group",
@@ -97,7 +98,8 @@
     "groupLink": "Group Link",
     "groupLinkDescription": "Create an easy-to-remember link to share the group",
     "groupLinkPrefix": "buddyup.vn/g/",
-    "groupLinkInfo": "Only use lowercase letters, numbers, and hyphens"
+    "groupLinkInfo": "Only use lowercase letters, numbers, and hyphens",
+    "groupLinkPreview": "Your group link:"
   },
   "step4": {
     "title": "Preview & Create Group",
@@ -164,5 +166,33 @@
   "success": {
     "groupCreated": "Group created successfully",
     "groupCreatedDescription": "Your group has been created and is ready for people to join!"
+  },
+  "creating": "Creating...",
+  "viewGroup": "View Group",
+  "goHome": "Go Home",
+  "community": {
+    "myGroups": "My Study Groups",
+    "joinedGroups": "Joined Groups",
+    "publicGroups": "Public Study Groups",
+    "noGroups": "No groups yet",
+    "noGroupsDescription": "Create your first study group",
+    "noJoinedGroups": "You haven't joined any groups",
+    "noJoinedGroupsDescription": "Explore and join public study groups",
+    "noPublicGroups": "No public groups yet",
+    "noPublicGroupsDescription": "Be the first to create a public group",
+    "createGroup": "Create Study Group",
+    "loading": "Loading...",
+    "searchPlaceholder": "Find study groups...",
+    "filterAll": "All",
+    "viewAll": "View all",
+    "roleAdmin": "Admin",
+    "groupCount_one": "group",
+    "groupCount_other": "groups",
+    "members": "members",
+    "messages": "messages",
+    "activityVeryActive": "Very active",
+    "activityActive": "Active",
+    "activityModerate": "Moderate",
+    "joinGroup": "Join group"
   }
 }

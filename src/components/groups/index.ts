@@ -4,3 +4,5 @@ export * from './TopicSelector';
 export * from './GroupRuleItem';
 export * from './GroupPreviewCard';
 export * from './FriendInviteList';
+export * from './GroupList';
+export * from './GroupCard';

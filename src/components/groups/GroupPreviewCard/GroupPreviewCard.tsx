@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Image, ViewStyle, ImageStyle } from 'react-native';
 import { Globe } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,7 @@ import { Text } from '../../ui/Text/Text';
 import { Card } from '../../ui/Card/Card';
 import { Chip } from '../../ui/Chip/Chip';
 import { Avatar } from '../../ui/Avatar/Avatar';
+import { getTopicLabels } from '../../../utils/topicUtils';
 
 export type GroupPreviewCardProps = {
   name: string;
@@ -33,6 +34,21 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
 }) => {
   const { theme } = useTheme();
   const { t } = useTranslation('groups');
+  const [topicLabels, setTopicLabels] = useState<string[]>([]);
+
+  // Convert topic IDs to labels
+  useEffect(() => {
+    const loadTopicLabels = async () => {
+      if (topics && topics.length > 0) {
+        // Always convert topics to labels
+        const labels = await getTopicLabels(topics);
+        setTopicLabels(labels);
+      } else {
+        setTopicLabels([]);
+      }
+    };
+    loadTopicLabels();
+  }, [topics]);
 
   return (
     <Card padding={0} elevation="md" style={{ overflow: 'hidden' }}>
@@ -144,7 +160,7 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
         </Text>
 
         {/* Topics */}
-        {topics.length > 0 && (
+        {topicLabels.length > 0 && (
           <View
             style={{
               flexDirection: 'row',
@@ -153,8 +169,8 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
               marginBottom: theme.spacing[3],
             }}
           >
-            {topics.map((topic, index) => (
-              <Chip key={index} label={topic} variant="default" disabled />
+            {topicLabels.map((label, index) => (
+              <Chip key={index} label={label} variant="default" disabled />
             ))}
           </View>
         )}
@@ -163,13 +179,13 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
         <View
           style={{
             flexDirection: 'row',
-            gap: theme.spacing[4],
+            justifyContent: 'space-between',
             paddingTop: theme.spacing[3],
             borderTopWidth: 1,
             borderTopColor: theme.colors.border,
           }}
         >
-          <View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
             <Text variant="h6" style={{ fontWeight: '700' as const }}>
               {memberCount}
             </Text>
@@ -178,7 +194,7 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
             </Text>
           </View>
           {activityFrequency && (
-            <View>
+            <View style={{ flex: 1, alignItems: 'center' }}>
               <Text variant="body" style={{ fontWeight: '600' as const }}>
                 {activityFrequency}
               </Text>
@@ -188,7 +204,7 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
             </View>
           )}
           {studentLevel && (
-            <View>
+            <View style={{ flex: 1, alignItems: 'center' }}>
               <Text variant="body" style={{ fontWeight: '600' as const }}>
                 {studentLevel === 'all'
                   ? t('step4.studentLevelAll')
