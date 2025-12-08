@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   ActivityIndicator,
   Alert,
@@ -9,7 +10,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ScreenContainer, Text, Button, Spacer } from '../../components/ui';
 import {
@@ -160,6 +161,53 @@ export const ProfileScreen: React.FC = () => {
       loadData(true);
     }
   }, [userId]);
+  const route = useRoute<any>();
+
+  // Reload profile data when the screen comes into focus (e.g., after marking a session completed)
+  useFocusEffect(
+    useCallback(() => {
+      // If we were navigated here with optimistic deltas from marking a session completed,
+      // apply them immediately so the UI reflects the change even if DB queries are delayed.
+      const addedHours = route.params?.addedCompletedHours as number | undefined;
+      const addedCount = route.params?.addedCompletedCount as number | undefined;
+
+      if (addedHours && addedCount) {
+        // Optimistically update local overview totalTime
+        setProfileOverview((prev) =>
+          prev
+            ? {
+                ...prev,
+                totalTime: Number((prev.totalTime + addedHours).toFixed(1)),
+              }
+            : prev,
+        );
+
+        // Optimistically update studyStats completedSessions
+        setStudyStats((prev) =>
+          prev
+            ? {
+                ...prev,
+                completedSessions: (prev.completedSessions || 0) + addedCount,
+              }
+            : prev,
+        );
+
+        // Clear params so we don't double-apply on next focus
+        try {
+          (navigation as any).setParams({
+            addedCompletedHours: undefined,
+            addedCompletedCount: undefined,
+          });
+        } catch (e) {
+          // ignore if setParams not available
+        }
+      }
+
+      if (userId) {
+        void loadData(false);
+      }
+    }, [loadData, userId, route.params, navigation]),
+  );
 
   useEffect(() => {
     const loadLanguagePreference = async () => {
@@ -167,7 +215,7 @@ export const ProfileScreen: React.FC = () => {
       const current = (stored || i18n.language || 'vi') as SupportedLanguage;
       setSelectedLanguage(current);
     };
-    loadLanguagePreference();
+    void loadLanguagePreference();
   }, [i18n.language]);
 
   const handleRefresh = useCallback(() => {

@@ -54,6 +54,20 @@
   },
   "detail": {
     "title": "Chi tiết buổi học",
+    "sessionIdNotFound": "Không tìm thấy ID buổi học",
+    "loadFailed": "Không thể tải thông tin buổi học",
+    "linkCopied": "Đã sao chép link",
+    "meetingLinkNotFound": "Không tìm thấy link cuộc họp",
+    "cannotOpenLink": "Không thể mở link cuộc họp",
+    "editComingSoon": "Tính năng chỉnh sửa sắp ra mắt",
+    "cancelTitle": "Hủy buổi học",
+    "cancelMessage": "Bạn có chắc chắn muốn hủy buổi học này?",
+    "cancelNo": "Không",
+    "cancelYes": "Hủy buổi học",
+    "cancelFailed": "Không thể hủy buổi học",
+    "cancelSuccess": "Đã hủy buổi học",
+    "markCompleteFailed": "Không thể đánh dấu hoàn thành",
+    "markCompleteSuccess": "Buổi học đã được đánh dấu hoàn thành! +50 XP",
     "loading": "Đang tải...",
     "date": "Ngày",
     "time": "Thời gian",
@@ -63,10 +77,9 @@
     "joinMeeting": "Tham gia cuộc họp",
     "members": "Thành viên",
     "creator": "Người tạo",
+    "confirmed": "Đã xác nhận ✓",
     "edit": "Chỉnh sửa",
     "cancel": "Hủy buổi học",
-    "accept": "Chấp nhận",
-    "decline": "Từ chối",
     "status": {
       "cancelled": "Đã hủy",
       "completed": "Đã kết thúc",
@@ -76,11 +89,10 @@
       "invited": "Đã mời",
       "declined": "Đã từ chối ✗"
     },
-    "cancelConfirm": {
-      "title": "Hủy buổi học",
-      "message": "Bạn có chắc chắn muốn hủy buổi học này?",
-      "no": "Không",
-      "yes": "Hủy buổi học"
+    "participantState": {
+      "accepted": "Đã xác nhận ✓",
+      "invited": "Đã mời",
+      "declined": "Đã từ chối ✗"
     },
     "toast": {
       "linkCopied": "Đã sao chép link",
@@ -95,5 +107,27 @@
     },
     "hours": "giờ",
     "minutes": "phút"
+  },
+  "allSessions": {
+    "title": "Tất cả buổi học",
+    "empty": "Bạn chưa có buổi học nào",
+    "notLoggedIn": "Bạn chưa đăng nhập",
+    "statusBadge": {
+      "cancelled": "Đã hủy",
+      "completed": "Đã kết thúc",
+      "ongoing": "Đang diễn ra",
+      "upcoming": "Sắp diễn ra"
+    },
+    "defaultTitle": "Buổi học"
+  },
+  "completion": {
+    "title": "Buổi học hoàn thành!",
+    "duration": "Thời lượng",
+    "people": "người",
+    "participants": "Tham gia",
+    "ratingQuestion": "Bạn cảm thấy buổi học thế nào?",
+    "trackingMessage": "Hãy đánh dấu lại buổi học để theo dõi tiến độ học tập hiệu quả hơn nhé",
+    "markCompleted": "Đánh dấu đã hoàn thành",
+    "notCompleted": "Chưa hoàn thành / Có vấn đề"
   }
 }

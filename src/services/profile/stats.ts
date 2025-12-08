@@ -22,10 +22,38 @@ import { calculateSessionHours, safeNumber } from './utils';
  */
 export async function fetchStudyStats(userId: string): Promise<StudyStats> {
   try {
+    // First fetch participant rows where this user has status = 'completed'
+    const { data: participantRows, error: participantsError } = await supabase
+      .from('study_session_participants')
+      .select('session_id')
+      .eq('user_id', userId)
+      .eq('status', 'completed');
+
+    if (participantsError) {
+      if (isPolicyRecursion(participantsError)) {
+        logger.warn(
+          'fetchStudyStats',
+          'Policy prevented access to participants, returning fallback',
+        );
+        return FALLBACK_STUDY_STATS;
+      }
+      throw participantsError;
+    }
+
+    const sessionIds = (participantRows || []).map((r: any) => r.session_id).filter(Boolean);
+
+    if (sessionIds.length === 0) {
+      return {
+        weeklyActivity: WEEK_DAYS.map((day) => ({ day, value: 0 })),
+        completedSessions: 0,
+        averagePerDay: `0${TIME_FORMAT_HOURS}`,
+      } as StudyStats;
+    }
+
     const { data, error } = await supabase
       .from('study_sessions')
       .select('scheduled_start,scheduled_end,status')
-      .eq('creator_id', userId);
+      .in('id', sessionIds);
 
     if (error) {
       if (isPolicyRecursion(error)) {
@@ -39,7 +67,7 @@ export async function fetchStudyStats(userId: string): Promise<StudyStats> {
     const activityMap = new Map<string, number>();
     WEEK_DAYS.forEach((day) => activityMap.set(day, 0));
 
-    let completedSessions = 0;
+    const completedSessions = sessionIds.length;
     let totalHours = 0;
 
     data.forEach((session) => {
@@ -49,7 +77,6 @@ export async function fetchStudyStats(userId: string): Promise<StudyStats> {
         session.status,
       );
       totalHours += hours;
-      if (session.status === 'completed') completedSessions += 1;
       if (!session.scheduled_start) return;
 
       const startDate = new Date(session.scheduled_start);

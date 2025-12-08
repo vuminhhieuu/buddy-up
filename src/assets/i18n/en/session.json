@@ -54,19 +54,32 @@
   },
   "detail": {
     "title": "Session Details",
+    "sessionIdNotFound": "Session ID not found",
+    "loadFailed": "Failed to load session details",
+    "linkCopied": "Link copied to clipboard",
+    "meetingLinkNotFound": "Meeting link not found",
+    "cannotOpenLink": "Cannot open meeting link",
+    "editComingSoon": "Edit feature coming soon",
+    "cancelTitle": "Cancel Session",
+    "cancelMessage": "Are you sure you want to cancel this session?",
+    "cancelNo": "No",
+    "cancelYes": "Cancel Session",
+    "cancelFailed": "Cannot cancel session",
+    "cancelSuccess": "Session cancelled",
+    "markCompleteFailed": "Cannot mark as completed",
+    "markCompleteSuccess": "Session marked as completed! +50 XP",
     "loading": "Loading...",
     "date": "Date",
     "time": "Time",
     "duration": "Duration",
-    "remaining": "Time remaining",
+    "remaining": "Remaining",
     "googleMeet": "Google Meet",
-    "joinMeeting": "Join meeting",
+    "joinMeeting": "Join Meeting",
     "members": "Members",
     "creator": "Creator",
+    "confirmed": "Confirmed ✓",
     "edit": "Edit",
-    "cancel": "Cancel session",
-    "accept": "Accept",
-    "decline": "Decline",
+    "cancel": "Cancel Session",
     "status": {
       "cancelled": "Cancelled",
       "completed": "Completed",
@@ -76,11 +89,10 @@
       "invited": "Invited",
       "declined": "Declined ✗"
     },
-    "cancelConfirm": {
-      "title": "Cancel Session",
-      "message": "Are you sure you want to cancel this session?",
-      "no": "No",
-      "yes": "Cancel Session"
+    "participantState": {
+      "accepted": "Accepted ✓",
+      "invited": "Invited",
+      "declined": "Declined ✗"
     },
     "toast": {
       "linkCopied": "Link copied to clipboard",
@@ -95,5 +107,27 @@
     },
     "hours": "hours",
     "minutes": "minutes"
+  },
+  "allSessions": {
+    "title": "All Sessions",
+    "empty": "You have no sessions yet",
+    "notLoggedIn": "You are not logged in",
+    "statusBadge": {
+      "cancelled": "Cancelled",
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "upcoming": "Upcoming"
+    },
+    "defaultTitle": "Session"
+  },
+  "completion": {
+    "title": "Session Completed!",
+    "duration": "Duration",
+    "people": "people",
+    "participants": "Participants",
+    "ratingQuestion": "How was the session?",
+    "trackingMessage": "Please mark the session to track your learning progress more effectively",
+    "markCompleted": "Mark as completed",
+    "notCompleted": "Not completed / Had issues"
   }
 }

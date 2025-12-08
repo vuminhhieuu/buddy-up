@@ -44,6 +44,29 @@ const formatCountdown = (startIso: string, t: (key: string, opts?: any) => strin
   return t('sessions.countdownDays', { count: Math.max(1, days) });
 };
 
+const getStatusBadge = (
+  startIso: string,
+  endIso: string | null | undefined,
+  t: (key: string) => string,
+  theme: any,
+) => {
+  const start = new Date(startIso).getTime();
+  const end = endIso ? new Date(endIso).getTime() : start + MS_PER_HOUR;
+  const now = Date.now();
+
+  if (now >= end) {
+    return {
+      label: t('sessions.statusCompleted'),
+      bg: theme.colors.neutral[200],
+      fg: theme.colors.neutral[600],
+    };
+  }
+  if (now >= start && now < end) {
+    return { label: t('sessions.statusOngoing'), bg: '#FFF9C4', fg: '#F57F17' };
+  }
+  return { label: t('sessions.statusUpcoming'), bg: '#C8E6C9', fg: '#2E7D32' };
+};
+
 export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
   sessions,
   onSessionPress,
@@ -111,27 +134,71 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
                   >
                     {session.title || session.subject || t('sessions.unknownSubject')}
                   </Text>
-                  <View
-                    style={[
-                      styles.countdownBadge,
-                      {
-                        backgroundColor: theme.colors.primary[50],
-                      },
-                    ]}
-                  >
-                    <Text
-                      variant="caption"
-                      style={[
-                        styles.countdownText,
-                        {
-                          color: theme.colors.semantic.warning,
-                          fontWeight: '600',
-                        },
-                      ]}
-                    >
-                      {formatCountdown(session.scheduledStart, t)}
-                    </Text>
-                  </View>
+                  {(() => {
+                    const badge = getStatusBadge(
+                      session.scheduledStart,
+                      session.scheduledEnd,
+                      t,
+                      theme,
+                    );
+                    const start = new Date(session.scheduledStart).getTime();
+                    const end = session.scheduledEnd
+                      ? new Date(session.scheduledEnd).getTime()
+                      : start;
+                    const now = Date.now();
+                    // Only show countdown for upcoming sessions
+                    if (now < start) {
+                      return (
+                        <View
+                          style={[
+                            styles.countdownBadge,
+                            {
+                              backgroundColor: badge.bg,
+                            },
+                          ]}
+                        >
+                          <Text
+                            variant="caption"
+                            style={[
+                              styles.countdownText,
+                              {
+                                color: badge.fg,
+                                fontWeight: '600',
+                              },
+                            ]}
+                          >
+                            {/* Show countdown for upcoming */}
+                            {formatCountdown(session.scheduledStart, t)}
+                          </Text>
+                        </View>
+                      );
+                    } else {
+                      // For ongoing or completed, just show the status badge
+                      return (
+                        <View
+                          style={[
+                            styles.countdownBadge,
+                            {
+                              backgroundColor: badge.bg,
+                            },
+                          ]}
+                        >
+                          <Text
+                            variant="caption"
+                            style={[
+                              styles.countdownText,
+                              {
+                                color: badge.fg,
+                                fontWeight: '600',
+                              },
+                            ]}
+                          >
+                            {badge.label}
+                          </Text>
+                        </View>
+                      );
+                    }
+                  })()}
                 </View>
 
                 <View style={styles.sessionBody}>

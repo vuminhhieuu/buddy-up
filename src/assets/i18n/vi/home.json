@@ -30,6 +30,9 @@
     "countdownMinutes": "Còn {{count}} phút",
     "countdownHours": "Còn {{count}} giờ",
     "countdownDays": "Còn {{count}} ngày",
+    "statusUpcoming": "Sắp diễn ra",
+    "statusOngoing": "Đang diễn ra",
+    "statusCompleted": "Đã kết thúc",
     "accessibilityLabel": "Buổi học cùng {{name}} lúc {{time}}",
     "emptyTitle": "Chưa có lịch học",
     "emptySubtitle": "Tạo buổi học mới hoặc tìm bạn học để bắt đầu."
