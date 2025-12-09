@@ -7,6 +7,7 @@ import { supabase } from '../../config/supabase';
 import { logger } from '../../utils/logger';
 import { isRlsError, handleSupabaseError, handleUnknownError } from '../helpers';
 import type { Message, SendMessageResponse, FetchMessagesResponse } from './types';
+import { sendNotification } from '../notifications/sendNotification';
 
 /**
  * Fetch messages for a chat room
@@ -189,6 +190,47 @@ export async function sendMessage(
       logger.error('sendMessage', 'Failed to update chat updated_at:', updateError);
       // Continue execution - message was sent successfully, this is a non-critical update
     }
+
+    // Fire-and-forget notification to other participants
+    (async () => {
+      try {
+        // Get all participants except sender
+        const { data: participants } = await supabase
+          .from('chat_participants')
+          .select('user_id')
+          .eq('chat_id', chatId)
+          .neq('user_id', senderId);
+
+        if (!participants || participants.length === 0) return;
+
+        // Get sender display name
+        const { data: senderProfile } = await supabase
+          .from('profiles')
+          .select('display_name')
+          .eq('user_id', senderId)
+          .is('deleted_at', null)
+          .maybeSingle();
+
+        const senderName = senderProfile?.display_name || 'Someone';
+        const messageContent = message.content || '[Attachment]';
+
+        await sendNotification({
+          type: 'chat_message',
+          userIds: participants.map((p) => p.user_id),
+          title: 'Tin nhắn mới',
+          body: `${senderName}: ${messageContent.length > 100 ? `${messageContent.slice(0, 97)}...` : messageContent}`,
+          data: {
+            type: 'chat_message',
+            chatId,
+            senderId,
+            senderName,
+          },
+          sound: 'default',
+        });
+      } catch (notifyError) {
+        logger.warn('sendMessage', 'Failed to send notification', notifyError);
+      }
+    })();
 
     return {
       success: true,

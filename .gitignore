@@ -43,3 +43,6 @@ yarn-error.*
 .env
 .cursorrules
 .cursor/
+
+google-services.json
+buddy-up-12f3c-firebase-adminsdk-fbsvc-22690a068c.json

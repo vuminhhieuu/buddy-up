@@ -65,5 +65,8 @@
       "report": "Report"
     },
     "leaveChat": "Leave conversation"
+  },
+  "notification": {
+    "newMessageTitle": "New message"
   }
 }
