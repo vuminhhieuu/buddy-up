@@ -5,17 +5,27 @@
 
 import * as Notifications from 'expo-notifications';
 import { AppState, AppStateStatus, Platform } from 'react-native';
+import * as Application from 'expo-application';
 import { logger } from '../../utils/logger';
 import { requestNotificationPermissions } from './permissions';
 import { getExpoPushToken, registerPushToken, unregisterPushToken } from './pushTokens';
 
+type ActiveChatResolver = () => string | null | undefined;
+
 // Configure notification handler
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
+  handleNotification: async (notification) => {
+    const service = NotificationService.getInstance();
+    const data = notification.request?.content?.data as { chatId?: string; type?: string };
+    const suppress = data?.type === 'chat_message' && service.shouldSuppressNotification(data);
+    logger.debug('NotificationHandler', `suppress=${suppress} chatId=${data?.chatId ?? 'none'}`);
+
+    return {
+      shouldShowAlert: !suppress,
+      shouldPlaySound: !suppress,
+      shouldSetBadge: true,
+    } as Notifications.NotificationBehavior;
+  },
 });
 
 export class NotificationService {
@@ -23,6 +33,7 @@ export class NotificationService {
   private listeners: Array<() => void> = [];
   private currentUserId: string | null = null;
   private currentToken: string | null = null;
+  private activeChatResolver: ActiveChatResolver | null = null;
 
   private constructor() {
     this.setupNotificationChannels();
@@ -76,6 +87,18 @@ export class NotificationService {
       // Get and register push token
       const tokenResult = await getExpoPushToken();
       if (!tokenResult.success || !tokenResult.token) {
+        // Log warning but don't fail initialization if Firebase is not setup
+        // This allows app to continue working, notifications just won't work until Firebase is configured
+        if (tokenResult.error?.includes('Firebase')) {
+          logger.warn(
+            'NotificationService',
+            'Push token registration failed due to Firebase setup. Notifications will not work until Firebase is configured.',
+          );
+          return {
+            success: false,
+            error: tokenResult.error || 'Firebase not configured',
+          };
+        }
         return {
           success: false,
           error: tokenResult.error || 'Failed to get push token',
@@ -84,8 +107,27 @@ export class NotificationService {
 
       this.currentToken = tokenResult.token;
 
-      // Register token in database
-      const registerResult = await registerPushToken(userId, tokenResult.token);
+      // Get device ID (prefer Android ID / installation ID)
+      let deviceId: string | undefined;
+      try {
+        if (Platform.OS === 'android') {
+          const maybeAndroidId =
+            (Application as any).androidId ||
+            (typeof (Application as any).getAndroidId === 'function'
+              ? (Application as any).getAndroidId()
+              : undefined);
+          deviceId = (maybeAndroidId as string | undefined) || undefined;
+        } else if (Platform.OS === 'ios' && (Application as any).getIosIdForVendorAsync) {
+          deviceId =
+            ((await (Application as any).getIosIdForVendorAsync()) as string | undefined) ||
+            undefined;
+        }
+      } catch (e) {
+        logger.warn('NotificationService', 'Failed to get deviceId', e);
+      }
+
+      // Register token in database (supports multi-device)
+      const registerResult = await registerPushToken(userId, tokenResult.token, deviceId);
       if (!registerResult.success) {
         return {
           success: false,
@@ -169,6 +211,28 @@ export class NotificationService {
    */
   getCurrentToken(): string | null {
     return this.currentToken;
+  }
+
+  /**
+   * Set resolver to get current active chat id (from UI)
+   */
+  setActiveChatResolver(resolver: ActiveChatResolver | null) {
+    this.activeChatResolver = resolver;
+  }
+
+  /**
+   * Check if notification should be suppressed (e.g., user is viewing the chat)
+   */
+  shouldSuppressNotification(data: { chatId?: string }): boolean {
+    try {
+      if (!data?.chatId) return false;
+      const activeChatId = this.activeChatResolver ? this.activeChatResolver() : null;
+      const isForeground = AppState.currentState === 'active';
+      return isForeground && activeChatId === data.chatId;
+    } catch (error) {
+      logger.warn('NotificationService', 'Failed to check suppression', error);
+      return false;
+    }
   }
 }
 

@@ -22,6 +22,7 @@ import { AppNavigator } from './src/navigation/AppNavigator';
 import { store } from './src/store';
 import { useAuthSession } from './src/hooks/useAuthSession';
 import { useBuddyRequests } from './src/hooks/useBuddyRequests';
+import { useChatInboxRealtime } from './src/hooks/chat/useChatInboxRealtime';
 import { useNotifications } from './src/hooks/useNotifications';
 import { initializeLanguage } from './src/services/language';
 import { buddyToastConfig } from './src/components/ui/BuddyToast/config';
@@ -37,6 +38,9 @@ const AppContent = () => {
   // Listen for incoming connection requests via Realtime
   useBuddyRequests(userId);
   
+  // Listen for incoming messages globally to update unread count
+  useChatInboxRealtime(userId);
+
   // Initialize notification system
   useNotifications();
 

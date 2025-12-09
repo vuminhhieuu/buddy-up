@@ -39,10 +39,25 @@ export async function getExpoPushToken(): Promise<PushTokenResponse> {
       token: tokenData.data,
     };
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+    // Check if it's a Firebase initialization error
+    if (errorMessage.includes('FirebaseApp') || errorMessage.includes('FCM')) {
+      logger.warn(
+        'getExpoPushToken',
+        'Firebase not initialized. Push notifications may not work on Android. See: https://docs.expo.dev/push-notifications/fcm-credentials/',
+      );
+      return {
+        success: false,
+        error:
+          'Firebase not initialized. Please setup Firebase credentials for Android push notifications.',
+      };
+    }
+
     logger.error('getExpoPushToken', 'Failed to get push token:', error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: errorMessage,
     };
   }
 }
@@ -58,15 +73,42 @@ export async function registerPushToken(
   try {
     const platform = Platform.OS === 'ios' ? 'ios' : 'android';
 
-    // Check if token already exists
-    const { data: existing } = await supabase
+    // 1) Nếu có deviceId: upsert theo (user_id, device_id)
+    if (deviceId) {
+      const { data: existingByDevice } = await supabase
+        .from('push_tokens')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('device_id', deviceId)
+        .maybeSingle();
+
+      if (existingByDevice) {
+        const { error: updateError } = await supabase
+          .from('push_tokens')
+          .update({
+            token,
+            platform,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingByDevice.id);
+
+        if (updateError) {
+          logger.error('registerPushToken', 'Failed to update token by device:', updateError);
+          return { success: false, error: `Failed to update token: ${updateError.message}` };
+        }
+
+        return { success: true };
+      }
+    }
+
+    // 2) Nếu token đã tồn tại: update chủ sở hữu/platform/device
+    const { data: existingByToken } = await supabase
       .from('push_tokens')
       .select('id')
       .eq('token', token)
       .maybeSingle();
 
-    if (existing) {
-      // Update existing token
+    if (existingByToken) {
       const { error: updateError } = await supabase
         .from('push_tokens')
         .update({
@@ -75,17 +117,16 @@ export async function registerPushToken(
           device_id: deviceId,
           updated_at: new Date().toISOString(),
         })
-        .eq('id', existing.id);
+        .eq('id', existingByToken.id);
 
       if (updateError) {
         logger.error('registerPushToken', 'Failed to update token:', updateError);
         return { success: false, error: `Failed to update token: ${updateError.message}` };
       }
-
       return { success: true };
     }
 
-    // Insert new token
+    // 3) Insert mới (giữ nguyên token của các device khác)
     const { error: insertError } = await supabase.from('push_tokens').insert({
       user_id: userId,
       token,

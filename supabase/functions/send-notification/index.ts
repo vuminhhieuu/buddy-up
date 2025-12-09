@@ -51,12 +51,16 @@ serve(async (req) => {
       );
     }
 
-    // Create Supabase client
+    // Create Supabase client (anon, for auth validation) and service client (bypass RLS to read tokens)
     const supabase = createClient(supabaseUrl, supabaseAnonKey, {
       global: {
         headers: { Authorization: authHeader },
       },
     });
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabaseService = supabaseServiceRoleKey
+      ? createClient(supabaseUrl, supabaseServiceRoleKey)
+      : null;
 
     // Parse request body
     const request: NotificationRequest = await req.json();
@@ -69,8 +73,8 @@ serve(async (req) => {
       );
     }
 
-    // Get push tokens for all users
-    const { data: tokens, error: tokensError } = await supabase
+    // Get push tokens for all users (use service role to bypass RLS)
+    const { data: tokens, error: tokensError } = await (supabaseService ?? supabase)
       .from('push_tokens')
       .select('token, user_id, platform')
       .in('user_id', userIds);
@@ -90,8 +94,8 @@ serve(async (req) => {
       );
     }
 
-    // Check notification preferences
-    const { data: preferences } = await supabase
+    // Check notification preferences (service role)
+    const { data: preferences } = await (supabaseService ?? supabase)
       .from('notification_preferences')
       .select('user_id, chat_enabled, buddy_enabled, session_enabled, sound_enabled')
       .in('user_id', userIds);
@@ -154,6 +158,25 @@ serve(async (req) => {
     });
 
     const result = await response.json();
+
+    // Cleanup invalid tokens if any
+    if (Array.isArray(result?.data) && supabaseService) {
+      for (let i = 0; i < result.data.length; i++) {
+        const receipt = result.data[i];
+        const tokenEntry = enabledTokens[i];
+        if (!receipt || !tokenEntry) continue;
+
+        if (receipt.status === 'error') {
+          const errorCode = receipt.details?.error || receipt.message;
+          if (errorCode === 'DeviceNotRegistered') {
+            await supabaseService
+              .from('push_tokens')
+              .delete()
+              .eq('token', tokenEntry.token);
+          }
+        }
+      }
+    }
 
     return new Response(
       JSON.stringify({

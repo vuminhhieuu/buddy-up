@@ -24,6 +24,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.buddyup",
@@ -46,6 +47,12 @@
           "mode": "production"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "b12a8f95-6629-4fb5-9a6b-86d51fdf96ad"
+      }
+    },
+    "owner": "vvuminhhieu"
   }
 }
