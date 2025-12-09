@@ -1,12 +1,19 @@
 {
   "session": {
     "defaultTitle": "Buổi học",
+    "allDay": "Cả ngày",
     "status": {
       "cancelled": "Đã hủy",
       "completed": "Đã kết thúc",
       "ongoing": "Đang diễn ra",
       "scheduled": "Sắp diễn ra"
     }
+  },
+  "week": {
+    "label": "Tuần",
+    "this": "Tuần này",
+    "prev": "Tuần trước",
+    "next": "Tuần sau"
   },
   "calendar": {
     "dayNames": ["TH 2", "TH 3", "TH 4", "TH 5", "TH 6", "TH 7", "CN"],
