@@ -6,8 +6,8 @@
 import { supabase } from '../../config/supabase';
 import { logger } from '../../utils/logger';
 import { isRlsError, handleSupabaseError, handleUnknownError } from '../helpers';
-import type { Message, SendMessageResponse, FetchMessagesResponse } from './types';
 import { sendNotification } from '../notifications/sendNotification';
+import type { Message, SendMessageResponse, FetchMessagesResponse, MessageAttachment } from './types';
 
 /**
  * Fetch messages for a chat room
@@ -94,11 +94,12 @@ export async function fetchMessages(chatId: string, limit = 50): Promise<FetchMe
 export async function sendMessage(
   chatId: string,
   senderId: string,
-  content: string,
+  content: string | null,
+  attachments: MessageAttachment[] = [],
 ): Promise<SendMessageResponse> {
   try {
-    // Validate content is not empty
-    if (!content || content.trim().length === 0) {
+    // Validate content/attachments
+    if ((!content || content.trim().length === 0) && attachments.length === 0) {
       return {
         success: false,
         error: 'Message content cannot be empty',
@@ -151,15 +152,16 @@ export async function sendMessage(
       };
     }
 
-    // Create message
+    const payload = {
+      chat_id: chatId,
+      sender_id: senderId,
+      content: content ? content.trim() : null,
+      attachments,
+    };
+
     const { data: message, error: messageError } = await supabase
       .from('messages')
-      .insert({
-        chat_id: chatId,
-        sender_id: senderId,
-        content: content.trim(),
-        attachments: [],
-      })
+      .insert(payload)
       .select()
       .single();
 

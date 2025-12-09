@@ -1,14 +1,14 @@
 /**
  * MessageBubble Component
- * Displays a single chat message with different styling for sent/received messages
+ * Simple bubble renderer for chat messages.
  */
 
 import React, { useMemo } from 'react';
 import { View, ViewStyle, useWindowDimensions } from 'react-native';
 import { useTheme } from '../../../styles';
-import { Text } from '../../ui/Text/Text';
 import { Avatar } from '../../ui/Avatar/Avatar';
 import { Spacer } from '../../ui/Spacer/Spacer';
+import { Text } from '../../ui/Text/Text';
 import { formatRelativeTime } from '../../../utils/date';
 import type { Message } from '../../../services/chat';
 
@@ -39,42 +39,40 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
   const { theme } = useTheme();
   const { width: windowWidth } = useWindowDimensions();
+  const horizontalPadding = theme.spacing[6] ?? 24;
 
   const maxBubbleWidth = useMemo(() => {
-    const horizontalPadding = theme.spacing[6]; // tighter spacing to keep avatar + bubble gọn
     const cappedWidth = Math.max(windowWidth - horizontalPadding, 0);
-    return Math.min(windowWidth * 0.6, cappedWidth);
-  }, [theme.spacing, windowWidth]);
-
-  const bubbleBackground =
-    variant === 'code'
-      ? theme.colors.code.background
-      : variant === 'status'
-        ? theme.colors.surface
-        : isSent
-          ? isSelected
-            ? theme.colors.primary[400]
-            : theme.colors.primary[500]
-          : isSelected
-            ? theme.colors.neutral[100]
-            : theme.colors.surface;
+    return Math.min(windowWidth * 0.65, cappedWidth);
+  }, [windowWidth, horizontalPadding]);
 
   const bubbleStyle: ViewStyle = {
     maxWidth: maxBubbleWidth,
     paddingHorizontal: variant === 'code' ? theme.spacing[5] : theme.spacing[4],
     paddingVertical: theme.spacing[3],
-    borderRadius: 24,
-    borderTopRightRadius: isSent ? 12 : 24,
-    borderTopLeftRadius: isSent ? 24 : 12,
-    backgroundColor: bubbleBackground,
-    borderWidth: variant === 'code' ? 1 : variant === 'status' || isSent ? 0 : 1,
-    borderColor: variant === 'code' ? theme.colors.code.border : theme.colors.border,
-    shadowColor: theme.shadows.md.shadowColor,
-    shadowOpacity: variant === 'status' ? 0 : theme.shadows.md.shadowOpacity,
-    shadowRadius: theme.shadows.md.shadowRadius,
-    shadowOffset: theme.shadows.md.shadowOffset,
-    elevation: variant === 'status' ? 0 : theme.shadows.md.elevation,
+    borderRadius: theme.radius.lg,
+    borderTopRightRadius: isSent ? theme.radius.sm : theme.radius.lg,
+    borderTopLeftRadius: isSent ? theme.radius.lg : theme.radius.sm,
+    backgroundColor:
+      variant === 'code'
+        ? '#1F1F1F'
+        : variant === 'status'
+          ? theme.colors.surface
+          : isSent
+            ? theme.colors.primary[500]
+            : theme.colors.surface,
+    borderWidth: variant === 'status' ? 0 : isSent ? 0 : 1.5,
+    borderColor: theme.colors.border,
+    shadowColor: '#000',
+    shadowOpacity: variant === 'status' ? 0 : 0.08,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: variant === 'status' ? 0 : 3,
   };
+  if (isSelected) {
+    bubbleStyle.borderColor = theme.colors.primary[200];
+    bubbleStyle.borderWidth = 2;
+  }
 
   const containerStyle: ViewStyle = {
     flexDirection: 'row',
@@ -99,11 +97,9 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
       )}
       <View style={{ alignItems: isSent ? 'flex-end' : 'flex-start' }}>
         {!isSent && senderName && (
-          <>
-            <Text variant="caption" color="secondary" style={{ marginBottom: theme.spacing[1] }}>
-              {senderName}
-            </Text>
-          </>
+          <Text variant="caption" color="secondary" style={{ marginBottom: theme.spacing[1] }}>
+            {senderName}
+          </Text>
         )}
         <View style={bubbleStyle}>
           {variant === 'status' ? (
@@ -111,14 +107,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               {statusIcon} {message.content}
             </Text>
           ) : variant === 'code' ? (
-            <Text
-              style={{
-                color: theme.colors.code.text,
-                fontFamily: theme.typography.code.fontFamily,
-                fontSize: theme.typography.code.fontSize,
-                lineHeight: theme.typography.code.lineHeight,
-              }}
-            >
+            <Text style={{ color: '#F7F7F7', fontFamily: 'Courier', lineHeight: 20 }}>
               {message.content}
             </Text>
           ) : (
@@ -132,11 +121,6 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
               </Text>
             )
           )}
-          {variant === 'text' && message.attachments && message.attachments.length > 0 ? (
-            <Text variant="caption" color={isSent ? 'inverse' : 'secondary'}>
-              📎 {message.attachments.length} file đính kèm
-            </Text>
-          ) : null}
         </View>
         {showTimestamp && (
           <Text

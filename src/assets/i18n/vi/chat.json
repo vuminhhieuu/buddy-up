@@ -68,5 +68,15 @@
   },
   "notification": {
     "newMessageTitle": "Tin nhắn mới"
-  }
+  },
+  "noMessages": "Chưa có tin nhắn",
+  "previewImage": "Ảnh",
+  "previewPdf": "Tệp PDF",
+  "previewAttachment": "Đính kèm",
+  "previewSession": "Lịch học",
+  "youLabel": "Bạn",
+  "senderUnknown": "Người gửi",
+  "previewImages": "đã gửi {{count}} ảnh",
+  "previewPdfs": "đã gửi {{count}} tệp PDF",
+  "previewSessions": "đã gửi {{count}} lịch học"
 }
