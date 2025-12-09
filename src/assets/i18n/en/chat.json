@@ -68,5 +68,15 @@
   },
   "notification": {
     "newMessageTitle": "New message"
-  }
+  },
+  "noMessages": "No messages yet",
+  "previewImage": "Photo",
+  "previewPdf": "PDF file",
+  "previewAttachment": "Attachment",
+  "previewSession": "Study session",
+  "youLabel": "You",
+  "senderUnknown": "Sender",
+  "previewImages": "sent {{count}} photo{{count, plural, one {} other {s}}}",
+  "previewPdfs": "sent {{count}} PDF file{{count, plural, one {} other {s}}}",
+  "previewSessions": "sent {{count}} study session{{count, plural, one {} other {s}}}"
 }

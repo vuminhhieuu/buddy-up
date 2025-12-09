@@ -290,6 +290,7 @@ export const ChatListScreen: React.FC = () => {
       <ConversationList
         conversations={filteredConversations}
         onSelectConversation={handleSelectConversation}
+        currentUserId={currentUserId}
         loading={isInitialLoading}
         emptyMessage={emptyMessage}
         header={listHeader}

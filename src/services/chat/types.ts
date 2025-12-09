@@ -35,12 +35,7 @@ export interface Message {
   chat_id: string;
   sender_id: string | null;
   content: string | null;
-  attachments: Array<{
-    url: string;
-    type: string;
-    name: string;
-    size: number;
-  }>;
+  attachments: MessageAttachment[];
   created_at: string;
   edited_at: string | null;
   deleted_at: string | null;
@@ -64,6 +59,16 @@ export interface SendMessageResponse {
   message?: Message;
   error?: string;
   errorCode?: 'INVALID_CHAT' | 'UNAUTHORIZED' | 'NETWORK_ERROR' | 'PERMISSION_DENIED';
+}
+
+export interface MessageAttachment {
+  url: string;
+  type: 'image' | 'pdf' | 'session' | 'other';
+  name?: string | null;
+  size?: number | null;
+  mime?: string | null;
+  width?: number | null;
+  height?: number | null;
 }
 
 /**

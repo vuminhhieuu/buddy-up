@@ -13,6 +13,7 @@ import type {
   FetchConversationsResponse,
   FetchMessagesResponse,
   SendMessageResponse,
+  MessageAttachment,
 } from '../../services/chat';
 import { logger } from '../../utils/logger';
 import { formatErrorMessage } from '../../services/helpers';
@@ -99,9 +100,9 @@ export const fetchMessagesAsync = createAsyncThunk<
  */
 export const sendMessageAsync = createAsyncThunk<
   { chatId: string; message: Message },
-  { chatId: string; content: string },
+  { chatId: string; content: string | null; attachments?: MessageAttachment[] },
   { state: RootState }
->('chat/sendMessage', async ({ chatId, content }, { getState, rejectWithValue }) => {
+>('chat/sendMessage', async ({ chatId, content, attachments }, { getState, rejectWithValue }) => {
   try {
     const state = getState();
     const currentUserId = state.auth.userId;
@@ -110,7 +111,7 @@ export const sendMessageAsync = createAsyncThunk<
       return rejectWithValue('User not authenticated');
     }
 
-    const response = await chatService.sendMessage(chatId, currentUserId, content);
+    const response = await chatService.sendMessage(chatId, currentUserId, content, attachments);
 
     if (!response.success || !response.message) {
       return rejectWithValue(response.error || 'Failed to send message');

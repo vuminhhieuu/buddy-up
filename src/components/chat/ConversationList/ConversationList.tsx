@@ -12,11 +12,13 @@ import { Spacer } from '../../ui/Spacer/Spacer';
 import { EmptyState } from '../../ui/EmptyState/EmptyState';
 import { Loading } from '../../ui/Loading/Loading';
 import { formatRelativeTime } from '../../../utils/date';
-import type { ChatConversation } from '../../../services/chat';
+import type { ChatConversation, MessageAttachment } from '../../../services/chat';
+import { useTranslation } from 'react-i18next';
 
 export type ConversationListProps = {
   conversations: ChatConversation[];
   onSelectConversation: (conversation: ChatConversation) => void;
+  currentUserId?: string | null;
   loading?: boolean;
   emptyMessage?: string;
   header?: React.ReactNode;
@@ -27,10 +29,46 @@ export type ConversationListProps = {
 const ConversationItem: React.FC<{
   conversation: ChatConversation;
   onPress: () => void;
-}> = ({ conversation, onPress }) => {
+  currentUserId?: string | null;
+}> = ({ conversation, onPress, currentUserId }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation('chat');
 
-  const lastMessagePreview = conversation.lastMessage?.content || 'Chưa có tin nhắn';
+  const getAttachmentPreview = (attachments: MessageAttachment[] | null | undefined) => {
+    if (!attachments || attachments.length === 0) return null;
+    const images = attachments.filter((a) => a.type === 'image').length;
+    const pdfs = attachments.filter((a) => a.type === 'pdf').length;
+    const sessions = attachments.filter((a) => a.type === 'session').length;
+    const others = attachments.filter(
+      (a) => a.type !== 'image' && a.type !== 'pdf' && a.type !== 'session',
+    ).length;
+
+    if (images > 0 && pdfs === 0 && sessions === 0 && others === 0) {
+      return t('previewImages', { count: images, defaultValue: 'đã gửi ảnh' });
+    }
+    if (pdfs > 0 && images === 0 && sessions === 0 && others === 0) {
+      return t('previewPdfs', { count: pdfs, defaultValue: 'đã gửi PDF' });
+    }
+    if (sessions > 0 && images === 0 && pdfs === 0 && others === 0) {
+      return t('previewSessions', { count: sessions, defaultValue: 'đã gửi lịch học' });
+    }
+    return t('previewAttachment', 'đã gửi đính kèm');
+  };
+
+  const senderName =
+    conversation.lastMessage?.sender_id === currentUserId
+      ? t('youLabel', 'Bạn')
+      : conversation.participantName || conversation.title || t('senderUnknown', 'Người gửi');
+
+  const messageText = conversation.lastMessage?.content?.trim();
+  const attachmentsPreview = getAttachmentPreview(
+    conversation.lastMessage?.attachments as MessageAttachment[] | undefined,
+  );
+
+  const lastMessagePreview =
+    (messageText && `${senderName}: ${messageText}`) ||
+    (attachmentsPreview && `${senderName}: ${attachmentsPreview}`) ||
+    t('noMessages', 'Chưa có tin nhắn');
   const displayName = conversation.participantName || conversation.title || 'Unknown';
   const displayAvatar = conversation.participantAvatar;
 
@@ -115,6 +153,7 @@ const ConversationItem: React.FC<{
 export const ConversationList: React.FC<ConversationListProps> = ({
   conversations,
   onSelectConversation,
+  currentUserId,
   loading = false,
   emptyMessage = 'Chưa có cuộc trò chuyện nào',
   header,
@@ -125,9 +164,13 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
   const renderItem: ListRenderItem<ChatConversation> = useCallback(
     ({ item }) => (
-      <ConversationItem conversation={item} onPress={() => onSelectConversation(item)} />
+      <ConversationItem
+        conversation={item}
+        onPress={() => onSelectConversation(item)}
+        currentUserId={currentUserId}
+      />
     ),
-    [onSelectConversation],
+    [onSelectConversation, currentUserId],
   );
 
   const keyExtractor = useCallback((item: ChatConversation) => item.chatId, []);
