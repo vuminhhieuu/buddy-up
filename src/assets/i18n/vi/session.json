@@ -38,6 +38,7 @@
   "invalidTimeChoose": "Vui lòng chọn giờ hiện tại hoặc tương lai.",
   "createButton": "Tạo Buổi Học",
   "successTitle": "Tạo buổi học thành công",
+  "listTitle": "Danh sách buổi học",
   "successDescription": "Buổi học chung của bạn đã được tạo. Mọi người sẽ được thông báo và có thể tham gia.",
   "viewSession": "Xem buổi học",
   "viewAll": "Thêm",

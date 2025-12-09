@@ -71,7 +71,6 @@ export const HomeScreen: React.FC = () => {
     }
   }, [loadDashboard, loadPendingCount, userId]);
 
-  // Reload dashboard when screen comes back into focus (e.g., after deleting a session)
   useFocusEffect(
     useCallback(() => {
       if (userId) {
@@ -159,7 +158,7 @@ export const HomeScreen: React.FC = () => {
     logger.debug('HomeScreen', 'View all pressed');
     const parent = (navigation as any).getParent?.();
     if (parent) {
-      parent.navigate('UpcomingSessionsAll');
+      parent.navigate('UpcomingSessionsAll', { initialTab: 0 });
     }
   };
 

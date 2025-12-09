@@ -38,6 +38,7 @@
   "invalidTimeChoose": "Please choose the current time or a future time.",
   "createButton": "Create Session",
   "successTitle": "Session created",
+  "listTitle": "Session list",
   "successDescription": "Your shared session has been created. Participants will be notified and can join.",
   "viewSession": "View session",
   "viewAll": "Add",

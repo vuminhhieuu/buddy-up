@@ -1,4 +1,6 @@
 {
+  "day_calendar": "Lịch ngày",
+  "week_schedule": "Lịch tuần",
   "welcome": "Chào mừng đến với Buddy Up",
   "appName": "Buddy Up",
   "loading": "Đang tải",
@@ -119,6 +121,17 @@
     "cancel": "Hủy",
     "delete": "Xóa",
     "success": "Thành công"
+  },
+  "tabs": {
+    "list": "Danh sách",
+    "month": "Tháng",
+    "week": "Tuần",
+    "day": "Ngày"
+  },
+  "upcoming": {
+    "title": "Lịch học sắp tới",
+    "notLoggedIn": "Bạn chưa đăng nhập",
+    "notImplemented": "Chức năng này đang phát triển"
   },
   "community": {
     "underDevelopment": "Trang cộng đồng đang được phát triển"
