@@ -11,11 +11,7 @@ import {
   Poppins_600SemiBold,
   Poppins_700Bold,
 } from '@expo-google-fonts/poppins';
-import {
-  Inter_400Regular,
-  Inter_500Medium,
-  Inter_600SemiBold,
-} from '@expo-google-fonts/inter';
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold } from '@expo-google-fonts/inter';
 import { Provider } from 'react-redux';
 import { ThemeProvider } from './src/styles';
 import { AppNavigator } from './src/navigation/AppNavigator';
@@ -34,10 +30,10 @@ const AppContent = () => {
   const { initialized } = useAuthSession();
   const userId = useAppSelector((state) => state.auth.userId);
   const dispatch = useAppDispatch();
-  
+
   // Listen for incoming connection requests via Realtime
   useBuddyRequests(userId);
-  
+
   // Listen for incoming messages globally to update unread count
   useChatInboxRealtime(userId);
 
