@@ -66,6 +66,23 @@ export async function createStudySession(
       }
     }
 
+    // Create session reminders server-side via RPC to ensure scheduled_at
+    // is computed by the database (scheduled_start - interval '10 minutes').
+    try {
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc('insert_session_reminders', {
+        p_session_id: (data as any).id,
+      });
+      if (rpcErr) {
+        logger.warn('createStudySession.reminders.rpc', rpcErr.message, rpcErr);
+      }
+    } catch (rErr) {
+      logger.error(
+        'createStudySession.reminders',
+        'Unexpected error creating reminders via RPC',
+        rErr,
+      );
+    }
+
     // Return the created session. If participant insertion failed we return
     // the session in `data` but include `participantError` so callers can
     // detect the partial failure and react accordingly.

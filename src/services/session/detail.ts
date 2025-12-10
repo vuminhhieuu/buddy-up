@@ -137,6 +137,25 @@ export async function updateSessionStatus(
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', sessionId);
 
+    // If the session is cancelled, remove any scheduled reminders to avoid sending
+    if (!error && status === 'cancelled') {
+      try {
+        const { error: delErr } = await supabase
+          .from('session_reminders')
+          .delete()
+          .eq('session_id', sessionId);
+        if (delErr) {
+          logger.warn(
+            'updateSessionStatus',
+            'Failed to delete session_reminders on cancel',
+            delErr,
+          );
+        }
+      } catch (e) {
+        logger.error('updateSessionStatus', 'Unexpected error deleting reminders', e);
+      }
+    }
+
     return { error };
   } catch (err) {
     logger.error('updateSessionStatus', 'Error:', err);
