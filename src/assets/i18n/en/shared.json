@@ -1,12 +1,19 @@
 {
   "session": {
     "defaultTitle": "Session",
+    "allDay": "All day",
     "status": {
       "cancelled": "Cancelled",
       "completed": "Completed",
       "ongoing": "Ongoing",
       "scheduled": "Upcoming"
     }
+  },
+  "week": {
+    "label": "Week",
+    "this": "This week",
+    "prev": "Previous week",
+    "next": "Next week"
   },
   "calendar": {
     "dayNames": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],

@@ -12,6 +12,8 @@ import { Text } from '../../components/ui/Text/Text';
 import { SessionCard } from '../../components/session/SessionCard';
 import { BackButton } from '../../components/navigation/BackButton';
 import MonthView from './MonthView';
+import WeekView from './WeekView';
+import DayView from './DayView';
 import { useTranslation } from 'react-i18next';
 
 type RouteProps = RouteProp<RootStackParamList, 'UpcomingSessionsAll'>;
@@ -176,7 +178,9 @@ const UpcomingSessionsAllScreen: React.FC = () => {
           />
         )}
         {activeTab === 1 && <MonthView sessions={sessions} />}
-        {activeTab > 1 && <Text>{t('upcoming.notImplemented')}</Text>}
+        {activeTab === 2 && <WeekView sessions={sessions} />}
+        {activeTab === 3 && <DayView sessions={sessions} />}
+        {activeTab > 3 && <Text>{t('upcoming.notImplemented')}</Text>}
       </View>
     </ScreenContainer>
   );
