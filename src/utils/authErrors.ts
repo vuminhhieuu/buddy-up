@@ -35,6 +35,12 @@ export function translateAuthError(
       return t('tooManyRequests');
     case AUTH_ERROR_CODES.EMAIL_NOT_REGISTERED:
       return t('emailNotRegistered');
+    case AUTH_ERROR_CODES.OAUTH_ACCOUNT_NOT_LINKED:
+      return t('oauthAccountNotLinked');
+    case AUTH_ERROR_CODES.OAUTH_PROVIDER_ERROR:
+      return t('oauthProviderError');
+    case AUTH_ERROR_CODES.USER_CANCELLED:
+      return t('socialLoginCancelled');
     default: {
       const lowerMessage = errorMessage.toLowerCase();
 
@@ -99,6 +105,22 @@ export function translateAuthError(
       // Check for network error patterns
       if (ERROR_MESSAGE_PATTERNS.NETWORK_ERROR.some((pattern) => lowerMessage.includes(pattern))) {
         return t('networkError');
+      }
+
+      // Check for OAuth cancelled patterns
+      if (
+        ERROR_MESSAGE_PATTERNS.OAUTH_CANCELLED.some((pattern) => lowerMessage.includes(pattern))
+      ) {
+        return t('socialLoginCancelled');
+      }
+
+      // Check for OAuth provider error patterns
+      if (
+        ERROR_MESSAGE_PATTERNS.OAUTH_PROVIDER_ERROR.some((pattern) =>
+          lowerMessage.includes(pattern),
+        )
+      ) {
+        return t('oauthProviderError');
       }
 
       // Context-specific fallback messages

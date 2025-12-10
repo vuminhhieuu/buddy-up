@@ -23,6 +23,10 @@ export const AUTH_ERROR_CODES = {
   OTP_INVALID: 'otp_invalid',
   OTP_RATE_LIMIT: 'otp_rate_limit',
   EMAIL_NOT_REGISTERED: 'email_not_registered',
+  // OAuth error codes
+  OAUTH_ACCOUNT_NOT_LINKED: 'oauth_account_not_linked',
+  OAUTH_PROVIDER_ERROR: 'oauth_provider_error',
+  USER_CANCELLED: 'user_cancelled',
 } as const;
 
 // ============================================================================
@@ -104,6 +108,10 @@ export const ERROR_MESSAGE_PATTERNS = {
   OTP_EXPIRED: ['token expired', 'otp expired', 'otp has expired'],
   OTP_INVALID: ['token mismatch', 'invalid token', 'otp invalid', 'invalid otp', 'token invalid'],
   OTP_RATE_LIMIT: ['rate limit', 'too many', 'rate_limit'],
+
+  // OAuth error patterns
+  OAUTH_CANCELLED: ['user cancelled', 'cancelled', 'user_cancelled', 'request cancelled'],
+  OAUTH_PROVIDER_ERROR: ['oauth', 'provider error', 'authentication failed'],
 
   // Unknown error fallback
   UNKNOWN_ERROR: ['unknown error occurred'],
