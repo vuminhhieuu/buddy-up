@@ -1,5 +1,6 @@
 import { supabase } from '../../config/supabase';
 import { logger } from '../../utils/logger';
+import { createOrUpdateSessionReminders, deleteSessionReminderForUser } from '../session/reminders';
 
 export type SessionInvitation = {
   session_id: string;
@@ -100,6 +101,12 @@ export async function acceptInvitation(sessionId: string, userId: string): Promi
     logger.warn('acceptInvitation', error.message, error);
     return false;
   }
+  // Ensure reminder exists for the user who accepted
+  try {
+    await createOrUpdateSessionReminders(sessionId);
+  } catch (e) {
+    logger.warn('acceptInvitation', 'Failed to create/update reminders after accept', e);
+  }
   return true;
 }
 
@@ -112,6 +119,12 @@ export async function declineInvitation(sessionId: string, userId: string): Prom
   if (error) {
     logger.warn('declineInvitation', error.message, error);
     return false;
+  }
+  // Remove any reminder for this user to avoid sending notifications
+  try {
+    await deleteSessionReminderForUser(sessionId, userId);
+  } catch (e) {
+    logger.warn('declineInvitation', 'Failed to delete user reminder after decline', e);
   }
   return true;
 }
