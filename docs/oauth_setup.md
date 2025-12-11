@@ -153,6 +153,79 @@ App receives callback → Exchange code for session
 
 **Lưu ý**: App Domains không bắt buộc cho OAuth flow, nhưng có thể giúp Facebook validate redirect URIs tốt hơn.
 
+### 2.7. **QUAN TRỌNG** - Thêm Test Users (Development Mode)
+
+⚠️ **BẮT BUỘC nếu app đang ở Development Mode và chưa submit App Review**
+
+Facebook App mặc định ở **Development Mode** và chỉ cho phép Administrator và Test Users login.
+
+**Option 1: Thêm Administrator (Khuyến nghị cho testing)**
+
+1. Vào **Roles** → **Administrators**
+2. Click **Add Administrators**
+3. Nhập Facebook email hoặc User ID của bạn
+4. Click **Submit**
+5. Người được mời sẽ nhận notification và phải accept
+
+**Option 2: Tạo Test Users**
+
+1. Vào **Roles** → **Test Users**
+2. Click **Add Test Users** hoặc **Create Test Users**
+3. Chọn số lượng test users cần tạo
+4. Facebook sẽ tạo fake accounts để test
+5. Dùng credentials của test users để login
+
+**Option 3: Add Testers**
+
+1. Vào **Roles** → **Testers**
+2. Click **Add Testers**
+3. Nhập Facebook email của người cần test
+4. Người được mời phải accept invitation
+
+**⚠️ Facebook App Review - BẮT BUỘC để lấy email:**
+
+**Vấn đề hiện tại:**
+
+- Mặc dù bạn là Administrator, Facebook vẫn **CHẶN** `email` scope nếu chưa được approved
+- Lỗi: "Invalid Scopes: email" xảy ra cho tất cả users (kể cả Admin)
+- Đây là policy mới của Facebook từ 2023
+
+**2 Options:**
+
+**Option A: Submit App Review (Production - Có email)**
+
+```
+1. Vào App Dashboard → App Review → Permissions and Features
+2. Tìm "email" permission → Click "Request Advanced Access"
+3. Điền form:
+   - Use case: "User authentication and profile creation"
+   - Screenshots: Login flow và profile screen
+   - Privacy Policy URL: Link đến privacy policy của app
+4. Submit và chờ review (2-7 ngày)
+5. Sau khi approved, email scope sẽ hoạt động
+```
+
+**Option B: Không dùng email (Development - Testing nhanh)**
+
+```
+1. Vào Supabase Dashboard → Authentication → Providers → Facebook
+2. Xóa "email" khỏi Scopes field
+3. Chỉ giữ "public_profile"
+4. Save và test lại
+5. OAuth sẽ work NHƯNG user.email = null
+```
+
+**Khuyến nghị:**
+
+- Development/Testing: Dùng Option B (nhanh, không cần wait review)
+- Production: Submit Option A để có đầy đủ email
+
+**⚠️ Nếu không thêm test users:**
+
+- Sẽ gặp lỗi: **"Invalid Scopes: email"**
+- OAuth flow sẽ fail
+- Chỉ Administrator có thể login
+
 ---
 
 ## Bước 3: Cấu hình Supabase Dashboard
@@ -175,7 +248,19 @@ App receives callback → Exchange code for session
 3. **Enable Facebook**:
    - **Client ID (for OAuth)**: Dán Facebook App ID từ bước 2.5
    - **Client Secret (for OAuth)**: Dán Facebook App Secret từ bước 2.5
-4. Click **Save**
+4. **⚠️ QUAN TRỌNG - Fix "Invalid Scopes: email":**
+   - Tìm phần **"Scopes"** (có thể ở phần Advanced hoặc Additional Settings)
+   - Nếu có `email`, xóa nó đi
+   - Chỉ giữ lại: `public_profile`
+   - Hoặc để trống để dùng default scope
+5. Click **Save**
+
+**Lưu ý về Email:**
+
+- Nếu không request `email` scope, user sẽ không có email từ Facebook
+- Profile sẽ được tạo nhưng `email` field sẽ là `null`
+- Cần handle logic cho trường hợp user không có email
+- Để có email, cần submit App Review và approve permission
 
 ### 3.3. Configure Redirect URLs
 
@@ -199,6 +284,7 @@ App receives callback → Exchange code for session
   - [ ] "Thực thi HTTPS" đã bật
   - [ ] "Chế độ sử dụng nghiêm ngặt cho URI chuyển hướng" đã bật
   - [ ] Valid OAuth Redirect URIs đã được thêm và test thành công
+  - [ ] **⚠️ ĐÃ THÊM TEST USERS/ADMINISTRATOR** (BẮT BUỘC nếu app ở Development Mode)
 - [ ] Google provider đã được enable trong Supabase với Client ID/Secret đúng
 - [ ] Facebook provider đã được enable trong Supabase với App ID/Secret đúng
 - [ ] Redirect URL `buddyup://auth/callback` đã được thêm vào Supabase
@@ -257,6 +343,52 @@ App receives callback → Exchange code for session
   - Thêm URI vào text area: `https://[PROJECT-REF].supabase.co/auth/v1/callback`
   - Click **"Lưu thay đổi"** (Save Changes)
   - Sử dụng công cụ validation để test lại URI
+
+### Lỗi Facebook: "Invalid Scopes: email"
+
+- **Nguyên nhân**: Facebook App ở Development Mode và tài khoản test chưa được thêm
+- **Giải pháp ngắn hạn (Development)**:
+  1. **Option 1 - Thêm Test Users:**
+     - Vào Facebook Developers → Your App
+     - **Roles** → **Administrators** hoặc **Testers**
+     - Thêm Facebook account của bạn vào danh sách
+     - Hoặc tạo Test User mới trong **Roles** → **Test Users**
+  2. **Option 2 - App Review (Production):**
+     - Nếu muốn cho public users sử dụng, cần submit app review
+     - Vào **App Review** → **Permissions and Features**
+     - Request review cho permission **"email"** và **"public_profile"**
+     - Giải thích use case và submit screenshots
+     - Chờ Facebook approve (có thể mất vài ngày)
+
+  3. **Option 3 - Không dùng email (Temporary Workaround):**
+     - Chỉ request `public_profile` permission
+     - Nhưng sẽ không lấy được email từ Facebook
+     - Cần xử lý trường hợp user không có email
+
+- **Khuyến nghị**: Dùng Option 1 cho development/testing, sau đó submit App Review cho production
+
+### Lỗi: "Unsupported provider: Provider [ID] could not be found"
+
+- **Nguyên nhân**: Google/Facebook provider chưa được enable trong Supabase Dashboard
+- **Giải pháp**:
+  1. **Kiểm tra Supabase Dashboard**:
+     - Vào [Supabase Dashboard](https://app.supabase.com/)
+     - Chọn project của bạn
+     - Vào **Authentication** → **Providers**
+     - Tìm **Google** → Đảm bảo toggle switch đã được **BẬT** (ON)
+     - Kiểm tra **Client ID** và **Client Secret** đã được điền đúng chưa
+  2. **Nếu chưa enable**:
+     - Click vào **Google** để expand
+     - Bật toggle **Enable Google**
+     - Paste **Client ID** và **Client Secret** từ Google Cloud Console
+     - Click **Save**
+  3. **Verify Configuration**:
+     - Đảm bảo Client ID và Client Secret đã được copy đúng (không có khoảng trắng thừa)
+     - Đảm bảo đã click **Save** sau khi điền thông tin
+  4. **Nếu vẫn lỗi**:
+     - Thử disable và enable lại Google provider
+     - Kiểm tra lại Client ID/Secret trong Google Cloud Console
+     - Đảm bảo redirect URI đã được thêm vào Google Cloud Console
 
 ---
 

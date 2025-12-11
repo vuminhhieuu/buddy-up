@@ -11,10 +11,10 @@ import { signInWithEmail } from '../../services/auth';
 import { useAppDispatch } from '../../store/hooks';
 import { setUser } from '../../store/slices/authSlice';
 import { translateAuthError } from '../../utils/authErrors';
-import { supabase } from '../../config/supabase';
 import { AuthError } from '@supabase/supabase-js';
 import { logger } from '../../utils/logger';
 import { VALIDATION_MESSAGES } from '../../constants/validation';
+import { useSocialAuth } from '../../hooks/useSocialAuth';
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -35,6 +35,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordIconPressed, setPasswordIconPressed] = useState(false);
+
+  // Use the new social auth hook
+  const { handleSocialLogin, socialLoading } = useSocialAuth({ mode: 'login' });
 
   const styles = useMemo(
     () => ({
@@ -69,10 +72,6 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
     (navigation as any).navigate('ForgotPassword');
   };
 
-  const handleSocialLogin = (provider: 'google' | 'facebook') => {
-    logger.debug('LoginForm', `Social login with ${provider}`);
-  };
-
   return (
     <Formik
       initialValues={{ email: '', password: '' }}
@@ -86,24 +85,26 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
             password: values.password,
           });
           if (result.session?.user) {
+            const displayName =
+              result.session.user.user_metadata?.full_name ||
+              result.session.user.user_metadata?.name ||
+              result.session.user.user_metadata?.display_name ||
+              result.session.user.email?.split('@')[0] ||
+              null;
             dispatch(
               setUser({
                 userId: result.session.user.id,
                 email: result.session.user.email ?? null,
+                displayName,
               }),
             );
           } else {
-            const {
-              data: { session },
-            } = await supabase.auth.getSession();
-            if (session?.user) {
-              dispatch(
-                setUser({
-                  userId: session.user.id,
-                  email: session.user.email ?? null,
-                }),
-              );
-            }
+            // This should never happen if signInWithOAuth is working correctly
+            logger.error(
+              'LoginForm',
+              'OAuth login succeeded but no session returned - this is a bug',
+            );
+            throw new Error('Authentication failed - no session returned');
           }
         } catch (err: unknown) {
           const errorMessage = translateAuthError(err as AuthError, t);
@@ -201,8 +202,16 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSwitchToRegister }) => {
 
           {/* Social buttons */}
           <View style={styles.socialButtonsContainer}>
-            <SocialButton provider="google" onPress={() => handleSocialLogin('google')} />
-            <SocialButton provider="facebook" onPress={() => handleSocialLogin('facebook')} />
+            <SocialButton
+              provider="google"
+              onPress={() => handleSocialLogin('google')}
+              loading={socialLoading === 'google'}
+            />
+            <SocialButton
+              provider="facebook"
+              onPress={() => handleSocialLogin('facebook')}
+              loading={socialLoading === 'facebook'}
+            />
           </View>
 
           <Spacer size={6} />
