@@ -4,3 +4,4 @@
  */
 
 export * from './chatHandler';
+export * from './sessionHandler';

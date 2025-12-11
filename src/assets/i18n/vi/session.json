@@ -130,5 +130,7 @@
     "trackingMessage": "Hãy đánh dấu lại buổi học để theo dõi tiến độ học tập hiệu quả hơn nhé",
     "markCompleted": "Đánh dấu đã hoàn thành",
     "notCompleted": "Chưa hoàn thành / Có vấn đề"
-  }
+  },
+  "reminderTitle": "Nhắc học: Buổi học sắp bắt đầu",
+  "reminderBody": "Buổi học sẽ bắt đầu lúc {{time}}. Mở để xem chi tiết."
 }

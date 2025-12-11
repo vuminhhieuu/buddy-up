@@ -130,5 +130,7 @@
     "trackingMessage": "Please mark the session to track your learning progress more effectively",
     "markCompleted": "Mark as completed",
     "notCompleted": "Not completed / Had issues"
-  }
+  },
+  "reminderTitle": "Upcoming class reminder",
+  "reminderBody": "Class starts at {{time}}. Tap to view details."
 }
