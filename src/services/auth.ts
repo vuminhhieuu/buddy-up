@@ -1,5 +1,11 @@
 import { supabase } from '../config/supabase';
 import { logger } from '../utils/logger';
+import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
+import { OAUTH_REDIRECT_URI, getSupabaseOAuthUrl, type OAuthProvider } from '../config/oauth';
+
+// Complete OAuth session when browser closes
+WebBrowser.maybeCompleteAuthSession();
 
 export async function signInWithEmail(params: { email: string; password: string }) {
   const { data, error } = await supabase.auth.signInWithPassword(params);
@@ -177,4 +183,159 @@ export async function changePassword(currentPassword: string, newPassword: strin
 
   if (error) throw error;
   return data;
+}
+
+/**
+ * Sign in with Google OAuth provider
+ * Opens browser for user authentication, then exchanges code for session
+ */
+export async function signInWithGoogle() {
+  return signInWithOAuth('google');
+}
+
+/**
+ * Sign in with Facebook OAuth provider
+ * Opens browser for user authentication, then exchanges code for session
+ */
+export async function signInWithFacebook() {
+  return signInWithOAuth('facebook');
+}
+
+/**
+ * Internal function to handle OAuth flow for any provider
+ */
+async function signInWithOAuth(provider: OAuthProvider) {
+  try {
+    const authUrl = getSupabaseOAuthUrl(provider);
+    const redirectUri = OAUTH_REDIRECT_URI;
+
+    logger.debug('signInWithOAuth', `Starting OAuth flow for ${provider}`);
+
+    // Create OAuth request
+    const request = new AuthSession.AuthRequest({
+      clientId: '', // Not needed for Supabase OAuth
+      scopes: ['openid', 'profile', 'email'],
+      responseType: AuthSession.AuthRequestResponseType.Code,
+      redirectUri,
+      extraParams: {},
+    });
+
+    // Open browser for authentication
+    const result = await request.promptAsync({
+      authorizationEndpoint: authUrl,
+      useProxy: false,
+      showInRecents: true,
+    });
+
+    // Check if user cancelled
+    if (result.type === 'cancel' || result.type === 'dismiss') {
+      const cancelledError = new Error('User cancelled OAuth flow');
+      (cancelledError as any).code = 'user_cancelled';
+      throw cancelledError;
+    }
+
+    // Check for errors
+    if (result.type === 'error') {
+      const error = new Error(result.error?.message || 'OAuth authentication failed');
+      (error as any).code = 'oauth_provider_error';
+      throw error;
+    }
+
+    // Extract code from result
+    if (result.type !== 'success' || !result.params?.code) {
+      const error = new Error('No authorization code received');
+      (error as any).code = 'oauth_provider_error';
+      throw error;
+    }
+
+    const { code } = result.params;
+
+    logger.debug('signInWithOAuth', `Received OAuth code for ${provider}, exchanging for session`);
+
+    // Exchange code for session with Supabase
+    const { data, error } = await supabase.auth.exchangeCodeForSession({
+      code,
+    });
+
+    if (error) {
+      logger.error('signInWithOAuth', `Failed to exchange code for session:`, error);
+      throw error;
+    }
+
+    if (!data.session || !data.user) {
+      const error = new Error('No session or user returned from OAuth');
+      (error as any).code = 'oauth_provider_error';
+      throw error;
+    }
+
+    logger.info('signInWithOAuth', `OAuth login successful for ${provider}, user: ${data.user.id}`);
+
+    // Create profile if needed
+    await createProfileIfNeeded(data.user.id, {
+      display_name:
+        data.user.user_metadata?.full_name ||
+        data.user.user_metadata?.name ||
+        data.user.email?.split('@')[0] ||
+        'User',
+      avatar_url: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture || null,
+    });
+
+    return data;
+  } catch (error: any) {
+    logger.error('signInWithOAuth', `OAuth flow failed for ${provider}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Create profile if user doesn't have one yet
+ * Extracts display_name and avatar_url from user metadata
+ */
+export async function createProfileIfNeeded(
+  userId: string,
+  userMetadata?: {
+    display_name?: string;
+    avatar_url?: string | null;
+  },
+): Promise<void> {
+  try {
+    // Check if profile already exists
+    const { data: existingProfile, error: fetchError } = await supabase
+      .from('profiles')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      // PGRST116 means no rows found, which is expected for new users
+      logger.error('createProfileIfNeeded', 'Failed to check existing profile:', fetchError);
+      return;
+    }
+
+    // If profile already exists, don't create a new one
+    if (existingProfile) {
+      logger.debug('createProfileIfNeeded', `Profile already exists for user ${userId}`);
+      return;
+    }
+
+    // Create new profile
+    const displayName = userMetadata?.display_name || 'User';
+    const avatarUrl = userMetadata?.avatar_url || null;
+
+    const { error: insertError } = await supabase.from('profiles').insert({
+      user_id: userId,
+      display_name: displayName,
+      avatar_url: avatarUrl,
+    });
+
+    if (insertError) {
+      logger.error('createProfileIfNeeded', 'Failed to create profile:', insertError);
+      // Don't throw error - profile creation failure shouldn't block OAuth login
+    } else {
+      logger.info('createProfileIfNeeded', `Profile created for user ${userId}`);
+    }
+  } catch (error) {
+    logger.error('createProfileIfNeeded', 'Unexpected error creating profile:', error);
+    // Don't throw error - profile creation failure shouldn't block OAuth login
+  }
 }
