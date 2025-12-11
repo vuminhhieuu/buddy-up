@@ -1,0 +1,31 @@
+{
+  "sessionReminder": {
+    "title": "10 MINUTES LEFT",
+    "body": "Session {{sessionTitle}} is about to start\nGet ready to join!"
+  },
+  "sessionInvitation": {
+    "title": "Session Invitation",
+    "body": "{{creatorName}} invited you to join {{sessionTitle}}"
+  },
+  "sessionCancelled": {
+    "title": "Session Cancelled",
+    "body": "{{sessionTitle}} was cancelled by the creator"
+  },
+  "buddyRequest": {
+    "title": "Buddy Request",
+    "body": "{{senderName}} wants to be your buddy"
+  },
+  "buddyAccepted": {
+    "title": "Buddy Request Accepted",
+    "body": "{{accepterName}} accepted your buddy request"
+  },
+  "achievementUnlocked": {
+    "title": "Achievement Unlocked",
+    "body": "You unlocked: {{achievementName}}"
+  },
+  "justNow": "Just now",
+  "minutesAgo": "{{count}} minutes ago",
+  "hoursAgo": "{{count}} hours ago",
+  "daysAgo": "{{count}} days ago",
+  "noNotifications": "No notifications yet"
+}

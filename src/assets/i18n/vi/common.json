@@ -137,7 +137,10 @@
     "ok": "OK",
     "cancel": "Hủy",
     "delete": "Xóa",
-    "success": "Thành công"
+    "success": "Thành công",
+    "notifications": "Thông báo",
+    "invitations": "Lời mời",
+    "allNotifications": "Tất cả thông báo"
   },
   "tabs": {
     "list": "Danh sách",

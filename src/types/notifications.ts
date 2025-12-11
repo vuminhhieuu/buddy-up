@@ -27,8 +27,11 @@ export interface NotificationData {
   // Session
   sessionId?: string;
   sessionTitle?: string;
+  scheduledStart?: string;
+  creatorName?: string;
   // Achievement
   achievementId?: string;
+  achievementName?: string;
   // Navigation
   screen?: string;
   params?: Record<string, any>;

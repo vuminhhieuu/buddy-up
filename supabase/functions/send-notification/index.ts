@@ -34,10 +34,10 @@ serve(async (req) => {
     // Get authorization header
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(
-        JSON.stringify({ error: 'Missing authorization header' }),
-        { status: 401, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
-      );
+      return new Response(JSON.stringify({ error: 'Missing authorization header' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     // Get Supabase URL and keys from environment
@@ -45,10 +45,10 @@ serve(async (req) => {
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
 
     if (!supabaseUrl || !supabaseAnonKey) {
-      return new Response(
-        JSON.stringify({ error: 'Missing Supabase configuration' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
-      );
+      return new Response(JSON.stringify({ error: 'Missing Supabase configuration' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     // Create Supabase client (anon, for auth validation) and service client (bypass RLS to read tokens)
@@ -67,10 +67,10 @@ serve(async (req) => {
     const { userIds, title, body, data, sound = 'default' } = request;
 
     if (!userIds || userIds.length === 0) {
-      return new Response(
-        JSON.stringify({ error: 'userIds is required' }),
-        { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
-      );
+      return new Response(JSON.stringify({ error: 'userIds is required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     // Get push tokens for all users (use service role to bypass RLS)
@@ -81,10 +81,10 @@ serve(async (req) => {
 
     if (tokensError) {
       console.error('Error fetching push tokens:', tokensError);
-      return new Response(
-        JSON.stringify({ error: 'Failed to fetch push tokens' }),
-        { status: 500, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
-      );
+      return new Response(JSON.stringify({ error: 'Failed to fetch push tokens' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json', ...corsHeaders },
+      });
     }
 
     // Even if no push tokens, we should still save in-app notifications
@@ -96,9 +96,7 @@ serve(async (req) => {
       .select('user_id, chat_enabled, buddy_enabled, session_enabled, sound_enabled')
       .in('user_id', userIds);
 
-    const preferencesMap = new Map(
-      preferences?.map((p) => [p.user_id, p]) || [],
-    );
+    const preferencesMap = new Map(preferences?.map((p) => [p.user_id, p]) || []);
 
     // Filter tokens based on preferences
     const notificationType = data.type;
@@ -124,7 +122,7 @@ serve(async (req) => {
 
     // Prepare push notifications (even if empty, we'll still save in-app notifications)
     let result: any = { data: [] };
-    
+
     if (enabledTokens.length > 0) {
       // Prepare notifications
       const notifications = enabledTokens.map((token) => {
@@ -164,10 +162,7 @@ serve(async (req) => {
         if (receipt.status === 'error') {
           const errorCode = receipt.details?.error || receipt.message;
           if (errorCode === 'DeviceNotRegistered') {
-            await supabaseService
-              .from('push_tokens')
-              .delete()
-              .eq('token', tokenEntry.token);
+            await supabaseService.from('push_tokens').delete().eq('token', tokenEntry.token);
           }
         }
       }
@@ -223,4 +218,3 @@ serve(async (req) => {
     );
   }
 });
-

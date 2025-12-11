@@ -1,23 +1,24 @@
 import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { InvitationsList } from '../../components/invitations/InvitationsList/InvitationsList';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../styles';
 import { Text } from '../../components/ui/Text/Text';
-import { ArrowLeft } from 'lucide-react-native';
 import { BackButton } from '../../components/navigation/BackButton';
 import { useTranslation } from 'react-i18next';
 
 const NotificationsScreen: React.FC = () => {
-  const { t } = useTranslation('invitations');
+  const { t } = useTranslation('common');
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { theme } = useTheme();
   const themedStyles = styles(theme);
+
   const handleBack = () => {
     navigation.goBack();
   };
+
   return (
     <View style={themedStyles.container}>
       <View style={[themedStyles.header, { paddingTop: insets.top + 8 }]}>
@@ -38,10 +39,10 @@ const NotificationsScreen: React.FC = () => {
           }}
         />
         <Text variant="h5" style={{ fontWeight: '700', flex: 1, textAlign: 'center' }}>
-          {t('title')}
+          {t('common.notifications')}
         </Text>
         {/* Right spacer to keep title centered */}
-        <View style={{ width: 35, height: 35 }} />
+        <View style={{ width: 40, height: 40 }} />
       </View>
       <InvitationsList />
     </View>

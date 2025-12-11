@@ -1,0 +1,31 @@
+{
+  "sessionReminder": {
+    "title": "CÒN 10 PHÚT NỮA",
+    "body": "Buổi học {{sessionTitle}} sẽ bắt đầu\nChuẩn bị vào học thôi nào!"
+  },
+  "sessionInvitation": {
+    "title": "Lời mời tham gia buổi học",
+    "body": "{{creatorName}} mời bạn tham gia buổi học {{sessionTitle}}"
+  },
+  "sessionCancelled": {
+    "title": "Buổi học đã bị hủy",
+    "body": "Buổi học {{sessionTitle}} đã bị hủy bởi người tạo"
+  },
+  "buddyRequest": {
+    "title": "Lời mời kết bạn",
+    "body": "{{senderName}} muốn kết bạn với bạn"
+  },
+  "buddyAccepted": {
+    "title": "Đã chấp nhận kết bạn",
+    "body": "{{accepterName}} đã chấp nhận lời mời kết bạn của bạn"
+  },
+  "achievementUnlocked": {
+    "title": "Mở khóa thành tích",
+    "body": "Bạn đã mở khóa thành tích: {{achievementName}}"
+  },
+  "justNow": "Vừa xong",
+  "minutesAgo": "{{count}} phút trước",
+  "hoursAgo": "{{count}} giờ trước",
+  "daysAgo": "{{count}} ngày trước",
+  "noNotifications": "Chưa có thông báo"
+}

@@ -68,8 +68,8 @@ export function useInvitations() {
         },
         (payload) => {
           logger.debug('useInvitations', 'Realtime update:', payload);
-          // Chỉ reload invitations cho INSERT, luôn reload count
-          if (payload.eventType === 'INSERT') {
+          // Reload invitations cho INSERT và UPDATE (Accept/Decline)
+          if (payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
             void loadInvitations();
           }
           void loadPendingCount();

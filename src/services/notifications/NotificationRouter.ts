@@ -83,15 +83,39 @@ export class NotificationRouter {
   }
 
   private routeToSession(data: NotificationData): void {
-    if (data.sessionId) {
-      this.navigationRef?.navigate('SessionDetail', {
-        sessionId: data.sessionId,
-        fromNotification: true,
-      });
+    // Support both sessionId and session_id for backward compatibility
+    const sessionId = data.sessionId || (data as any).session_id;
+
+    logger.debug('NotificationRouter', 'Routing to session with data:', {
+      type: data.type,
+      sessionId: data.sessionId,
+      session_id: (data as any).session_id,
+      hasSessionId: !!sessionId,
+    });
+
+    if (sessionId) {
+      logger.debug('NotificationRouter', `Navigating to SessionDetail with ID: ${sessionId}`);
+
+      // Use setTimeout to ensure navigation happens after any pending state updates
+      setTimeout(() => {
+        this.navigationRef?.navigate('SessionDetail', {
+          sessionId: sessionId,
+          fromNotification: true,
+        });
+      }, 100);
     } else {
-      this.navigationRef?.navigate('MainTabs', {
-        screen: 'Home',
-      });
+      logger.warn(
+        'NotificationRouter',
+        'Session ID missing in notification data. Data:',
+        JSON.stringify(data),
+      );
+
+      // Fallback: Navigate to Home screen
+      setTimeout(() => {
+        this.navigationRef?.navigate('MainTabs', {
+          screen: 'Home',
+        });
+      }, 100);
     }
   }
 

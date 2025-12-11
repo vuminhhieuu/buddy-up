@@ -138,7 +138,10 @@
     "ok": "OK",
     "cancel": "Cancel",
     "delete": "Delete",
-    "success": "Success"
+    "success": "Success",
+    "notifications": "Notifications",
+    "invitations": "Invitations",
+    "allNotifications": "All Notifications"
   },
   "tabs": {
     "list": "List",

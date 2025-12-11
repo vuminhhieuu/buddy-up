@@ -13,6 +13,7 @@ import enSession from '../assets/i18n/en/session.json';
 import enInvitations from '../assets/i18n/en/invitations.json';
 import enChat from '../assets/i18n/en/chat.json';
 import enGroups from '../assets/i18n/en/groups.json';
+import enNotifications from '../assets/i18n/en/notifications.json';
 import viCommon from '../assets/i18n/vi/common.json';
 import viShared from '../assets/i18n/vi/shared.json';
 import viAuth from '../assets/i18n/vi/auth.json';
@@ -24,6 +25,7 @@ import viSession from '../assets/i18n/vi/session.json';
 import viInvitations from '../assets/i18n/vi/invitations.json';
 import viChat from '../assets/i18n/vi/chat.json';
 import viGroups from '../assets/i18n/vi/groups.json';
+import viNotifications from '../assets/i18n/vi/notifications.json';
 
 i18n.use(initReactI18next).init({
   compatibilityJSON: 'v3',
@@ -42,6 +44,7 @@ i18n.use(initReactI18next).init({
       invitations: enInvitations,
       chat: enChat,
       groups: enGroups,
+      notifications: enNotifications,
     },
     vi: {
       common: viCommon,
@@ -55,6 +58,7 @@ i18n.use(initReactI18next).init({
       invitations: viInvitations,
       chat: viChat,
       groups: viGroups,
+      notifications: viNotifications,
     },
   },
   ns: [
@@ -69,6 +73,7 @@ i18n.use(initReactI18next).init({
     'invitations',
     'chat',
     'groups',
+    'notifications',
   ],
   defaultNS: 'common',
   interpolation: { escapeValue: false },
