@@ -34,17 +34,14 @@ serve(async (req) => {
       );
     }
 
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
     const supabaseService = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Fetch due reminders (limit to 200 per run to avoid long runs)
-    const { data: reminders, error: remError } = await supabaseService
-      .from('session_reminders')
-      .select('id, session_id, recipient_id, scheduled_at')
-      .lte('scheduled_at', new Date().toISOString())
-      .eq('sent', false)
-      .order('scheduled_at', { ascending: true })
-      .limit(200);
+    // Reserve due reminders atomically via RPC to avoid race conditions
+    const { data: reminders, error: remError } = await supabaseService.rpc(
+      'reserve_due_reminders',
+      { p_limit: 200 },
+    );
 
     if (remError) {
       console.error('Error fetching due reminders:', remError);
@@ -123,7 +120,7 @@ serve(async (req) => {
           type: 'session_reminder',
           title,
           body,
-          data: JSON.stringify(data),
+          data,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
@@ -134,7 +131,7 @@ serve(async (req) => {
           session_id: r.session_id,
           recipient_id: r.recipient_id,
           status: 'skipped',
-          payload: JSON.stringify({ title, body, data }),
+          payload: { title, body, data },
           created_at: new Date().toISOString(),
         });
 
@@ -149,7 +146,7 @@ serve(async (req) => {
         type: 'session_reminder',
         title,
         body,
-        data: JSON.stringify(data),
+        data,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
@@ -160,7 +157,7 @@ serve(async (req) => {
         session_id: r.session_id,
         recipient_id: r.recipient_id,
         status: 'pending',
-        payload: JSON.stringify({ title, body, data }),
+        payload: { title, body, data },
         created_at: new Date().toISOString(),
       });
 
@@ -213,45 +210,82 @@ serve(async (req) => {
       string,
       { success: number; failure: number; receipts: any[] }
     > = {};
+    const invalidTokens = new Set<string>();
+
+    // Initialize perReminderResults so we have entries even if no tokens
+    for (const remId of reminderIdsToMark) {
+      perReminderResults[remId] = { success: 0, failure: 0, receipts: [] };
+    }
+
     if (messagesToSend.length > 0) {
-      const payload = messagesToSend.map((m) => m.message);
-      const resp = await fetch(EXPO_PUSH_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-          'Accept-Encoding': 'gzip, deflate',
-        },
-        body: JSON.stringify(payload),
-      });
-      const result = await resp.json().catch(() => null);
-      if (result && Array.isArray(result.data)) {
-        // Initialize perReminderResults
-        for (const m of messagesToSend) {
-          perReminderResults[m.reminder_id] = { success: 0, failure: 0, receipts: [] };
+      // Chunk messages to avoid huge payloads
+      const CHUNK_SIZE = 100;
+      for (let i = 0; i < messagesToSend.length; i += CHUNK_SIZE) {
+        const chunk = messagesToSend.slice(i, i + CHUNK_SIZE);
+        const payload = chunk.map((m) => m.message);
+
+        const resp = await fetch(EXPO_PUSH_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+            'Accept-Encoding': 'gzip, deflate',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const ok = resp && resp.ok;
+        const result = await resp.json().catch(() => null);
+
+        if (!ok) {
+          console.error('Expo API error', resp.status, result);
+          // mark all receipts in this chunk as failed
+          for (let j = 0; j < chunk.length; j++) {
+            const msg = chunk[j];
+            const remId = msg.reminder_id;
+            perReminderResults[remId].failure += 1;
+            perReminderResults[remId].receipts.push({ error: 'expo_error', detail: result });
+          }
+          continue;
         }
 
-        sentCount = 0;
-        for (let i = 0; i < result.data.length; i++) {
-          const receipt = result.data[i];
-          const msg = messagesToSend[i];
-          if (!msg) continue;
-          const remId = msg.reminder_id;
-          perReminderResults[remId].receipts.push(receipt);
-          if (receipt.status === 'ok') {
-            perReminderResults[remId].success += 1;
-            sentCount += 1;
-          } else {
-            perReminderResults[remId].failure += 1;
-            const errorCode = receipt.details?.error || receipt.message;
-            if (errorCode === 'DeviceNotRegistered') {
-              try {
-                await supabaseService.from('push_tokens').delete().eq('token', msg.token);
-              } catch (e) {
-                console.warn('Failed to delete invalid token', msg.token, e);
+        if (result && Array.isArray(result.data)) {
+          for (let j = 0; j < result.data.length; j++) {
+            const receipt = result.data[j];
+            const msg = chunk[j];
+            if (!msg) continue;
+            const remId = msg.reminder_id;
+            perReminderResults[remId].receipts.push(receipt);
+            if (receipt.status === 'ok') {
+              perReminderResults[remId].success += 1;
+              sentCount += 1;
+            } else {
+              perReminderResults[remId].failure += 1;
+              const errorCode = receipt.details?.error || receipt.message;
+              if (errorCode === 'DeviceNotRegistered') {
+                invalidTokens.add(msg.token);
               }
             }
           }
+        } else {
+          // Unexpected result format
+          console.warn('Unexpected Expo response format', result);
+          for (const msg of chunk) {
+            perReminderResults[msg.reminder_id].failure += 1;
+            perReminderResults[msg.reminder_id].receipts.push({
+              error: 'unexpected_response',
+              detail: result,
+            });
+          }
+        }
+      }
+
+      // Delete invalid tokens in bulk
+      if (invalidTokens.size > 0) {
+        try {
+          await supabaseService.from('push_tokens').delete().in('token', Array.from(invalidTokens));
+        } catch (e) {
+          console.warn('Failed to bulk delete invalid tokens', e);
         }
       }
     }
@@ -266,14 +300,14 @@ serve(async (req) => {
         continue;
       }
       const logId = insertedLog.id;
-      if (!result) {
+      if (!result || (result.success === 0 && result.failure === 0)) {
         // No messages were sent (no tokens) -> mark as 'no_tokens'
         logsToUpdate.push({ id: logId, status: 'no_tokens', updated_at: new Date().toISOString() });
         continue;
       }
 
       const status = result.success > 0 ? 'sent' : 'failed';
-      const payload = JSON.stringify({ receipts: result.receipts });
+      const payload = { receipts: result.receipts };
       logsToUpdate.push({ id: logId, status, payload, updated_at: new Date().toISOString() });
     }
 
@@ -289,12 +323,24 @@ serve(async (req) => {
       }
     }
 
-    // Mark reminders as sent (only those we prepared)
+    // Mark reminders as sent (only those we prepared). Reset processing flag either way.
     if (reminderIdsToMark.length > 0) {
-      await supabaseService
-        .from('session_reminders')
-        .update({ sent: true, sent_at: new Date().toISOString() })
-        .in('id', reminderIdsToMark as string[]);
+      try {
+        await supabaseService
+          .from('session_reminders')
+          .update({ sent: true, sent_at: new Date().toISOString(), processing: false })
+          .in('id', reminderIdsToMark as string[]);
+      } catch (e) {
+        console.error('Failed to mark reminders as sent, attempting to reset processing flag', e);
+        try {
+          await supabaseService
+            .from('session_reminders')
+            .update({ processing: false })
+            .in('id', reminderIdsToMark as string[]);
+        } catch (er) {
+          console.error('Failed to reset processing flag on reminders', er);
+        }
+      }
     }
 
     return new Response(
