@@ -71,6 +71,24 @@ export async function registerPushToken(
   deviceId?: string,
 ): Promise<{ success: boolean; error?: string }> {
   try {
+    // Ensure we have an authenticated session; otherwise RLS will reject the insert
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session?.user) {
+      logger.warn('registerPushToken', 'No active session, skip registering push token');
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    if (session.user.id !== userId) {
+      logger.warn(
+        'registerPushToken',
+        `Session user mismatch (session=${session.user.id}, arg=${userId}), skip registering push token`,
+      );
+      return { success: false, error: 'Session user mismatch' };
+    }
+
     const platform = Platform.OS === 'ios' ? 'ios' : 'android';
 
     // 1) Nếu có deviceId: upsert theo (user_id, device_id)

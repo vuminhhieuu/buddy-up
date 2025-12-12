@@ -2,7 +2,8 @@ import { supabase } from '../config/supabase';
 import { logger } from '../utils/logger';
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
-import { OAUTH_REDIRECT_URI, getSupabaseOAuthUrl, type OAuthProvider } from '../config/oauth';
+import { type OAuthProvider } from '../config/oauth';
+import { SUPABASE_URL } from '../config/env';
 
 // Complete OAuth session when browser closes
 WebBrowser.maybeCompleteAuthSession();
@@ -206,63 +207,124 @@ export async function signInWithFacebook() {
  */
 async function signInWithOAuth(provider: OAuthProvider) {
   try {
-    const authUrl = getSupabaseOAuthUrl(provider);
-    const redirectUri = OAUTH_REDIRECT_URI;
+    // For development with Expo Go: use native redirect
+    // This will work with deep linking in emulator/device
+    const redirectUri = AuthSession.makeRedirectUri({
+      native: 'buddyup://auth/callback',
+      // Don't specify scheme to avoid using custom scheme
+    });
+
+    if (!SUPABASE_URL) {
+      throw new Error('SUPABASE_URL is not configured');
+    }
 
     logger.debug('signInWithOAuth', `Starting OAuth flow for ${provider}`);
+    logger.debug('signInWithOAuth', `Redirect URI: ${redirectUri}`);
+    logger.info('signInWithOAuth', `⚠️  Add this URL to Supabase Redirect URLs: ${redirectUri}`);
 
-    // Create OAuth request
-    const request = new AuthSession.AuthRequest({
-      clientId: '', // Not needed for Supabase OAuth
-      scopes: ['openid', 'profile', 'email'],
-      responseType: AuthSession.AuthRequestResponseType.Code,
-      redirectUri,
-      extraParams: {},
+    // Use Supabase's signInWithOAuth to get the authorization URL
+    // For mobile apps with custom schemes, Supabase uses implicit flow (returns tokens directly)
+    const { data: oauthData, error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: redirectUri,
+        skipBrowserRedirect: true, // We'll handle browser redirect manually
+        // Facebook: Only request public_profile to avoid "Invalid Scopes: email" error
+        // Email permission requires Facebook App Review approval
+        scopes: provider === 'facebook' ? 'public_profile' : 'openid email profile',
+      },
     });
 
-    // Open browser for authentication
-    const result = await request.promptAsync({
-      authorizationEndpoint: authUrl,
-      useProxy: false,
-      showInRecents: true,
-    });
+    if (oauthError) {
+      logger.error('signInWithOAuth', `Supabase OAuth error:`, oauthError);
+      throw oauthError;
+    }
+
+    if (!oauthData?.url) {
+      throw new Error('No authorization URL returned from Supabase');
+    }
+
+    const authUrl = oauthData.url;
+    logger.debug('signInWithOAuth', `Supabase OAuth URL: ${authUrl}`);
+
+    // Open browser with Supabase URL; WebBrowser will return redirect URL
+    const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+
+    logger.debug('signInWithOAuth', `Browser result type: ${result.type}`);
+    if (result.type === 'success' && result.url) {
+      logger.debug('signInWithOAuth', `Redirect URL received: ${result.url}`);
+    }
 
     // Check if user cancelled
     if (result.type === 'cancel' || result.type === 'dismiss') {
+      logger.info('signInWithOAuth', 'User cancelled OAuth flow');
       const cancelledError = new Error('User cancelled OAuth flow');
       (cancelledError as any).code = 'user_cancelled';
       throw cancelledError;
     }
 
     // Check for errors
-    if (result.type === 'error') {
-      const error = new Error(result.error?.message || 'OAuth authentication failed');
+    if (result.type !== 'success' || !result.url) {
+      logger.error('signInWithOAuth', `OAuth failed - type: ${result.type}`);
+      const error = new Error('OAuth authentication failed');
       (error as any).code = 'oauth_provider_error';
       throw error;
     }
 
-    // Extract code from result
-    if (result.type !== 'success' || !result.params?.code) {
-      const error = new Error('No authorization code received');
+    // Parse tokens from redirect URL (Supabase uses implicit flow for mobile)
+    // Tokens are in hash fragment: #access_token=...&refresh_token=...
+    let accessToken: string | undefined;
+    let refreshToken: string | undefined;
+
+    try {
+      const parsed = new URL(result.url);
+      logger.debug(
+        'signInWithOAuth',
+        `Parsed URL - pathname: ${parsed.pathname}, search: ${parsed.search}, hash: ${parsed.hash}`,
+      );
+
+      // Parse hash parameters (implicit flow)
+      if (parsed.hash) {
+        const hashParams = new URLSearchParams(parsed.hash.substring(1));
+        accessToken = hashParams.get('access_token') ?? undefined;
+        refreshToken = hashParams.get('refresh_token') ?? undefined;
+
+        logger.debug(
+          'signInWithOAuth',
+          `Tokens from hash - access_token: ${accessToken ? 'found' : 'not found'}, refresh_token: ${refreshToken ? 'found' : 'not found'}`,
+        );
+      }
+    } catch (e) {
+      logger.error('signInWithOAuth', 'Failed to parse redirect URL:', e);
+    }
+
+    if (!accessToken || !refreshToken) {
+      logger.error('signInWithOAuth', `Tokens not found in redirect URL: ${result.url}`);
+      const error = new Error('No tokens received from OAuth');
       (error as any).code = 'oauth_provider_error';
       throw error;
     }
 
-    const { code } = result.params;
+    logger.debug('signInWithOAuth', `Received OAuth tokens for ${provider}, setting session`);
 
-    logger.debug('signInWithOAuth', `Received OAuth code for ${provider}, exchanging for session`);
-
-    // Exchange code for session with Supabase
-    const { data, error } = await supabase.auth.exchangeCodeForSession({
-      code,
+    // Set session directly with tokens (implicit flow)
+    const { data, error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken,
     });
 
+    logger.debug('signInWithOAuth', `setSession response - data: ${!!data}, error: ${!!error}`);
+
     if (error) {
-      logger.error('signInWithOAuth', `Failed to exchange code for session:`, error);
+      logger.error('signInWithOAuth', `Failed to set session:`, error);
       throw error;
     }
 
     if (!data.session || !data.user) {
+      logger.error(
+        'signInWithOAuth',
+        `No session or user in response - session: ${!!data.session}, user: ${!!data.user}`,
+      );
       const error = new Error('No session or user returned from OAuth');
       (error as any).code = 'oauth_provider_error';
       throw error;
@@ -270,17 +332,41 @@ async function signInWithOAuth(provider: OAuthProvider) {
 
     logger.info('signInWithOAuth', `OAuth login successful for ${provider}, user: ${data.user.id}`);
 
-    // Create profile if needed
-    await createProfileIfNeeded(data.user.id, {
-      display_name:
-        data.user.user_metadata?.full_name ||
-        data.user.user_metadata?.name ||
-        data.user.email?.split('@')[0] ||
-        'User',
-      avatar_url: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture || null,
-    });
+    // Log email status (Facebook may not provide email if permission not approved)
+    const hasEmail = !!data.user.email;
+    logger.debug(
+      'signInWithOAuth',
+      `User email available: ${hasEmail}, email: ${data.user.email || 'null'}`,
+    );
 
-    return data;
+    // IMPORTANT: Create profile BEFORE returning
+    // This must complete before RegisterForm can check profile existence
+    let isNewProfile = false;
+    try {
+      // Generate fallback display name if no email available (Facebook without email permission)
+      const fallbackName =
+        data.user.user_metadata?.name ||
+        data.user.user_metadata?.full_name ||
+        `User_${data.user.id.substring(0, 8)}`;
+
+      isNewProfile = await createProfileIfNeeded(data.user.id, {
+        display_name:
+          data.user.user_metadata?.full_name ||
+          data.user.user_metadata?.name ||
+          (data.user.email ? data.user.email.split('@')[0] : fallbackName),
+        avatar_url: data.user.user_metadata?.avatar_url || data.user.user_metadata?.picture || null,
+      });
+      logger.debug(
+        'signInWithOAuth',
+        `Profile creation check completed, isNewProfile: ${isNewProfile}`,
+      );
+    } catch (profileError) {
+      // Don't fail the login if profile creation fails
+      // The app can handle missing profiles
+      logger.error('signInWithOAuth', 'Profile creation failed but continuing:', profileError);
+    }
+
+    return { ...data, isNewProfile };
   } catch (error: any) {
     logger.error('signInWithOAuth', `OAuth flow failed for ${provider}:`, error);
     throw error;
@@ -297,7 +383,7 @@ export async function createProfileIfNeeded(
     display_name?: string;
     avatar_url?: string | null;
   },
-): Promise<void> {
+): Promise<boolean> {
   try {
     // Check if profile already exists
     const { data: existingProfile, error: fetchError } = await supabase
@@ -309,13 +395,13 @@ export async function createProfileIfNeeded(
     if (fetchError && fetchError.code !== 'PGRST116') {
       // PGRST116 means no rows found, which is expected for new users
       logger.error('createProfileIfNeeded', 'Failed to check existing profile:', fetchError);
-      return;
+      return false;
     }
 
     // If profile already exists, don't create a new one
     if (existingProfile) {
       logger.debug('createProfileIfNeeded', `Profile already exists for user ${userId}`);
-      return;
+      return false;
     }
 
     // Create new profile
@@ -331,11 +417,14 @@ export async function createProfileIfNeeded(
     if (insertError) {
       logger.error('createProfileIfNeeded', 'Failed to create profile:', insertError);
       // Don't throw error - profile creation failure shouldn't block OAuth login
-    } else {
-      logger.info('createProfileIfNeeded', `Profile created for user ${userId}`);
+      return false;
     }
+
+    logger.info('createProfileIfNeeded', `Profile created for user ${userId}`);
+    return true;
   } catch (error) {
     logger.error('createProfileIfNeeded', 'Unexpected error creating profile:', error);
     // Don't throw error - profile creation failure shouldn't block OAuth login
+    return false;
   }
 }

@@ -35,20 +35,6 @@ export const makeOAuthRedirectUri = (path: string = '/auth/callback'): string =>
   });
 };
 
-/**
- * Gets Supabase OAuth authorization URL for a provider
- *
- * @param provider - OAuth provider ('google' | 'facebook')
- * @returns Authorization URL for the provider
- */
-export const getSupabaseOAuthUrl = (provider: OAuthProvider): string => {
-  if (!SUPABASE_URL) {
-    throw new Error('SUPABASE_URL is not configured');
-  }
-
-  return `${SUPABASE_URL}/auth/v1/authorize?provider=${provider}`;
-};
-
 // ============================================================================
 // OAuth Configuration Constants
 // ============================================================================

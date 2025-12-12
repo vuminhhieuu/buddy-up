@@ -216,7 +216,7 @@ export const HomeScreen: React.FC = () => {
     >
       <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
         <HomeHeader
-          name={dashboard?.profileName || authDisplayName || undefined}
+          name={dashboard?.profileName || profileData?.displayName || authDisplayName || undefined}
           avatarUrl={profileData?.avatarUrl || dashboard?.avatarUrl}
           notificationsCount={pendingCount}
           onNotificationPress={handleNotificationPress}

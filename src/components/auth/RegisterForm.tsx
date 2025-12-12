@@ -14,9 +14,12 @@ import {
   setProfileSetupInProgress,
   setProfileData,
   setCurrentProfileStep,
+  setUser,
 } from '../../store/slices/authSlice';
 import { translateAuthError } from '../../utils/authErrors';
+import { AuthError } from '@supabase/supabase-js';
 import { logger } from '../../utils/logger';
+import { useSocialAuth } from '../../hooks/useSocialAuth';
 import {
   DISPLAY_NAME_MIN_LENGTH,
   DISPLAY_NAME_MAX_LENGTH,
@@ -117,6 +120,12 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
   const [confirmIconPressed, setConfirmIconPressed] = useState(false);
   const dispatch = useAppDispatch();
 
+  // Use the new social auth hook
+  const { handleSocialLogin, socialLoading } = useSocialAuth({
+    mode: 'register',
+    onNavigateToProfileSetup,
+  });
+
   const styles = useMemo(
     () => ({
       divider: {
@@ -141,10 +150,6 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
     }),
     [theme],
   );
-
-  const handleSocialLogin = (provider: 'google' | 'facebook') => {
-    logger.debug('RegisterForm', `Social login with ${provider}`);
-  };
 
   return (
     <Formik
@@ -339,8 +344,16 @@ export const RegisterForm: React.FC<RegisterFormProps> = ({
 
             {/* Social buttons */}
             <View style={styles.socialButtonsContainer}>
-              <SocialButton provider="google" onPress={() => handleSocialLogin('google')} />
-              <SocialButton provider="facebook" onPress={() => handleSocialLogin('facebook')} />
+              <SocialButton
+                provider="google"
+                onPress={() => handleSocialLogin('google')}
+                loading={socialLoading === 'google'}
+              />
+              <SocialButton
+                provider="facebook"
+                onPress={() => handleSocialLogin('facebook')}
+                loading={socialLoading === 'facebook'}
+              />
             </View>
 
             <Spacer size={6} />
