@@ -10,15 +10,10 @@ import type { UserProfile } from '../../../types/profile';
 
 export type ProfileHeaderProps = {
   profile: UserProfile;
-  onSettingsPress?: () => void;
   onEditAvatarPress?: () => void;
 };
 
-export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
-  profile,
-  onSettingsPress,
-  onEditAvatarPress,
-}) => {
+export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, onEditAvatarPress }) => {
   const { theme } = useTheme();
   const avatarScale = useRef(new Animated.Value(0.9)).current;
 
@@ -39,32 +34,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         },
       ]}
     >
-      {/* Settings Button */}
-      {onSettingsPress && (
-        <Pressable
-          onPress={onSettingsPress}
-          style={styles.settingsButton}
-          accessibilityRole="button"
-          accessibilityLabel="Settings"
-        >
-          <View
-            style={[
-              styles.settingsButtonInner,
-              {
-                backgroundColor: theme.colors.surface,
-                shadowColor: '#000',
-                shadowOpacity: 0.15,
-                shadowRadius: 12,
-                shadowOffset: { width: 0, height: 4 },
-                elevation: 3,
-              },
-            ]}
-          >
-            <Icon name="settings" size={18} color={theme.colors.text.secondary} />
-          </View>
-        </Pressable>
-      )}
-
       {/* Avatar with Edit Button */}
       <View style={styles.avatarContainer}>
         <Animated.View
@@ -157,19 +126,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     minHeight: 220,
     position: 'relative',
-  },
-  settingsButton: {
-    position: 'absolute',
-    top: 28,
-    right: 20,
-    zIndex: 10,
-  },
-  settingsButtonInner: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   avatarContainer: {
     position: 'relative',

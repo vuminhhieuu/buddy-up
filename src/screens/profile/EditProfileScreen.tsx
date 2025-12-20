@@ -1,5 +1,14 @@
-import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, Alert, ActivityIndicator, Pressable } from 'react-native';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Alert,
+  ActivityIndicator,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +24,7 @@ import {
   Lock,
   Trash2,
   Save,
+  PlusCircle,
   FileText,
   Clock,
   Target,
@@ -65,6 +75,7 @@ export const EditProfileScreen: React.FC = () => {
   const navigation = useNavigation<NativeStackNavigationProp<ProfileStackParamList>>();
   const dispatch = useAppDispatch();
   const { userId, email, profileData: setupProfileData } = useAppSelector((state) => state.auth);
+  const scrollRef = useRef<ScrollView | null>(null);
 
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -74,6 +85,9 @@ export const EditProfileScreen: React.FC = () => {
       CATEGORY_OPTIONS.map((cat) => ({ key: cat.key, label: t(cat.labelKey, { ns: 'common' }) })),
     [t],
   );
+
+  // Set of default category keys to detect custom interests
+  const defaultInterestKeys = useMemo(() => new Set(CATEGORY_OPTIONS.map((c) => c.key)), []);
 
   const TIME_OPTIONS: { key: TimeKey; labelKey: string; icon: React.ReactElement }[] = [
     {
@@ -122,6 +136,7 @@ export const EditProfileScreen: React.FC = () => {
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [learningStyle, setLearningStyle] = useState<string>('');
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [customInterest, setCustomInterest] = useState('');
 
   const [initialData, setInitialData] = useState<EditProfileData | null>(null);
 
@@ -296,6 +311,18 @@ export const EditProfileScreen: React.FC = () => {
     }
   }, [hasChanges, navigation, t]);
 
+  const handleAddCustomInterest = useCallback(() => {
+    const trimmed = customInterest.trim();
+    if (!trimmed) return;
+    const exists = selectedInterests.some((item) => item.toLowerCase() === trimmed.toLowerCase());
+    if (exists) {
+      setCustomInterest('');
+      return;
+    }
+    setSelectedInterests((prev) => [...prev, trimmed]);
+    setCustomInterest('');
+  }, [customInterest, selectedInterests]);
+
   if (loading) {
     return (
       <ScreenContainer>
@@ -308,295 +335,382 @@ export const EditProfileScreen: React.FC = () => {
 
   return (
     <ScreenContainer scroll={false}>
-      {/* Header */}
-      <View style={styles.header}>
-        <BackButton onPress={handleBack} />
-        <Text variant="h4" style={styles.headerTitle}>
-          {t('editProfile.title')}
-        </Text>
-        <View style={styles.saveButton} />
-      </View>
-
-      <Spacer size={4} />
-
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={80}
       >
-        {/* Avatar */}
-        <View style={styles.avatarContainer}>
-          <AvatarPickerSection
-            avatarUri={avatarUri}
-            displayName={displayName}
-            onAvatarSelected={handleAvatarSelected}
-          />
+        {/* Header */}
+        <View style={styles.header}>
+          <BackButton onPress={handleBack} />
+          <Text variant="h4" style={styles.headerTitle}>
+            {t('editProfile.title')}
+          </Text>
+          <View style={styles.saveButton} />
         </View>
 
         <Spacer size={4} />
 
-        {/* Thông tin cơ bản */}
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionIconContainer}>
-            <FileText size={20} color={theme.colors.primary[500]} />
+        <ScrollView
+          ref={scrollRef}
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Avatar */}
+          <View style={styles.avatarContainer}>
+            <AvatarPickerSection
+              avatarUri={avatarUri}
+              displayName={displayName}
+              onAvatarSelected={handleAvatarSelected}
+            />
           </View>
-          <Text variant="h6" style={styles.sectionTitle}>
-            {t('editProfile.basicInfo')}
-          </Text>
-        </View>
 
-        <Spacer size={3} />
+          <Spacer size={4} />
 
-        <View style={styles.fieldContainer}>
-          <View style={styles.labelRow}>
+          {/* Thông tin cơ bản */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <FileText size={20} color={theme.colors.primary[500]} />
+            </View>
+            <Text variant="h6" style={styles.sectionTitle}>
+              {t('editProfile.basicInfo')}
+            </Text>
+          </View>
+
+          <Spacer size={3} />
+
+          <View style={styles.fieldContainer}>
+            <View style={styles.labelRow}>
+              <Text variant="body" style={styles.fieldLabel}>
+                {t('editProfile.displayName')}
+              </Text>
+              <Text variant="body" style={styles.requiredStar}>
+                *
+              </Text>
+            </View>
+            <Input
+              value={displayName}
+              onChangeText={setDisplayName}
+              placeholder={t('editProfile.displayNamePlaceholder')}
+              autoCapitalize="words"
+              autoCorrect={false}
+            />
+          </View>
+
+          <View style={styles.fieldContainer}>
+            <View style={styles.labelRow}>
+              <Text variant="body" style={styles.fieldLabel}>
+                {t('editProfile.studyGoalLabel')}
+              </Text>
+              <Text variant="body" style={styles.requiredStar}>
+                *
+              </Text>
+            </View>
+            <Input
+              value={studyGoal}
+              onChangeText={setStudyGoal}
+              placeholder={t('editProfile.studyGoalPlaceholder')}
+              maxLength={200}
+            />
+          </View>
+
+          <View style={styles.fieldContainer}>
             <Text variant="body" style={styles.fieldLabel}>
-              {t('editProfile.displayName')}
+              {t('editProfile.email')}
             </Text>
-            <Text variant="body" style={styles.requiredStar}>
-              *
+            <Input
+              value={email || ''}
+              onChangeText={() => {}}
+              placeholder={t('editProfile.emailPlaceholder')}
+              editable={false}
+              keyboardType="email-address"
+              right={<Lock size={18} color={theme.colors.text.tertiary} />}
+            />
+          </View>
+
+          <Spacer size={6} />
+
+          {/* Thời gian rảnh */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <Clock size={20} color={theme.colors.primary[500]} />
+            </View>
+            <Text variant="h6" style={styles.sectionTitle}>
+              {t('editProfile.freeTime')}
             </Text>
           </View>
-          <Input
-            value={displayName}
-            onChangeText={setDisplayName}
-            placeholder={t('editProfile.displayNamePlaceholder')}
-            autoCapitalize="words"
-            autoCorrect={false}
-          />
-        </View>
 
-        <View style={styles.fieldContainer}>
-          <View style={styles.labelRow}>
-            <Text variant="body" style={styles.fieldLabel}>
-              {t('editProfile.studyGoalLabel')}
-            </Text>
-            <Text variant="body" style={styles.requiredStar}>
-              *
-            </Text>
-          </View>
-          <Input
-            value={studyGoal}
-            onChangeText={setStudyGoal}
-            placeholder={t('editProfile.studyGoalPlaceholder')}
-            maxLength={200}
-          />
-        </View>
+          <Spacer size={3} />
 
-        <View style={styles.fieldContainer}>
-          <Text variant="body" style={styles.fieldLabel}>
-            {t('editProfile.email')}
-          </Text>
-          <Input
-            value={email || ''}
-            onChangeText={() => {}}
-            placeholder={t('editProfile.emailPlaceholder')}
-            editable={false}
-            keyboardType="email-address"
-            right={<Lock size={18} color={theme.colors.text.tertiary} />}
-          />
-        </View>
-
-        <Spacer size={6} />
-
-        {/* Thời gian rảnh */}
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionIconContainer}>
-            <Clock size={20} color={theme.colors.primary[500]} />
-          </View>
-          <Text variant="h6" style={styles.sectionTitle}>
-            {t('editProfile.freeTime')}
-          </Text>
-        </View>
-
-        <Spacer size={3} />
-
-        <View style={styles.grid}>
-          {TIME_OPTIONS.map((option) => {
-            const isSelected = availableTimes.includes(option.key);
-            return (
-              <Pressable
-                key={option.key}
-                onPress={() => {
-                  setAvailableTimes((prev) =>
-                    prev.includes(option.key)
-                      ? prev.filter((k) => k !== option.key)
-                      : [...prev, option.key],
-                  );
-                }}
-                style={[
-                  option.key === 'flexible' ? styles.tileFull : styles.tileHalf,
-                  isSelected && styles.tileActive,
-                ]}
-              >
-                {option.icon}
-                <Spacer size={2} />
-                <Text
-                  variant="body"
-                  style={{
-                    fontWeight: isSelected ? '600' : '400',
-                    color: isSelected ? theme.colors.primary[600] : theme.colors.text.primary,
+          <View style={styles.grid}>
+            {TIME_OPTIONS.map((option) => {
+              const isSelected = availableTimes.includes(option.key);
+              return (
+                <Pressable
+                  key={option.key}
+                  onPress={() => {
+                    setAvailableTimes((prev) =>
+                      prev.includes(option.key)
+                        ? prev.filter((k) => k !== option.key)
+                        : [...prev, option.key],
+                    );
                   }}
-                >
-                  {t(option.labelKey)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Spacer size={6} />
-
-        {/* Phong cách học */}
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionIconContainer}>
-            <Target size={20} color={theme.colors.primary[500]} />
-          </View>
-          <Text variant="h6" style={styles.sectionTitle}>
-            {t('editProfile.learningStyleTitle')}
-          </Text>
-        </View>
-
-        <Spacer size={3} />
-
-        <View>
-          {STYLE_OPTIONS.map((option) => {
-            const isSelected = learningStyle === option.key;
-            return (
-              <Pressable
-                key={option.key}
-                onPress={() => setLearningStyle(option.key)}
-                style={[
-                  styles.radioRow,
-                  isSelected && {
-                    borderColor: theme.colors.primary[500],
-                    backgroundColor: theme.colors.primary[50],
-                  },
-                ]}
-              >
-                <View
                   style={[
-                    styles.radioOuter,
-                    isSelected && { borderColor: theme.colors.primary[500] },
+                    option.key === 'flexible' ? styles.tileFull : styles.tileHalf,
+                    isSelected && styles.tileActive,
                   ]}
                 >
-                  {isSelected && <View style={styles.radioInner} />}
-                </View>
-                <Text variant="body" style={{ flex: 1 }}>
-                  {t(option.labelKey)}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        <Spacer size={6} />
-
-        {/* Môn học quan tâm */}
-        <View style={styles.sectionHeader}>
-          <View style={styles.sectionIconContainer}>
-            <BookOpen size={20} color={theme.colors.primary[500]} />
+                  {option.icon}
+                  <Spacer size={2} />
+                  <Text
+                    variant="body"
+                    style={{
+                      fontWeight: isSelected ? '600' : '400',
+                      color: isSelected ? theme.colors.primary[600] : theme.colors.text.primary,
+                    }}
+                  >
+                    {t(option.labelKey)}
+                  </Text>
+                </Pressable>
+              );
+            })}
           </View>
-          <Text variant="h6" style={styles.sectionTitle}>
-            {t('editProfile.subjectsTitle')}
-          </Text>
-        </View>
 
-        <Spacer size={3} />
+          <Spacer size={6} />
 
-        <View style={styles.chipContainer}>
-          {availableInterestsList.map((item) => {
-            const isSelected = selectedInterests.includes(item.key);
-            return (
-              <Pressable
-                key={item.key}
-                onPress={() => handleToggleInterest(item.key)}
-                style={[
-                  styles.chip,
-                  {
-                    backgroundColor: isSelected ? theme.colors.primary[100] : theme.colors.surface,
-                    borderColor: isSelected ? theme.colors.primary[500] : theme.colors.border,
-                  },
-                ]}
-              >
-                <Text
-                  variant="body"
-                  style={{
-                    color: isSelected ? theme.colors.primary[700] : theme.colors.text.secondary,
-                    fontWeight: isSelected ? '600' : '400',
-                  }}
+          {/* Phong cách học */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <Target size={20} color={theme.colors.primary[500]} />
+            </View>
+            <Text variant="h6" style={styles.sectionTitle}>
+              {t('editProfile.learningStyleTitle')}
+            </Text>
+          </View>
+
+          <Spacer size={3} />
+
+          <View>
+            {STYLE_OPTIONS.map((option) => {
+              const isSelected = learningStyle === option.key;
+              return (
+                <Pressable
+                  key={option.key}
+                  onPress={() => setLearningStyle(option.key)}
+                  style={[
+                    styles.radioRow,
+                    isSelected && {
+                      borderColor: theme.colors.primary[500],
+                      backgroundColor: theme.colors.primary[50],
+                    },
+                  ]}
                 >
-                  {item.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+                  <View
+                    style={[
+                      styles.radioOuter,
+                      isSelected && { borderColor: theme.colors.primary[500] },
+                    ]}
+                  >
+                    {isSelected && <View style={styles.radioInner} />}
+                  </View>
+                  <Text variant="body" style={{ flex: 1 }}>
+                    {t(option.labelKey)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
 
-        <Spacer size={8} />
+          <Spacer size={6} />
 
-        {/* Action Buttons */}
-        <View style={styles.actionButtonsRow}>
-          {/* Delete Account */}
-          <Pressable
-            style={[
-              styles.deleteButton,
-              {
-                borderColor: theme.colors.semantic.error,
-                opacity: saving || deleting ? 0.5 : 1,
-              },
-            ]}
-            onPress={handleDeleteAccount}
-            disabled={saving || deleting}
-          >
-            {deleting ? (
-              <ActivityIndicator size="small" color={theme.colors.semantic.error} />
-            ) : (
-              <Trash2 size={18} color={theme.colors.semantic.error} />
-            )}
-            <Spacer horizontal size={2} />
-            <Text
-              variant="body"
-              style={{
-                color: theme.colors.semantic.error,
-                fontWeight: '600',
-              }}
-            >
-              {deleting ? t('editProfile.deleting') : t('editProfile.deleteAccount')}
+          {/* Môn học quan tâm */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <BookOpen size={20} color={theme.colors.primary[500]} />
+            </View>
+            <Text variant="h6" style={styles.sectionTitle}>
+              {t('editProfile.subjectsTitle')}
             </Text>
-          </Pressable>
+          </View>
 
-          {/* Save Button */}
-          <Pressable
-            onPress={handleSave}
-            disabled={saving || deleting || !hasChanges}
-            style={[
-              styles.saveButtonBottom,
-              {
-                backgroundColor: theme.colors.primary[500],
-                opacity: !hasChanges || saving || deleting ? 0.5 : 1,
-              },
-            ]}
-          >
-            {saving ? (
-              <ActivityIndicator size="small" color={theme.colors.text.inverse} />
-            ) : (
-              <Save size={18} color={theme.colors.text.inverse} />
-            )}
-            <Spacer horizontal size={2} />
-            <Text
-              variant="body"
-              style={{
-                color: theme.colors.text.inverse,
-                fontWeight: '600',
-              }}
+          <Spacer size={3} />
+
+          <View style={styles.chipContainer}>
+            {availableInterestsList.map((item) => {
+              const isSelected = selectedInterests.includes(item.key);
+              return (
+                <Pressable
+                  key={item.key}
+                  onPress={() => handleToggleInterest(item.key)}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: isSelected
+                        ? theme.colors.primary[100]
+                        : theme.colors.surface,
+                      borderColor: isSelected ? theme.colors.primary[500] : theme.colors.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    variant="body"
+                    style={{
+                      color: isSelected ? theme.colors.primary[700] : theme.colors.text.secondary,
+                      fontWeight: isSelected ? '600' : '400',
+                    }}
+                  >
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+
+            {/* Render custom interests (immediately visible when added) */}
+            {selectedInterests
+              .filter((key) => !defaultInterestKeys.has(key))
+              .map((key) => {
+                const isSelected = selectedInterests.includes(key);
+                return (
+                  <Pressable
+                    key={`custom-${key}`}
+                    onPress={() => handleToggleInterest(key)}
+                    style={[
+                      styles.chip,
+                      {
+                        backgroundColor: isSelected
+                          ? theme.colors.primary[100]
+                          : theme.colors.surface,
+                        borderColor: isSelected ? theme.colors.primary[500] : theme.colors.border,
+                      },
+                    ]}
+                  >
+                    <Text
+                      variant="body"
+                      style={{
+                        color: isSelected ? theme.colors.primary[700] : theme.colors.text.secondary,
+                        fontWeight: isSelected ? '600' : '400',
+                      }}
+                    >
+                      {key}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+          </View>
+
+          <Spacer size={3} />
+
+          <View style={styles.customSubjectRow}>
+            <Input
+              value={customInterest}
+              onChangeText={setCustomInterest}
+              placeholder={t('editProfile.customSubjectPlaceholder', {
+                defaultValue: 'Nhập môn khác',
+              })}
+              style={styles.customSubjectInput}
+              onFocus={() => scrollRef.current?.scrollToEnd({ animated: true })}
+            />
+            <Pressable
+              onPress={handleAddCustomInterest}
+              disabled={!customInterest.trim()}
+              style={[
+                styles.customSubjectButton,
+                {
+                  backgroundColor: customInterest.trim()
+                    ? theme.colors.primary[500]
+                    : theme.colors.neutral[200],
+                },
+              ]}
             >
-              {saving ? t('editProfile.saving') : t('editProfile.save')}
-            </Text>
-          </Pressable>
-        </View>
+              <PlusCircle
+                size={18}
+                color={
+                  customInterest.trim() ? theme.colors.text.inverse : theme.colors.text.secondary
+                }
+              />
+              <Spacer horizontal size={2} />
+              <Text
+                variant="body"
+                style={{
+                  color: customInterest.trim()
+                    ? theme.colors.text.inverse
+                    : theme.colors.text.secondary,
+                  fontWeight: '600',
+                }}
+              >
+                {t('editProfile.addCustomSubject', { defaultValue: 'Thêm' })}
+              </Text>
+            </Pressable>
+          </View>
 
-        <Spacer size={8} />
-      </ScrollView>
+          <Spacer size={8} />
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtonsRow}>
+            {/* Delete Account */}
+            <Pressable
+              style={[
+                styles.deleteButton,
+                {
+                  borderColor: theme.colors.semantic.error,
+                  opacity: saving || deleting ? 0.5 : 1,
+                },
+              ]}
+              onPress={handleDeleteAccount}
+              disabled={saving || deleting}
+            >
+              {deleting ? (
+                <ActivityIndicator size="small" color={theme.colors.semantic.error} />
+              ) : (
+                <Trash2 size={18} color={theme.colors.semantic.error} />
+              )}
+              <Spacer horizontal size={2} />
+              <Text
+                variant="body"
+                style={{
+                  color: theme.colors.semantic.error,
+                  fontWeight: '600',
+                }}
+              >
+                {deleting ? t('editProfile.deleting') : t('editProfile.deleteAccount')}
+              </Text>
+            </Pressable>
+
+            {/* Save Button */}
+            <Pressable
+              onPress={handleSave}
+              disabled={saving || deleting || !hasChanges}
+              style={[
+                styles.saveButtonBottom,
+                {
+                  backgroundColor: theme.colors.primary[500],
+                  opacity: !hasChanges || saving || deleting ? 0.5 : 1,
+                },
+              ]}
+            >
+              {saving ? (
+                <ActivityIndicator size="small" color={theme.colors.text.inverse} />
+              ) : (
+                <Save size={18} color={theme.colors.text.inverse} />
+              )}
+              <Spacer horizontal size={2} />
+              <Text
+                variant="body"
+                style={{
+                  color: theme.colors.text.inverse,
+                  fontWeight: '600',
+                }}
+              >
+                {saving ? t('editProfile.saving') : t('editProfile.save')}
+              </Text>
+            </Pressable>
+          </View>
+
+          <Spacer size={8} />
+        </ScrollView>
+      </KeyboardAvoidingView>
     </ScreenContainer>
   );
 };
@@ -629,7 +743,7 @@ const createStyles = (theme: ReturnType<typeof useTheme>['theme']) =>
       flex: 1,
     },
     scrollContent: {
-      paddingBottom: 40,
+      paddingBottom: 140,
     },
     avatarContainer: {
       alignItems: 'center',
@@ -761,5 +875,23 @@ const createStyles = (theme: ReturnType<typeof useTheme>['theme']) =>
       borderRadius: 20,
       borderWidth: 1.5,
       marginBottom: 8,
+    },
+    customSubjectRow: {
+      width: '100%',
+      flexDirection: 'column',
+      alignItems: 'stretch',
+      gap: 8,
+    },
+    customSubjectInput: {
+      width: '100%',
+    },
+    customSubjectButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderRadius: 12,
+      width: '100%',
     },
   });

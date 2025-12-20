@@ -44,6 +44,9 @@
   "viewAll": "Thêm",
   "errorPastSession": "Không thể tạo buổi học đã qua. Vui lòng chọn thời gian tương lai.",
   "close": "Đóng",
+  "hours": "giờ",
+  "minutes": "phút",
+  "completed": "hoàn thành",
   "weekdays": {
     "0": "Chủ Nhật",
     "1": "Thứ Hai",
