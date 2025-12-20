@@ -47,6 +47,7 @@ const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, s
         <View style={styles.chartContainer}>
           {stats.weeklyActivity.map((activity, index) => {
             const heightPercent = maxValue > 0 ? (activity.value / maxValue) * 100 : 0;
+            const isActive = heightPercent > 0;
             return (
               <View key={index} style={styles.chartBarContainer}>
                 <View
@@ -54,13 +55,22 @@ const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, s
                     styles.chartBar,
                     {
                       height: `${heightPercent}%`,
-                      backgroundColor: theme.colors.primary[500],
-                      minHeight: heightPercent > 0 ? 8 : 0,
+                      minHeight: isActive ? 12 : 4,
+                      backgroundColor: isActive
+                        ? theme.colors.primary[500]
+                        : theme.colors.neutral[200],
+                      borderRadius: isActive ? 8 : 2,
                     },
                   ]}
                 />
                 <Spacer size={1} />
-                <Text variant="caption" color="secondary" style={styles.chartLabel}>
+                <Text
+                  variant="caption"
+                  style={[
+                    styles.chartLabel,
+                    { color: isActive ? theme.colors.text.primary : theme.colors.text.secondary },
+                  ]}
+                >
                   {activity.day}
                 </Text>
               </View>
@@ -68,13 +78,13 @@ const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, s
           })}
         </View>
 
-        <Spacer size={4} />
+        <Spacer size={5} />
 
         {/* Stats Grid */}
         <View style={styles.statsGrid}>
           <View style={styles.statItem}>
             <Text
-              variant="h3"
+              variant="h2"
               style={[
                 styles.statValue,
                 {
@@ -90,9 +100,10 @@ const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, s
               {t('studyStats.sessions')}
             </Text>
           </View>
+          <View style={[styles.divider, { backgroundColor: theme.colors.neutral[200] }]} />
           <View style={styles.statItem}>
             <Text
-              variant="h3"
+              variant="h2"
               style={[
                 styles.statValue,
                 {
@@ -137,35 +148,38 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     justifyContent: 'space-between',
-    height: 80,
+    height: 100,
+    paddingHorizontal: 8,
   },
   chartBarContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'flex-end',
-    marginHorizontal: 2,
+    marginHorizontal: 4,
   },
   chartBar: {
     width: '100%',
-    borderRadius: 4,
-    borderTopLeftRadius: 4,
-    borderTopRightRadius: 4,
+    maxWidth: 32,
   },
   chartLabel: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
   },
   statsGrid: {
     flexDirection: 'row',
-    marginTop: 16,
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  divider: {
+    width: 1,
+    height: 40,
   },
   statItem: {
     flex: 1,
     alignItems: 'center',
-    marginHorizontal: 8,
   },
   statValue: {
-    fontSize: 24,
+    fontSize: 32,
     marginBottom: 4,
   },
   statLabel: {

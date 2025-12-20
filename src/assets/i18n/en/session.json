@@ -44,6 +44,9 @@
   "viewAll": "Add",
   "errorPastSession": "Cannot create a past session. Please choose a future time.",
   "close": "Close",
+  "hours": "hours",
+  "minutes": "minutes",
+  "completed": "completed",
   "weekdays": {
     "0": "Sunday",
     "1": "Monday",

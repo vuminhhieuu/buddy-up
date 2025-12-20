@@ -246,10 +246,6 @@ export const ProfileScreen: React.FC = () => {
     [navigation],
   );
 
-  const handleSettingsPress = useCallback(() => {
-    handleOpenSettingsSection('profile');
-  }, [handleOpenSettingsSection]);
-
   const achievementsRef = React.useRef(achievements);
   achievementsRef.current = achievements;
 
@@ -342,12 +338,6 @@ export const ProfileScreen: React.FC = () => {
         label: t('settings.friends'),
         icon: 'buddy',
         onPress: () => handleOpenSettingsSection('friends'),
-      },
-      {
-        id: 'notifications',
-        label: t('settings.notifications'),
-        icon: 'bell',
-        onPress: () => handleOpenSettingsSection('notifications'),
       },
       {
         id: 'security',
@@ -460,7 +450,6 @@ export const ProfileScreen: React.FC = () => {
         )}
         <ProfileHeader
           profile={resolvedProfile}
-          onSettingsPress={handleSettingsPress}
           onEditAvatarPress={updatingAvatar ? undefined : handleEditAvatarPress}
         />
 

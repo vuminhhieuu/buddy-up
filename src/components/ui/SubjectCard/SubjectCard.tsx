@@ -113,7 +113,7 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, style, onPres
           <ProgressBar progress={subject.progress} variant={getProgressVariant()} height={8} />
         </View>
         <Text variant="caption" color="secondary" style={styles.progressText}>
-          {subject.progress}% hoàn thành
+          {subject.progress}% {t('completed')}
         </Text>
       </Card>
     </Pressable>

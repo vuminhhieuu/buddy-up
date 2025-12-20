@@ -49,6 +49,7 @@ export type Subject = {
   badgeColor: SubjectBadgeColor;
   progress: number;
   totalHours: number;
+  attendedHours: number;
 };
 
 export type WeeklyActivity = {
