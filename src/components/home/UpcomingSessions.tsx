@@ -8,6 +8,7 @@ import { Calendar } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { formatISOToLocal, formatWeekdayDate, formatStartEndTimes } from '../../utils/date';
 import { MS_PER_HOUR } from '../../constants/profile';
+import { AVAILABLE_SUBJECTS } from '../../constants/subjects';
 
 export type Session = {
   id: string;
@@ -42,6 +43,16 @@ const formatCountdown = (startIso: string, t: (key: string, opts?: any) => strin
   }
   const days = Math.round(diffMs / (MS_PER_HOUR * 24));
   return t('sessions.countdownDays', { count: Math.max(1, days) });
+};
+
+const getSubjectLabel = (subjectKey: string | null | undefined, t: any) => {
+  if (!subjectKey) return t('sessions.unknownSubject');
+  const subj = AVAILABLE_SUBJECTS.find((s) => s.key === subjectKey);
+  if (subj) {
+    const ns = (subj as any).namespace || 'common';
+    return t(subj.label, { ns });
+  }
+  return subjectKey;
 };
 
 const getStatusBadge = (
@@ -132,7 +143,9 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
                       },
                     ]}
                   >
-                    {session.title || session.subject || t('sessions.unknownSubject')}
+                    {session.title ||
+                      getSubjectLabel(session.subject, t) ||
+                      t('sessions.unknownSubject')}
                   </Text>
                   {(() => {
                     const badge = getStatusBadge(
@@ -233,7 +246,9 @@ export const UpcomingSessions: React.FC<UpcomingSessionsProps> = ({
                           },
                         ]}
                       >
-                        {session.subject || session.title || t('sessions.unknownSubject')}
+                        {getSubjectLabel(session.subject, t) ||
+                          session.title ||
+                          t('sessions.unknownSubject')}
                       </Text>
                     </View>
                   </View>

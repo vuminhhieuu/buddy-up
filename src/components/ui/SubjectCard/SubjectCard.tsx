@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Card } from '../Card/Card';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
 import type { Subject } from '../../../types/profile';
+import { AVAILABLE_SUBJECTS } from '../../../constants/subjects';
 
 export type SubjectCardProps = {
   subject: Subject;
@@ -61,12 +62,21 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, style, onPres
 
   const { t } = useTranslation('session');
 
+  const displayName = (() => {
+    const subj = AVAILABLE_SUBJECTS.find((s) => s.key === subject.name);
+    if (subj) {
+      const ns = (subj as any).namespace || 'common';
+      return t(subj.label, { ns });
+    }
+    return subject.name;
+  })();
+
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed }) => [pressed && styles.pressed, style]}
       accessibilityRole="button"
-      accessibilityLabel={`${subject.name}: ${subject.progress}% hoàn thành`}
+      accessibilityLabel={`${displayName}: ${subject.progress}% hoàn thành`}
     >
       <Card padding={4} elevation="sm">
         <View style={styles.header}>
@@ -92,7 +102,7 @@ export const SubjectCard: React.FC<SubjectCardProps> = ({ subject, style, onPres
                 },
               ]}
             >
-              {subject.name}
+              {displayName}
             </Text>
           </View>
           <Text

@@ -13,7 +13,6 @@ import {
   Users,
   Link as LinkIcon,
   Copy,
-  X,
   FileText,
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
@@ -28,6 +27,8 @@ import { showSuccessToast, showErrorToast } from '../../utils/toast';
 import { logger } from '../../utils/logger';
 import { useAppSelector } from '../../store/hooks';
 import { useInvitations } from '../../hooks/useInvitations';
+import { BackButton } from '../../components/navigation/BackButton';
+import { AVAILABLE_SUBJECTS } from '../../constants/subjects';
 import type { NavigationProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { SessionCompletionModal } from '../../components/session/SessionCompletionModal';
@@ -264,6 +265,16 @@ export const SessionDetailScreen: React.FC = () => {
   const DEFAULT_SESSION_DURATION_MS = 60 * 60 * 1000;
   const endTime = endDate?.getTime() || startTime + DEFAULT_SESSION_DURATION_MS;
 
+  // Calculate weeks ago for completed sessions
+  const getWeeksAgo = (pastTimeMs: number) => {
+    const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+    const weeks = Math.floor((now - pastTimeMs) / msPerWeek);
+    // Only show "This week" for sessions completed within this week
+    if (weeks === 0) return t('detail.status.thisWeek') || 'Tuần này';
+    // For older sessions, don't show week text
+    return null;
+  };
+
   let actualStatus: string;
   let statusBgColor: string;
   let statusTextColor: string;
@@ -273,7 +284,10 @@ export const SessionDetailScreen: React.FC = () => {
     statusBgColor = '#FFCDD2';
     statusTextColor = '#C62828';
   } else if (now >= endTime) {
-    actualStatus = t('detail.status.completed');
+    const weeksText = getWeeksAgo(endTime);
+    actualStatus = weeksText
+      ? `${t('detail.status.completed')} (${weeksText})`
+      : t('detail.status.completed');
     statusBgColor = theme.colors.neutral[200];
     statusTextColor = theme.colors.neutral[600];
   } else if (now >= startTime && now < endTime) {
@@ -401,33 +415,17 @@ export const SessionDetailScreen: React.FC = () => {
             paddingBottom: 12,
           }}
         >
-          {/* Left spacer to keep title centered */}
-          <View
-            style={{
-              width: 35,
-              height: 35,
-            }}
-          />
+          <BackButton onPress={handleClose} accessibilityLabel={t('back', { ns: 'common' })} />
           <Text variant="h5" style={{ fontWeight: '700', flex: 1, textAlign: 'center' }}>
             {t('detail.title')}
           </Text>
-          <Pressable
-            accessibilityRole="button"
-            onPress={handleClose}
+          {/* Right spacer to keep title centered */}
+          <View
             style={{
-              width: 35,
-              height: 35,
-              borderRadius: theme.radius.md,
-              backgroundColor: theme.colors.background,
-              borderWidth: 1,
-              borderColor: theme.colors.border,
-              justifyContent: 'center',
-              alignItems: 'center',
+              width: 44,
+              height: 44,
             }}
-            hitSlop={8}
-          >
-            <X size={18} color={theme.colors.text.primary} />
-          </Pressable>
+          />
         </View>
       </View>
 
@@ -498,7 +496,15 @@ export const SessionDetailScreen: React.FC = () => {
                     variant="body"
                     style={{ marginLeft: theme.spacing[2], color: theme.colors.text.secondary }}
                   >
-                    {session.subject}
+                    {t('subjectLabel')}:{' '}
+                    {(() => {
+                      const subj = AVAILABLE_SUBJECTS.find((s) => s.key === session.subject);
+                      if (subj) {
+                        const ns = (subj as any).namespace || 'common';
+                        return t(subj.label, { ns });
+                      }
+                      return session.subject;
+                    })()}
                   </Text>
                 </View>
               )}

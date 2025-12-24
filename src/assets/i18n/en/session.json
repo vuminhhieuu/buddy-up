@@ -4,6 +4,7 @@
   "namePlaceholder": "Enter session name",
   "subjectLabel": "Subject/Topic",
   "subjectPlaceholder": "Select subject or topic",
+  "customSubjectPlaceholder": "Enter custom subject",
   "timeDateTitle": "Date & Time",
   "datePlaceholder": "DD/MM/YYYY",
   "timePlaceholder": "HH:MM",
@@ -91,7 +92,10 @@
       "upcoming": "Upcoming",
       "accepted": "Accepted ✓",
       "invited": "Invited",
-      "declined": "Declined ✗"
+      "declined": "Declined ✗",
+      "thisWeek": "This week",
+      "oneWeekAgo": "1 week ago",
+      "weeksAgo": "weeks ago"
     },
     "participantState": {
       "accepted": "Accepted ✓",

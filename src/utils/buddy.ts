@@ -10,6 +10,7 @@ import type {
 } from '../types/buddy';
 import { DEFAULT_BUDDY_FILTERS } from '../constants/buddy';
 import i18n from '../config/i18n';
+import { AVAILABLE_SUBJECTS } from '../constants/subjects';
 
 /**
  * Get current user ID from Redux store
@@ -114,6 +115,33 @@ function getAvailableTimeIcon(time: AvailableTime): string {
 }
 
 /**
+ * Get available time text (i18n mapped)
+ */
+function getAvailableTimeText(time: string): string {
+  const timeMap: Record<string, string> = {
+    morning: i18n.t('filter.availableTime.morning', { ns: 'buddy' }),
+    afternoon: i18n.t('filter.availableTime.afternoon', { ns: 'buddy' }),
+    evening: i18n.t('filter.availableTime.evening', { ns: 'buddy' }),
+    late_night: i18n.t('filter.availableTime.lateNight', { ns: 'buddy' }),
+    weekend: i18n.t('filter.availableTime.weekend', { ns: 'buddy' }),
+    flexible: i18n.t('filter.availableTime.flexible', { ns: 'buddy' }),
+  };
+  return timeMap[time] || time;
+}
+
+/**
+ * Map interest/subject key to i18n label
+ */
+function mapInterestToLabel(interest: string): string {
+  const subj = AVAILABLE_SUBJECTS.find((s) => s.key === interest);
+  if (subj) {
+    const ns = (subj as any).namespace || 'common';
+    return i18n.t(subj.label, { ns });
+  }
+  return interest;
+}
+
+/**
  * Get learning style text
  */
 function getLearningStyleText(style: LearningStyle | null): string {
@@ -154,20 +182,20 @@ export function profileToCardData(profile: BuddyProfile): BuddyCardData {
     profile.learning_goals[0] ||
     i18n.t('card.notUpdated', { ns: 'buddy' });
 
-  // Format available times with icons
-  // Ensure available_times_detail exists and is an array to prevent errors
-  const availableTimesDetail = profile.available_times_detail || [];
-  const availableTimes = profile.available_times.map((time, index) => ({
+  // Format available times with icons and i18n labels
+  const availableTimes = profile.available_times.map((time) => ({
     icon: getAvailableTimeIcon(time),
-    text: availableTimesDetail[index] || time,
+    text: getAvailableTimeText(time),
   }));
 
   // Format learning style
   const learningStyle = getLearningStyleText(profile.learning_style);
 
   // Use learning_interests if available, otherwise use interests
-  const interests =
+  // Map through i18n if they match AVAILABLE_SUBJECTS keys
+  const rawInterests =
     profile.learning_interests.length > 0 ? profile.learning_interests : profile.interests;
+  const interests = rawInterests.map(mapInterestToLabel);
 
   return {
     userId: profile.user_id,

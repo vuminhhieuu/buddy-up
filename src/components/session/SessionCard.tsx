@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { COLORS } from '../../styles/tokens';
 import { formatWeekdayDate, formatStartEndTimes } from '../../utils/date';
 import type { HomeSession, HomeSessionFull } from '../../services/home';
+import { AVAILABLE_SUBJECTS } from '../../constants/subjects';
 
 const theme = {
   primary: COLORS.primary[500],
@@ -93,7 +94,14 @@ export const SessionCard: React.FC<SessionCardProps> = ({ session, onPress, styl
             {session.subject ? (
               <View style={styles.subjectTag}>
                 <Text variant="caption" style={{ color: COLORS.secondary[500] }}>
-                  {session.subject}
+                  {(() => {
+                    const subj = AVAILABLE_SUBJECTS.find((s) => s.key === session.subject);
+                    if (subj) {
+                      const ns = (subj as any).namespace || 'common';
+                      return t(subj.label, { ns });
+                    }
+                    return session.subject;
+                  })()}
                 </Text>
               </View>
             ) : null}
