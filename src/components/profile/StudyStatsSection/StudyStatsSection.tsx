@@ -38,6 +38,9 @@ const StudyStatsSectionComponent: React.FC<StudyStatsSectionProps> = ({ stats, s
             {t('studyStats.title')}
           </Text>
         </View>
+        <Text variant="bodySmall" color="secondary" style={{ fontWeight: '500' }}>
+          {t('studyStats.thisWeek', { defaultValue: 'Tuần này' })}
+        </Text>
       </View>
 
       <Spacer size={4} />
