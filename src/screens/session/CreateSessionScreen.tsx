@@ -16,6 +16,7 @@ import { ScreenContainer } from '../../components/ui/ScreenContainer/ScreenConta
 import { Input } from '../../components/ui/Input/Input';
 import { Button } from '../../components/ui/Button/Button';
 import { Text } from '../../components/ui/Text/Text';
+import { Avatar } from '../../components/ui/Avatar/Avatar';
 import { useTheme } from '../../styles';
 import { ArrowLeft, Calendar, Clock } from 'lucide-react-native';
 import { BackButton } from '../../components/navigation/BackButton';
@@ -30,16 +31,18 @@ import { showSuccessToast, showErrorToast } from '../../utils/toast';
 import { logger } from '../../utils/logger';
 import { formatDateTimeDDMMYYYYHHMM } from '../../utils/date';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Avatar } from '../../components/ui/Avatar/Avatar';
+import { AVAILABLE_SUBJECTS } from '../../constants/subjects';
 
 export const CreateSessionScreen: React.FC = () => {
   const { theme } = useTheme();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { t } = useTranslation('session');
+  const { t } = useTranslation(['session', 'common']);
 
   const [title, setTitle] = useState('');
   const [subject, setSubject] = useState('');
+  const [customSubject, setCustomSubject] = useState('');
+  const [showSubjectModal, setShowSubjectModal] = useState(false);
   const [date, setDate] = useState('');
   const [time, setTime] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
@@ -134,9 +137,14 @@ export const CreateSessionScreen: React.FC = () => {
         ? Number.parseInt(customDuration, 10) || 90
         : Number.parseInt(duration ?? '90', 10) || 90;
     const endDate = new Date(startDate.getTime() + durationMin * 60 * 1000);
+
+    // Use customSubject if subject is 'other', otherwise use subject key
+    const finalSubject =
+      subject === 'other' && customSubject.trim() ? customSubject.trim() : subject || null;
+
     const payload = {
       title: title.trim(),
-      subject: subject || null,
+      subject: finalSubject,
       scheduled_start: startDate.toISOString(),
       scheduled_end: endDate.toISOString(),
       creator_id: userId,
@@ -321,13 +329,192 @@ export const CreateSessionScreen: React.FC = () => {
             onChangeText={setTitle}
           />
 
-          <Input
-            label={t('subjectLabel')}
-            labelBold
-            placeholder={t('subjectPlaceholder')}
-            value={subject}
-            onChangeText={setSubject}
-          />
+          <View>
+            <Text
+              variant="h6"
+              style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+            >
+              {t('subjectLabel')}
+            </Text>
+            <Pressable
+              onPress={() => setShowSubjectModal(true)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: theme.colors.background,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: theme.radius.md,
+                paddingHorizontal: theme.spacing[4],
+                paddingVertical: theme.spacing[3],
+                gap: theme.spacing[2],
+              }}
+            >
+              <Text
+                style={{
+                  flex: 1,
+                  color: subject ? theme.colors.text.primary : theme.colors.text.tertiary,
+                }}
+              >
+                {(() => {
+                  if (!subject) return t('subjectPlaceholder');
+                  if (subject === 'other' && customSubject) return customSubject;
+                  const subj = AVAILABLE_SUBJECTS.find((s) => s.key === subject);
+                  if (subj) {
+                    const ns = (subj as any).namespace || 'common';
+                    return t(subj.label, { ns });
+                  }
+                  return subject;
+                })()}
+              </Text>
+              <Text style={{ color: theme.colors.text.tertiary }}>▼</Text>
+            </Pressable>
+          </View>
+
+          <Modal
+            transparent
+            visible={showSubjectModal}
+            onRequestClose={() => setShowSubjectModal(false)}
+            animationType="slide"
+          >
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={{ flex: 1 }}
+            >
+              <Pressable
+                style={{
+                  flex: 1,
+                  backgroundColor: 'rgba(0,0,0,0.5)',
+                  justifyContent: 'flex-end',
+                }}
+                onPress={() => setShowSubjectModal(false)}
+              >
+                <Pressable
+                  style={{
+                    backgroundColor: theme.colors.background,
+                    borderTopLeftRadius: theme.radius.lg,
+                    borderTopRightRadius: theme.radius.lg,
+                    maxHeight: '80%',
+                    paddingTop: theme.spacing[4],
+                    paddingBottom: theme.spacing[8],
+                  }}
+                  onPress={(e) => e.stopPropagation()}
+                >
+                  <Text
+                    variant="h6"
+                    style={{
+                      fontWeight: '700',
+                      paddingHorizontal: theme.spacing[4],
+                      marginBottom: theme.spacing[3],
+                    }}
+                  >
+                    {t('subjectLabel')}
+                  </Text>
+                  <ScrollView
+                    contentContainerStyle={{
+                      paddingBottom: theme.spacing[4],
+                    }}
+                    keyboardShouldPersistTaps="handled"
+                    nestedScrollEnabled
+                  >
+                    {AVAILABLE_SUBJECTS.map((subj, index) => (
+                      <View key={subj.key}>
+                        <Pressable
+                          onPress={() => {
+                            setSubject(subj.key);
+                            if (subj.key !== 'other') {
+                              setShowSubjectModal(false);
+                              setCustomSubject('');
+                            }
+                          }}
+                          style={({ pressed }) => ({
+                            paddingHorizontal: theme.spacing[4],
+                            paddingVertical: theme.spacing[3],
+                            backgroundColor: pressed ? theme.colors.neutral[50] : 'transparent',
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                          })}
+                        >
+                          {subject === subj.key && (
+                            <View
+                              style={{
+                                width: 20,
+                                height: 20,
+                                borderRadius: 10,
+                                backgroundColor: theme.colors.primary[500],
+                                marginRight: theme.spacing[3],
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                              }}
+                            >
+                              <Text style={{ color: 'white', fontSize: 12, fontWeight: '600' }}>
+                                ✓
+                              </Text>
+                            </View>
+                          )}
+                          {subject !== subj.key && (
+                            <View
+                              style={{
+                                width: 20,
+                                height: 20,
+                                borderRadius: 10,
+                                borderWidth: 2,
+                                borderColor: theme.colors.border,
+                                marginRight: theme.spacing[3],
+                              }}
+                            />
+                          )}
+                          <Text
+                            style={{
+                              fontSize: 15,
+                              color: theme.colors.text.primary,
+                              fontWeight: subject === subj.key ? '600' : '400',
+                            }}
+                          >
+                            {(() => {
+                              const ns = (subj as any).namespace || 'common';
+                              return t(subj.label, { ns });
+                            })()}
+                          </Text>
+                        </Pressable>
+                        {index < AVAILABLE_SUBJECTS.length - 1 && (
+                          <View
+                            style={{
+                              height: 1,
+                              backgroundColor: theme.colors.neutral[100],
+                              marginLeft: theme.spacing[4] + 20 + theme.spacing[3],
+                            }}
+                          />
+                        )}
+                      </View>
+                    ))}
+                    {subject === 'other' && (
+                      <View
+                        style={{ marginTop: theme.spacing[4], paddingHorizontal: theme.spacing[4] }}
+                      >
+                        <Input
+                          placeholder={t('customSubjectPlaceholder') || 'Nhập môn học tùy chỉnh'}
+                          value={customSubject}
+                          onChangeText={setCustomSubject}
+                          autoFocus
+                        />
+                        <Button
+                          label={t('select', { ns: 'common' }) || 'Chọn'}
+                          disabled={!customSubject.trim()}
+                          onPress={() => {
+                            if (customSubject.trim()) {
+                              setShowSubjectModal(false);
+                            }
+                          }}
+                          style={{ marginTop: theme.spacing[3] }}
+                        />
+                      </View>
+                    )}
+                  </ScrollView>
+                </Pressable>
+              </Pressable>
+            </KeyboardAvoidingView>
+          </Modal>
 
           <View>
             <Text

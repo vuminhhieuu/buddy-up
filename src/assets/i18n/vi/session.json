@@ -4,6 +4,7 @@
   "namePlaceholder": "Nhập tên buổi học",
   "subjectLabel": "Môn học/Chủ đề",
   "subjectPlaceholder": "Chọn môn học hoặc chủ đề",
+  "customSubjectPlaceholder": "Nhập môn học tùy chỉnh",
   "timeDateTitle": "Thời gian",
   "datePlaceholder": "DD/MM/YYYY",
   "timePlaceholder": "HH:MM",
@@ -91,7 +92,10 @@
       "upcoming": "Sắp diễn ra",
       "accepted": "Đã xác nhận ✓",
       "invited": "Đã mời",
-      "declined": "Đã từ chối ✗"
+      "declined": "Đã từ chối ✗",
+      "thisWeek": "Tuần này",
+      "oneWeekAgo": "1 tuần trước",
+      "weeksAgo": "tuần trước"
     },
     "participantState": {
       "accepted": "Đã xác nhận ✓",

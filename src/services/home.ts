@@ -76,19 +76,21 @@ const logWarning = (scope: string, error: { message: string }) => {
 };
 
 function startOfWeek(date: Date) {
-  const d = new Date(date);
-  const day = d.getDay();
+  // Use UTC math so week boundaries are stable regardless of device timezone
+  const utcMidnight = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  const d = new Date(utcMidnight);
+  const day = d.getUTCDay();
   const diff = (day + MONDAY_OFFSET) % 7; // Monday = start
-  d.setHours(0, 0, 0, 0);
-  d.setDate(d.getDate() - diff);
+  d.setUTCDate(d.getUTCDate() - diff);
+  d.setUTCHours(0, 0, 0, 0);
   return d;
 }
 
 function endOfWeek(date: Date) {
   const start = startOfWeek(date);
   const end = new Date(start);
-  end.setDate(end.getDate() + WEEK_END_OFFSET);
-  end.setHours(23, 59, 59, 999);
+  end.setUTCDate(end.getUTCDate() + WEEK_END_OFFSET);
+  end.setUTCHours(23, 59, 59, 999);
   return end;
 }
 
@@ -147,6 +149,12 @@ const calculateStreakFromSessions = (sessions: SupabaseSession[], now: Date) => 
 const toStartOfDay = (date: Date) => {
   const normalized = new Date(date);
   normalized.setHours(0, 0, 0, 0);
+  return normalized;
+};
+
+const toStartOfDayUTC = (date: Date) => {
+  const normalized = new Date(date);
+  normalized.setUTCHours(0, 0, 0, 0);
   return normalized;
 };
 
@@ -448,8 +456,8 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     return hours;
   }, 0);
 
-  // Count completed sessions based on user's participant status, not session status
-  const completedSessions = userWeekSessions.filter((session) => {
+  // Count all completed sessions (recent window) based on user's participant status
+  const completedSessions = userRecentSessions.filter((session) => {
     const participants = participantsMap.get(session.id) || [];
     const userParticipant = participants.find((p) => p.user_id === userId);
     return userParticipant?.status === 'completed';
@@ -470,8 +478,8 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
     return session.creator_id === userId || userParticipant?.status === 'accepted';
   }).length;
 
-  const normalizedWeekStart = toStartOfDay(weekStart);
-  const normalizedNow = toStartOfDay(now);
+  const normalizedWeekStart = toStartOfDayUTC(weekStart);
+  const normalizedNow = toStartOfDayUTC(now);
   const daysIntoWeek = Math.min(
     WEEKLY_STREAK_GOAL,
     Math.floor((normalizedNow.getTime() - normalizedWeekStart.getTime()) / MS_PER_DAY) + 1,
