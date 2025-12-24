@@ -70,36 +70,59 @@ export async function fetchStudyStats(userId: string): Promise<StudyStats> {
     const completedSessions = sessionIds.length;
     let totalHours = 0;
 
+    // Count sessions per day for this week only
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7)); // Monday
+    startOfWeek.setHours(0, 0, 0, 0);
+    const endOfWeek = new Date(startOfWeek);
+    endOfWeek.setDate(startOfWeek.getDate() + 7);
+
+    const sessionCountMap = new Map<string, number>();
+    WEEK_DAYS.forEach((day) => sessionCountMap.set(day, 0));
+
+    let daysWithSessions = 0;
+    const daysWithSessionsSet = new Set<string>();
+    let completedSessionsThisWeek = 0;
+
     data.forEach((session) => {
       const hours = calculateSessionHours(
         session.scheduled_start,
         session.scheduled_end,
         session.status,
       );
-      totalHours += hours;
       if (!session.scheduled_start) return;
 
       const startDate = new Date(session.scheduled_start);
       if (isNaN(startDate.getTime())) return;
 
+      // Only count sessions from this week
+      if (startDate < startOfWeek || startDate >= endOfWeek) return;
+
+      completedSessionsThisWeek++;
+      totalHours += hours;
+
       const weekday = startDate.getDay();
       const mappedDay = WEEK_DAYS[(weekday + MONDAY_OFFSET) % WEEK_DAYS.length];
-      activityMap.set(mappedDay, safeNumber(activityMap.get(mappedDay)) + hours);
-    });
+      const currentCount = safeNumber(sessionCountMap.get(mappedDay));
+      sessionCountMap.set(mappedDay, currentCount + 1);
 
-    const activityEntries = Array.from(activityMap.entries());
-    const maxActivity = Math.max(...activityEntries.map(([, value]) => value), 1);
+      if (!daysWithSessionsSet.has(mappedDay)) {
+        daysWithSessionsSet.add(mappedDay);
+        daysWithSessions++;
+      }
+    });
 
     return {
       weeklyActivity: WEEK_DAYS.map((day) => ({
         day,
-        value: Math.min(
-          PROGRESS_MAX_PERCENTAGE,
-          Math.round((safeNumber(activityMap.get(day)) / maxActivity) * PROGRESS_MAX_PERCENTAGE),
-        ),
+        value: safeNumber(sessionCountMap.get(day)),
       })),
-      completedSessions,
-      averagePerDay: `${(totalHours / DAYS_IN_WEEK).toFixed(1)}${TIME_FORMAT_HOURS}`,
+      completedSessions: completedSessionsThisWeek,
+      averagePerDay:
+        daysWithSessions > 0
+          ? `${(totalHours / daysWithSessions).toFixed(1)}${TIME_FORMAT_HOURS}`
+          : `0${TIME_FORMAT_HOURS}`,
     };
   } catch (error) {
     logger.warn('fetchStudyStats', 'Failed:', error);

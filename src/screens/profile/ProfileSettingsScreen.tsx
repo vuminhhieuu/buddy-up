@@ -14,8 +14,6 @@ import { fetchFriends, type Friend } from '../../services/connections';
 
 const SUPPORT_EMAIL = '22520451@gm.uit.edu.vn';
 
-const SUPPORT_EMAIL = '22520451@gm.uit.edu.vn';
-
 type NavigationProp = NativeStackNavigationProp<ProfileStackParamList, 'ProfileSettings'>;
 type RouteProps = RouteProp<ProfileStackParamList, 'ProfileSettings'>;
 
