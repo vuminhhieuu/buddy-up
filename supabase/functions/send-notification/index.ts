@@ -87,12 +87,8 @@ serve(async (req) => {
       );
     }
 
-    if (!tokens || tokens.length === 0) {
-      return new Response(
-        JSON.stringify({ message: 'No push tokens found', sent: 0 }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
-      );
-    }
+    // Even if no push tokens, we should still save in-app notifications
+    // So we continue processing instead of returning early
 
     // Check notification preferences (service role)
     const { data: preferences } = await (supabaseService ?? supabase)
@@ -119,45 +115,44 @@ serve(async (req) => {
           return pref.buddy_enabled;
         case 'session_reminder':
         case 'session_invitation':
+        case 'session_cancelled':
           return pref.session_enabled;
         default:
           return true;
       }
     });
 
-    if (enabledTokens.length === 0) {
-      return new Response(
-        JSON.stringify({ message: 'No enabled tokens found', sent: 0 }),
-        { status: 200, headers: { 'Content-Type': 'application/json', ...corsHeaders } },
-      );
+    // Prepare push notifications (even if empty, we'll still save in-app notifications)
+    let result: any = { data: [] };
+    
+    if (enabledTokens.length > 0) {
+      // Prepare notifications
+      const notifications = enabledTokens.map((token) => {
+        const pref = preferencesMap.get(token.user_id);
+        return {
+          to: token.token,
+          sound: pref?.sound_enabled !== false ? sound : undefined,
+          title,
+          body,
+          data,
+          priority: 'high' as const,
+          channelId: notificationType === 'chat_message' ? 'chat' : 'default',
+        };
+      });
+
+      // Send to Expo Push Notification Service
+      const response = await fetch(EXPO_PUSH_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          'Accept-Encoding': 'gzip, deflate',
+        },
+        body: JSON.stringify(notifications),
+      });
+
+      result = await response.json();
     }
-
-    // Prepare notifications
-    const notifications = enabledTokens.map((token) => {
-      const pref = preferencesMap.get(token.user_id);
-      return {
-        to: token.token,
-        sound: pref?.sound_enabled !== false ? sound : undefined,
-        title,
-        body,
-        data,
-        priority: 'high' as const,
-        channelId: notificationType === 'chat_message' ? 'chat' : 'default',
-      };
-    });
-
-    // Send to Expo Push Notification Service
-    const response = await fetch(EXPO_PUSH_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'Accept-Encoding': 'gzip, deflate',
-      },
-      body: JSON.stringify(notifications),
-    });
-
-    const result = await response.json();
 
     // Cleanup invalid tokens if any
     if (Array.isArray(result?.data) && supabaseService) {
@@ -175,6 +170,34 @@ serve(async (req) => {
               .eq('token', tokenEntry.token);
           }
         }
+      }
+    }
+
+    // Save in-app notifications to database for all users (not just those with push tokens)
+    // This ensures users can see notifications in-app even if they don't have push tokens
+    if (supabaseService) {
+      try {
+        const notificationRecords = userIds.map((userId: string) => ({
+          user_id: userId,
+          type: notificationType,
+          title,
+          body,
+          data: data,
+          read: false,
+        }));
+
+        const { error: insertError } = await supabaseService
+          .from('notifications')
+          .insert(notificationRecords);
+
+        if (insertError) {
+          console.error('Failed to save in-app notifications:', insertError);
+        } else {
+          console.log(`Saved ${notificationRecords.length} in-app notifications to database`);
+        }
+      } catch (dbError) {
+        console.error('Error saving in-app notifications:', dbError);
+        // Don't fail the request if saving to DB fails
       }
     }
 

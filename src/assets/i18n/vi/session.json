@@ -57,6 +57,14 @@
     "5": "Thứ Sáu",
     "6": "Thứ Bảy"
   },
+  "edit": {
+    "title": "Chỉnh sửa buổi học",
+    "updateSuccess": "Cập nhật buổi học thành công",
+    "updateFailed": "Không thể cập nhật buổi học",
+    "updateUnexpected": "Đã xảy ra lỗi khi cập nhật buổi học"
+  },
+  "durationValidation": "Thời lượng phải từ 15 đến 480 phút",
+  "selectLabel": "Chọn",
   "detail": {
     "title": "Chi tiết buổi học",
     "sessionIdNotFound": "Không tìm thấy ID buổi học",
@@ -71,6 +79,9 @@
     "cancelYes": "Hủy buổi học",
     "cancelFailed": "Không thể hủy buổi học",
     "cancelSuccess": "Đã hủy buổi học",
+    "cancelledBy": "đã bị hủy bởi người tạo",
+    "cancelNotificationTitle": "Buổi học đã bị hủy",
+    "sessionDefault": "Buổi học",
     "markCompleteFailed": "Không thể đánh dấu hoàn thành",
     "markCompleteSuccess": "Buổi học đã được đánh dấu hoàn thành! +50 XP",
     "loading": "Đang tải...",
@@ -85,6 +96,12 @@
     "confirmed": "Đã xác nhận ✓",
     "edit": "Chỉnh sửa",
     "cancel": "Hủy buổi học",
+    "cancelConfirm": {
+      "title": "Hủy buổi học",
+      "message": "Bạn có chắc chắn muốn hủy buổi học này?",
+      "no": "Không",
+      "yes": "Hủy buổi học"
+    },
     "status": {
       "cancelled": "Đã hủy",
       "completed": "Đã kết thúc",
@@ -127,6 +144,14 @@
       "upcoming": "Sắp diễn ra"
     },
     "defaultTitle": "Buổi học"
+  },
+  "edit": {
+    "title": "Chỉnh sửa buổi học",
+    "updateButton": "Cập nhật buổi học",
+    "updateSuccess": "Đã cập nhật buổi học thành công",
+    "updateFailed": "Không thể cập nhật buổi học. Vui lòng thử lại.",
+    "updateUnexpected": "Đã xảy ra lỗi khi cập nhật buổi học. Vui lòng thử lại.",
+    "onlyCreatorCanEdit": "Chỉ người tạo mới có thể chỉnh sửa buổi học này"
   },
   "completion": {
     "title": "Buổi học hoàn thành!",

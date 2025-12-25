@@ -10,6 +10,7 @@ export enum NotificationType {
   BUDDY_REJECTED = 'buddy_rejected',
   SESSION_REMINDER = 'session_reminder',
   SESSION_INVITATION = 'session_invitation',
+  SESSION_CANCELLED = 'session_cancelled',
   ACHIEVEMENT_UNLOCKED = 'achievement_unlocked',
 }
 

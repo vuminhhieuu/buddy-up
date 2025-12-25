@@ -1,5 +1,6 @@
 import { supabase } from '../../config/supabase';
 import { logger } from '../../utils/logger';
+import { NotificationType } from '../../types/notifications';
 
 export interface SessionParticipant {
   user_id: string;
@@ -166,6 +167,71 @@ export async function updateSessionStatus(
 export async function deleteSession(sessionId: string): Promise<{ error: any }> {
   try {
     logger.debug('deleteSession', 'Deleting session and related data:', sessionId);
+
+    // Fetch session details and accepted participants before deleting
+    const { data: session, error: sessionFetchError } = await supabase
+      .from('study_sessions')
+      .select('title, subject')
+      .eq('id', sessionId)
+      .single();
+
+    if (sessionFetchError) {
+      logger.error('deleteSession', 'Error fetching session:', sessionFetchError);
+    }
+
+    const { data: participants, error: participantsFetchError } = await supabase
+      .from('study_session_participants')
+      .select('user_id, status')
+      .eq('session_id', sessionId)
+      .eq('status', 'accepted');
+
+    if (participantsFetchError) {
+      logger.error('deleteSession', 'Error fetching participants:', participantsFetchError);
+    }
+
+    logger.debug('deleteSession', 'Found participants:', participants?.length || 0);
+
+    // Send notifications to accepted participants about session cancellation
+    if (participants && participants.length > 0) {
+      try {
+        const acceptedUserIds = participants.map((p: any) => p.user_id);
+        const sessionTitle = session?.title || session?.subject || 'Session';
+
+        logger.debug('deleteSession', 'Sending notifications to:', acceptedUserIds);
+
+        // Dynamically import to avoid circular dependencies
+        const { sendNotification } = await import('../notifications/sendNotification');
+
+        // Send push notifications
+        const notificationResult = await sendNotification({
+          type: NotificationType.SESSION_CANCELLED,
+          userIds: acceptedUserIds,
+          title: 'Session cancelled', // Will be localized on client side
+          body: `"${sessionTitle}" was cancelled by the creator`, // Will be localized on client side
+          data: {
+            type: NotificationType.SESSION_CANCELLED,
+            sessionId,
+            sessionTitle,
+          },
+        });
+
+        if (notificationResult.success) {
+          logger.debug(
+            'deleteSession',
+            'Sent cancellation notifications to participants:',
+            notificationResult.sent || 0,
+          );
+          // Note: In-app notifications are now saved automatically by the edge function
+        } else {
+          logger.warn('deleteSession', 'Failed to send notifications:', notificationResult.error);
+        }
+      } catch (notifError) {
+        logger.error('deleteSession', 'Failed to send notifications:', notifError);
+        // Continue with deletion even if notifications fail
+      }
+    } else {
+      logger.debug('deleteSession', 'No accepted participants to notify');
+    }
 
     // First, delete all participants from study_session_participants
     const { error: participantsError } = await supabase

@@ -84,7 +84,7 @@ export const HeroProgressCard: React.FC<HeroProgressCardProps> = ({
               },
             ]}
           >
-            {streakDays} ngày
+            {streakDays} {t('hero.dayLabel')}
           </Text>
           <Animated.Text
             style={[

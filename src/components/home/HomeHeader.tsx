@@ -86,7 +86,7 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
         accessibilityLabel={t('header.notifications')}
       >
         <Bell size={20} color={theme.colors.text.secondary} strokeWidth={2} />
-        {notificationsCount > 0 ? (
+        {notificationsCount > 0 && (
           <View
             style={[
               styles.badge,
@@ -100,16 +100,6 @@ export const HomeHeader: React.FC<HomeHeaderProps> = ({
               {notificationsCount > 99 ? '99+' : notificationsCount}
             </Text>
           </View>
-        ) : (
-          <View
-            style={[
-              styles.dot,
-              {
-                backgroundColor: theme.colors.semantic.error,
-                borderColor: theme.colors.surface,
-              },
-            ]}
-          />
         )}
       </Pressable>
     </View>

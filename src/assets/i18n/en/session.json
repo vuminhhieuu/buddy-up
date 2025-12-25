@@ -57,6 +57,14 @@
     "5": "Friday",
     "6": "Saturday"
   },
+  "edit": {
+    "title": "Edit Session",
+    "updateSuccess": "Session updated successfully",
+    "updateFailed": "Failed to update session",
+    "updateUnexpected": "An unexpected error occurred updating the session"
+  },
+  "durationValidation": "Duration must be between 15 and 480 minutes",
+  "selectLabel": "Select",
   "detail": {
     "title": "Session Details",
     "sessionIdNotFound": "Session ID not found",
@@ -71,6 +79,9 @@
     "cancelYes": "Cancel Session",
     "cancelFailed": "Cannot cancel session",
     "cancelSuccess": "Session cancelled",
+    "cancelledBy": "was cancelled by the creator",
+    "cancelNotificationTitle": "Session was cancelled",
+    "sessionDefault": "Session",
     "markCompleteFailed": "Cannot mark as completed",
     "markCompleteSuccess": "Session marked as completed! +50 XP",
     "loading": "Loading...",
@@ -85,6 +96,12 @@
     "confirmed": "Confirmed ✓",
     "edit": "Edit",
     "cancel": "Cancel Session",
+    "cancelConfirm": {
+      "title": "Cancel Session",
+      "message": "Are you sure you want to cancel this session?",
+      "no": "No",
+      "yes": "Cancel Session"
+    },
     "status": {
       "cancelled": "Cancelled",
       "completed": "Completed",
@@ -127,6 +144,14 @@
       "upcoming": "Upcoming"
     },
     "defaultTitle": "Session"
+  },
+  "edit": {
+    "title": "Edit Session",
+    "updateButton": "Update Session",
+    "updateSuccess": "Session updated successfully",
+    "updateFailed": "Cannot update session. Please try again.",
+    "updateUnexpected": "An unexpected error occurred updating the session. Please try again.",
+    "onlyCreatorCanEdit": "Only the creator can edit this session"
   },
   "completion": {
     "title": "Session Completed!",
