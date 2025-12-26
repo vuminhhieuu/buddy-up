@@ -1,8 +1,12 @@
 import React, { useMemo, useState } from 'react';
 import { View, Pressable, Dimensions } from 'react-native';
-import { ScreenContainer, Text, ProfileSetupNextButton, Spacer } from '../../../components/ui';
-import { SkipButton } from '../../../components/ui/SkipButton/SkipButton';
-import { ProcessHeader } from '../../../components/ui';
+import {
+  ScreenContainer,
+  Text,
+  ProfileSetupNextButton,
+  Spacer,
+  ProfileSetupHeader,
+} from '../../../components/ui';
 import { useTheme } from '../../../styles';
 import { useTranslation } from 'react-i18next';
 import { Formik } from 'formik';
@@ -11,7 +15,7 @@ import { useAppDispatch, useAppSelector } from '../../../store/hooks';
 import { saveStepForUser } from '../../../lib/supabaseHelpers';
 import { setProfileData } from '../../../store/slices/authSlice';
 import { logger } from '../../../utils/logger';
-import { Sun, CloudSun, Moon, PartyPopper, Zap, ArrowLeft } from 'lucide-react-native';
+import { Sun, CloudSun, Moon, PartyPopper, Zap } from 'lucide-react-native';
 import { BASE_HORIZONTAL_PADDING } from '../../../constants/layout';
 
 export type ProfileSetupStep2ScreenProps = {
@@ -33,37 +37,12 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
   const [submitting, setSubmitting] = useState(false);
 
   const styles = useMemo(() => {
-    const baseHorizontalPadding = BASE_HORIZONTAL_PADDING + theme.spacing[4];
+    const baseHorizontalPadding = BASE_HORIZONTAL_PADDING;
     const containerWidth = Dimensions.get('window').width - baseHorizontalPadding * 2;
     return {
       header: {
-        paddingHorizontal: theme.spacing[4],
+        paddingHorizontal: 0,
         paddingVertical: theme.spacing[2],
-      },
-      backButton: {
-        width: 35,
-        height: 35,
-        borderRadius: theme.radius.md,
-        alignItems: 'center' as const,
-        justifyContent: 'center' as const,
-        backgroundColor: theme.colors.background,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        marginBottom: theme.spacing[2],
-        alignSelf: 'flex-start' as const,
-      },
-      progressBarContainer: {
-        height: 4,
-        backgroundColor: theme.colors.border,
-        borderRadius: 2,
-        marginTop: theme.spacing[1],
-        overflow: 'hidden' as const,
-      },
-      progressBar: {
-        height: 4,
-        width: containerWidth * 0.5,
-        backgroundColor: theme.colors.primary[500],
-        borderRadius: 2,
       },
       grid: {
         flexDirection: 'row' as const,
@@ -127,10 +106,6 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
       footer: {
         paddingBottom: theme.spacing[4],
       },
-      skipButton: {
-        alignSelf: 'flex-end' as const,
-        paddingVertical: theme.spacing[2],
-      },
     };
   }, [theme]);
 
@@ -173,45 +148,18 @@ export const ProfileSetupStep2Screen: React.FC<ProfileSetupStep2ScreenProps> = (
   return (
     <ScreenContainer scroll>
       <View style={{ flex: 1 }}>
-        <ProcessHeader
-          leftText={t('profileSetup.step', { current: 2 })}
-          rightText={t('profileSetup.headerTitle')}
+        <ProfileSetupHeader
+          step={2}
           progress={0.5}
-          leftColor={theme.colors.primary[500]}
-          rightColor={theme.colors.text.tertiary}
-          leftFontSize={theme.typography.scale.sm}
-          rightFontSize={theme.typography.scale.sm}
-          leftFontWeight="700"
-          rightFontWeight="normal"
-          progressBarColor={theme.colors.primary[500]}
-          progressBarBgColor={theme.colors.border}
+          rightText={t('profileSetup.headerTitle')}
+          onBack={onBack}
+          showSkipButton={true}
           containerStyle={styles.header}
-        >
-          <View
-            style={{
-              width: '100%',
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t('common.back')}
-              onPress={onBack || (() => {})}
-              style={styles.backButton}
-            >
-              <ArrowLeft size={18} color={theme.colors.text.primary} />
-            </Pressable>
-
-            <SkipButton style={styles.skipButton} />
-          </View>
-        </ProcessHeader>
+        />
 
         <View
           style={{
             flex: 1,
-            paddingHorizontal: theme.spacing[4],
             paddingVertical: theme.spacing[3],
           }}
         >

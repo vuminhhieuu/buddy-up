@@ -8,15 +8,49 @@ import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import type { MainTabParamList } from '../../../navigation/MainTabsNavigator';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer/ScreenContainer';
 import { Text } from '../../../components/ui/Text/Text';
-import { ProcessHeader } from '../../../components/ui/ProcessHeader/ProcessHeader';
+import { ProfileSetupHeader } from '../../../components/ui/ProfileSetupHeader/ProfileSetupHeader';
 import { useTheme } from '../../../styles/ThemeProvider';
 import { setProfileSetupInProgress } from '../../../store/slices/authSlice';
-import { ArrowLeft, User } from 'lucide-react-native';
+import { User } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { NAVIGATION_DELAY_MS } from '../../../constants/profileSetup';
+import { CATEGORY_GROUPS } from './ProfileSetupStep3Screen';
 
 export type ProfileSetupStep4ScreenProps = {
   onBack?: () => void;
+};
+
+/**
+ * Formats a subject category key into a display name
+ * @param categoryKey - The category key (e.g., 'english', 'custom_math', etc.)
+ * @param t - Translation function
+ * @returns Formatted display name
+ */
+const formatSubjectDisplayName = (categoryKey: string, t: (key: string) => string): string => {
+  if (typeof categoryKey !== 'string') return String(categoryKey);
+
+  // Check if it's a custom subject (starts with 'custom_')
+  if (categoryKey.startsWith('custom_')) {
+    // Extract and format display name from custom key
+    return categoryKey
+      .replace(/^custom_/, '')
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+  }
+
+  // Get all predefined keys from CATEGORY_GROUPS
+  const allPredefinedKeys = CATEGORY_GROUPS.flatMap((group) => group.options.map((opt) => opt.key));
+
+  // Check if it's a predefined category
+  if (allPredefinedKeys.includes(categoryKey)) {
+    const labelKey = `profileSetup.category${categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1)}`;
+    return t(labelKey, {
+      defaultValue: categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1),
+    });
+  }
+
+  // Fallback: capitalize first letter
+  return categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1);
 };
 
 const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBack }) => {
@@ -31,7 +65,7 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
   const { theme } = useTheme();
   const styles = {
     header: {
-      paddingHorizontal: theme.spacing[4],
+      paddingHorizontal: 0,
       paddingVertical: theme.spacing[2],
     },
     center: {
@@ -94,18 +128,12 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
 
   return (
     <ScreenContainer>
-      <ProcessHeader
-        leftText={t('profileSetup.step', { current: 4 })}
-        rightText={''}
-        leftColor={theme.colors.primary[500]}
-        rightColor={theme.colors.text.tertiary}
-        leftFontSize={theme.typography.scale.sm}
-        rightFontSize={theme.typography.scale.sm}
-        leftFontWeight="700"
-        rightFontWeight="normal"
+      <ProfileSetupHeader
+        step={4}
         progress={1}
-        progressBarColor={theme.colors.primary[500]}
-        progressBarBgColor={theme.colors.border}
+        rightText=""
+        onBack={onBack}
+        showSkipButton={false}
         containerStyle={styles.header}
       />
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
@@ -238,9 +266,7 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
                     }}
                   >
                     <Text variant="caption" style={{ color: theme.colors.primary[500] }}>
-                      {typeof time === 'string'
-                        ? time.charAt(0).toUpperCase() + time.slice(1)
-                        : time}
+                      {typeof time === 'string' ? t(`time.${time}`, { ns: 'common' }) : time}
                     </Text>
                   </View>
                 ))
@@ -273,7 +299,7 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
                     }}
                   >
                     <Text variant="caption" style={{ color: theme.colors.primary[500] }}>
-                      {typeof cat === 'string' ? cat.charAt(0).toUpperCase() + cat.slice(1) : cat}
+                      {formatSubjectDisplayName(cat, t)}
                     </Text>
                   </View>
                 ))

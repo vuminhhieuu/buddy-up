@@ -9,6 +9,7 @@ import {
   ProfileSetupNextButton,
   Input,
   AvatarPickerSection,
+  ProfileSetupHeader,
 } from '../../../components/ui';
 import { useTheme } from '../../../styles';
 import { profileStep1Schema } from '../../../utils/validation';
@@ -42,37 +43,12 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
   };
 
   const styles = useMemo(() => {
-    const containerWidth = Dimensions.get('window').width - theme.spacing[8];
     return {
       header: {
-        paddingHorizontal: theme.spacing[4],
+        paddingHorizontal: 0,
         paddingVertical: theme.spacing[2],
-      },
-      skipButton: {
-        alignSelf: 'flex-end' as const,
-        paddingVertical: theme.spacing[2],
-      },
-      titleRow: {
-        flexDirection: 'row' as const,
-        justifyContent: 'space-between' as const,
-        alignItems: 'center' as const,
-        marginBottom: theme.spacing[2],
-      },
-      progressBarContainer: {
-        height: 4,
-        backgroundColor: theme.colors.border,
-        borderRadius: 2,
-        marginTop: theme.spacing[1],
-        overflow: 'hidden' as const,
-      },
-      progressBar: {
-        height: 4,
-        width: containerWidth * 0.25,
-        backgroundColor: theme.colors.primary[500],
-        borderRadius: 2,
       },
       content: {
-        paddingHorizontal: theme.spacing[4],
         paddingVertical: theme.spacing[6],
       },
     };
@@ -87,36 +63,18 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
       >
         <View style={{ flex: 1 }}>
           {/* Header */}
-          <View style={styles.header}>
-            {/* Title Row */}
-            <View style={styles.titleRow}>
-              <Text
-                variant="body"
-                color="primary"
-                style={{
-                  fontWeight: '700' as const,
-                  fontSize: theme.typography.scale.sm,
-                  color: theme.colors.primary[500],
-                }}
-              >
-                {t('profileSetup.step', { current: 1 })}
-              </Text>
-              <Text variant="body" color="tertiary" style={{ fontSize: theme.typography.scale.sm }}>
-                {t('profileSetup.basicInfo')}
-              </Text>
-            </View>
-
-            {/* Progress Bar */}
-            <View style={styles.progressBarContainer}>
-              <View style={styles.progressBar} />
-            </View>
-          </View>
+          <ProfileSetupHeader
+            step={1}
+            progress={0.25}
+            rightText={t('profileSetup.basicInfo')}
+            showSkipButton={true}
+            containerStyle={styles.header}
+          />
 
           {/* Content - Fixed */}
           <View
             style={{
               flex: 1,
-              paddingHorizontal: theme.spacing[4],
               paddingVertical: theme.spacing[3],
               justifyContent: 'space-between',
             }}
