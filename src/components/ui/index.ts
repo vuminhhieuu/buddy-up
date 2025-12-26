@@ -31,6 +31,8 @@ export type { ProcessHeaderProps } from './ProcessHeader/ProcessHeader';
 export { NextButton } from './NextButton/NextButton';
 export { ProfileSetupNextButton } from './ProfileSetupNextButton/ProfileSetupNextButton';
 export type { ProfileSetupNextButtonProps } from './ProfileSetupNextButton/ProfileSetupNextButton';
+export { ProfileSetupHeader } from './ProfileSetupHeader/ProfileSetupHeader';
+export type { ProfileSetupHeaderProps } from './ProfileSetupHeader/ProfileSetupHeader';
 export { ProgressBar } from './ProgressBar/ProgressBar';
 export type { ProgressBarProps, ProgressBarVariant } from './ProgressBar/ProgressBar';
 export { StatCard } from './StatCard/StatCard';

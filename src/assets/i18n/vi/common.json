@@ -110,6 +110,9 @@
     "noAvailableTimes": "Chưa chọn thời gian rảnh",
     "interestedSubjectsLabel": "MÔN HỌC QUAN TÂM",
     "noSubjectsSelected": "Chưa chọn môn học quan tâm",
+    "customSubjects": "Môn học tùy chỉnh",
+    "addCustomSubject": "Thêm môn học tùy chỉnh",
+    "customSubjectPlaceholder": "Nhập tên môn học của bạn",
     "findBuddyButton": "Tìm bạn học ngay",
     "exploreAppLink": "Khám phá ứng dụng trước",
     "noNameSet": "Chưa đặt tên",
@@ -136,6 +139,7 @@
     "confirmDelete": "Hành động này không thể hoàn tác",
     "ok": "OK",
     "cancel": "Hủy",
+    "add": "Thêm",
     "delete": "Xóa",
     "success": "Thành công"
   },

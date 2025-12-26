@@ -111,6 +111,9 @@
     "noAvailableTimes": "No available times selected",
     "interestedSubjectsLabel": "INTERESTED SUBJECTS",
     "noSubjectsSelected": "No subjects selected",
+    "customSubjects": "Custom Subjects",
+    "addCustomSubject": "Add Custom Subject",
+    "customSubjectPlaceholder": "Enter your subject name",
     "findBuddyButton": "Find a study buddy now",
     "exploreAppLink": "Explore the app first",
     "noNameSet": "No name set",
@@ -137,6 +140,7 @@
     "confirmDelete": "This action cannot be undone",
     "ok": "OK",
     "cancel": "Cancel",
+    "add": "Add",
     "delete": "Delete",
     "success": "Success"
   },
