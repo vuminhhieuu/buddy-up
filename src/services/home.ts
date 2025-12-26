@@ -251,7 +251,9 @@ const isRelevantSession = (
   if (session.creator_id === userId) return true;
   const participants = participantsMap.get(session.id) || [];
   return participants.some(
-    (participant) => participant.user_id === userId && participant.status === 'accepted',
+    (participant) =>
+      participant.user_id === userId &&
+      (participant.status === 'accepted' || participant.status === 'completed'),
   );
 };
 
@@ -474,8 +476,12 @@ export async function fetchHomeDashboard(userId: string): Promise<HomeDashboardD
   const sessionGoal = allUserSessions.filter((session) => {
     const participants = participantsMap.get(session.id) || [];
     const userParticipant = participants.find((p) => p.user_id === userId);
-    // Count if user is creator or has accepted
-    return session.creator_id === userId || userParticipant?.status === 'accepted';
+    // Count if user is creator or has accepted/completed
+    return (
+      session.creator_id === userId ||
+      userParticipant?.status === 'accepted' ||
+      userParticipant?.status === 'completed'
+    );
   }).length;
 
   const normalizedWeekStart = toStartOfDayUTC(weekStart);

@@ -26,9 +26,6 @@ export const AVAILABLE_SUBJECTS = [
   { key: 'categoryKorean', label: 'profileSetup.categoryKorean' },
   { key: 'categoryChinese', label: 'profileSetup.categoryChinese' },
 
-  // Languages from buddy namespace
-  { key: 'japanese', label: 'quickFilters.japanese', namespace: 'buddy' },
-
   // Programming languages
   { key: 'categoryJavaScript', label: 'profileSetup.categoryJavaScript' },
   { key: 'categoryPython', label: 'profileSetup.categoryPython' },

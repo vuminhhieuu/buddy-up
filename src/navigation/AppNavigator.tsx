@@ -8,6 +8,7 @@ import { OnboardingNavigator } from './OnboardingNavigator';
 import { CreateSessionScreen } from '../screens/session/CreateSessionScreen';
 import CreateSessionSuccessScreen from '../screens/session/CreateSessionSuccessScreen';
 import SessionDetailScreen from '../screens/session/SessionDetailScreen';
+import EditSessionScreen from '../screens/session/EditSessionScreen';
 import { CreateGroupTypeScreen } from '../screens/groups/CreateGroupTypeScreen';
 import { CreatePublicGroupScreen } from '../screens/groups/CreatePublicGroupScreen';
 import { CreateGroupSuccessScreen } from '../screens/groups/CreateGroupSuccessScreen';
@@ -22,6 +23,7 @@ export type RootStackParamList = {
   Auth: { profileSetupInProgress: boolean };
   MainTabs: { screen?: string } | undefined;
   CreateSession: undefined;
+  EditSession: { sessionId: string };
   CreateSessionSuccess:
     | {
         sessionTitle?: string;
@@ -83,6 +85,7 @@ export const AppNavigator: React.FC = () => {
           <>
             <Stack.Screen name="MainTabs" component={MainTabsNavigator} />
             <Stack.Screen name="CreateSession" component={CreateSessionScreen} />
+            <Stack.Screen name="EditSession" component={EditSessionScreen} />
             <Stack.Screen name="CreateSessionSuccess" component={CreateSessionSuccessScreen} />
             <Stack.Screen name="SessionDetail" component={SessionDetailScreen} />
             <Stack.Screen

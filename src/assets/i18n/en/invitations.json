@@ -6,5 +6,6 @@
   "accepted": "Invitation accepted!",
   "declined": "Invitation declined!",
   "noInvitations": "No notifications",
-  "invitationText": "You have an invitation to join <1>{{title}}</1> from <3>{{creatorName}}</3>"
+  "invitationTitle": "Session Invitation",
+  "invitationText": "You have an invitation to join '{{title}}' from {{creatorName}}"
 }

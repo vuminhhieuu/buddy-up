@@ -13,6 +13,7 @@
   "hero": {
     "streakLabel": "Study streak",
     "weekLabel": "this week",
+    "dayLabel": "day",
     "encouragement": "Awesome! Keep up the momentum 💪"
   },
   "stats": {

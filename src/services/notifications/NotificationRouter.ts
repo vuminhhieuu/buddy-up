@@ -35,6 +35,7 @@ export class NotificationRouter {
           break;
         case 'session_reminder':
         case 'session_invitation':
+        case 'session_cancelled':
           this.routeToSession(data);
           break;
         case 'achievement_unlocked':

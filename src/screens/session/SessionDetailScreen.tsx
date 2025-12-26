@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, Pressable, Linking, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../styles';
 import { Text } from '../../components/ui/Text/Text';
 import { Button } from '../../components/ui/Button/Button';
 import { Avatar } from '../../components/ui/Avatar/Avatar';
-import { useNavigation, useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import {
   Calendar,
   Clock,
@@ -55,6 +55,14 @@ export const SessionDetailScreen: React.FC = () => {
     loadSession();
   }, [sessionId]);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      if (sessionId) {
+        loadSession();
+      }
+    }, [sessionId, loadSession]),
+  );
+
   useEffect(() => {
     if (!session || !userId) return;
 
@@ -81,7 +89,7 @@ export const SessionDetailScreen: React.FC = () => {
     }
   }, [session, userId]);
 
-  const loadSession = async () => {
+  const loadSession = useCallback(async () => {
     if (!sessionId) {
       showErrorToast(t('detail.toast.sessionNotFound'));
       showErrorToast(t('detail.sessionIdNotFound'));
@@ -101,7 +109,7 @@ export const SessionDetailScreen: React.FC = () => {
 
     setSession(data);
     setLoading(false);
-  };
+  }, [sessionId, t, navigation]);
 
   const handleCopyLink = () => {
     // Copy to clipboard
@@ -139,7 +147,7 @@ export const SessionDetailScreen: React.FC = () => {
   };
 
   const handleEdit = () => {
-    showSuccessToast(t('detail.editComingSoon'));
+    navigation.navigate('EditSession', { sessionId });
   };
 
   const handleClose = async () => {
@@ -605,47 +613,82 @@ export const SessionDetailScreen: React.FC = () => {
             {/* For ongoing/completed/cancelled, do not show countdown/remaining */}
           </View>
 
-          {/* Google Meet Card */}
-          <View
-            style={[
-              styles.infoCard,
-              { backgroundColor: theme.colors.surface, marginTop: theme.spacing[4] },
-            ]}
-          >
-            <Text variant="h6" style={{ fontWeight: '700' }}>
-              {t('detail.googleMeet')}
-            </Text>
-
-            <Pressable
-              onPress={handleCopyLink}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                backgroundColor: '#F0F9FF',
-                padding: theme.spacing[3],
-                borderRadius: theme.radius.md,
-                marginTop: theme.spacing[4],
-              }}
+          {/* Location Card - Google Meet for online, Offline info for offline */}
+          {session.location ? (
+            <View
+              style={[
+                styles.infoCard,
+                { backgroundColor: theme.colors.surface, marginTop: theme.spacing[4] },
+              ]}
             >
-              <LinkIcon size={18} color={theme.colors.primary[500]} />
-              <Text
-                variant="body"
-                style={{ marginLeft: theme.spacing[2], color: theme.colors.primary[500], flex: 1 }}
-                numberOfLines={1}
-              >
-                {session.location}
+              <Text variant="h6" style={{ fontWeight: '700' }}>
+                {t('detail.googleMeet')}
               </Text>
-              <Copy size={18} color={theme.colors.primary[500]} />
-            </Pressable>
 
-            <Button
-              label={t('detail.joinMeeting')}
-              onPress={handleJoinMeeting}
-              variant="primary"
-              size="lg"
-              style={{ marginTop: theme.spacing[4] }}
-            />
-          </View>
+              <Pressable
+                onPress={handleCopyLink}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: '#F0F9FF',
+                  padding: theme.spacing[3],
+                  borderRadius: theme.radius.md,
+                  marginTop: theme.spacing[4],
+                }}
+              >
+                <LinkIcon size={18} color={theme.colors.primary[500]} />
+                <Text
+                  variant="body"
+                  style={{
+                    marginLeft: theme.spacing[2],
+                    color: theme.colors.primary[500],
+                    flex: 1,
+                  }}
+                  numberOfLines={1}
+                >
+                  {session.location}
+                </Text>
+                <Copy size={18} color={theme.colors.primary[500]} />
+              </Pressable>
+
+              <Button
+                label={t('detail.joinMeeting')}
+                onPress={handleJoinMeeting}
+                variant="primary"
+                size="lg"
+                style={{ marginTop: theme.spacing[4] }}
+              />
+            </View>
+          ) : (
+            <View
+              style={[
+                styles.infoCard,
+                { backgroundColor: theme.colors.surface, marginTop: theme.spacing[4] },
+              ]}
+            >
+              <Text variant="h6" style={{ fontWeight: '700' }}>
+                {t('locationTitle')}
+              </Text>
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: theme.colors.neutral[50],
+                  padding: theme.spacing[3],
+                  borderRadius: theme.radius.md,
+                  marginTop: theme.spacing[4],
+                }}
+              >
+                <Text
+                  variant="body"
+                  style={{ color: theme.colors.text.primary, fontWeight: '600' }}
+                >
+                  {t('offline')}
+                </Text>
+              </View>
+            </View>
+          )}
 
           {/* Participants Card */}
           <View
@@ -762,7 +805,6 @@ export const SessionDetailScreen: React.FC = () => {
                 flexDirection: 'row',
                 marginTop: theme.spacing[6],
                 gap: theme.spacing[3],
-                paddingHorizontal: theme.spacing[5],
               }}
             >
               <Button

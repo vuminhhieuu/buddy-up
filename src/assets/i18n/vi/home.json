@@ -13,6 +13,7 @@
   "hero": {
     "streakLabel": "Chuỗi học tập",
     "weekLabel": "tuần này",
+    "dayLabel": "ngày",
     "encouragement": "Tuyệt vời! Tiếp tục phát huy nhé 💪"
   },
   "stats": {
