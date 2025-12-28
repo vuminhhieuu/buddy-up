@@ -4,12 +4,12 @@
     "slug": "buddy-up",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/buddyup-logo-32.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "scheme": "buddyup",
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/buddyup-logo-32.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -22,7 +22,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/buddyup-logo-32.png",
         "backgroundColor": "#ffffff"
       },
       "googleServicesFile": "./google-services.json",
@@ -30,20 +30,20 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.buddyup",
       "notification": {
-        "icon": "./assets/icon.png",
+        "icon": "./assets/buddyup-logo-64.png",
         "color": "#ffffff",
         "sound": "default"
       }
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/buddyup-logo-32.png"
     },
     "plugins": [
       "expo-font",
       [
         "expo-notifications",
         {
-          "icon": "./assets/icon.png",
+          "icon": "./assets/buddyup-logo-32.png",
           "color": "#ffffff",
           "mode": "production"
         }

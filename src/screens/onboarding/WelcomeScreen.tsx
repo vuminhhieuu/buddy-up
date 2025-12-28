@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../styles';
 import { HandshakeLogo, ScreenContainer } from '../../components/ui';
 import { LanguageSelector } from '../../components/onboarding/LanguageSelector';
+import { Target, Flame, BookOpen } from 'lucide-react-native';
 
 type OnboardingStackParamList = {
   Welcome: undefined;
@@ -232,7 +233,9 @@ export const WelcomeScreen: React.FC = () => {
           {/* Features List */}
           <View style={[styles.featuresList, { backgroundColor: theme.colors.surface }]}>
             <View style={styles.featureItem}>
-              <Text style={styles.featureIcon}>🎯</Text>
+              <View style={styles.featureIconContainer}>
+                <Target size={20} color={theme.colors.primary[600]} strokeWidth={2.5} />
+              </View>
               <Text
                 style={[
                   styles.featureText,
@@ -247,7 +250,9 @@ export const WelcomeScreen: React.FC = () => {
             </View>
 
             <View style={styles.featureItem}>
-              <Text style={styles.featureIcon}>📚</Text>
+              <View style={styles.featureIconContainer}>
+                <BookOpen size={20} color={theme.colors.primary[600]} strokeWidth={2.5} />
+              </View>
               <Text
                 style={[
                   styles.featureText,
@@ -262,7 +267,9 @@ export const WelcomeScreen: React.FC = () => {
             </View>
 
             <View style={styles.featureItem}>
-              <Text style={styles.featureIcon}>🔥</Text>
+              <View style={styles.featureIconContainer}>
+                <Flame size={20} color={theme.colors.primary[600]} strokeWidth={2.5} />
+              </View>
               <Text
                 style={[
                   styles.featureText,
@@ -499,8 +506,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginBottom: 8,
   },
-  featureIcon: {
-    fontSize: 20,
+  featureIconContainer: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 12,
   },
   featureText: {
