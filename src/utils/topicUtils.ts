@@ -4,6 +4,8 @@
  */
 
 import { getAllCustomTopics } from './topicsStorage';
+import { supabase } from '../config/supabase';
+import i18n from '../config/i18n';
 
 export type Topic = {
   id: string;
@@ -29,7 +31,7 @@ const AVAILABLE_TOPICS: Topic[] = [
 /**
  * Get topic label by ID
  * @param topicId - The topic ID
- * @returns The topic label, or the ID if not found
+ * @returns The topic label, or a fallback label if not found
  */
 export async function getTopicLabel(topicId: string): Promise<string> {
   // Check available topics first
@@ -49,6 +51,33 @@ export async function getTopicLabel(topicId: string): Promise<string> {
     console.error('Error loading custom topics:', error);
   }
 
+  // Check database for stored topic labels (for custom topics created by other users)
+  try {
+    const { data, error } = await supabase
+      .from('group_topic_labels')
+      .select('topic_label')
+      .eq('topic_id', topicId)
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data?.topic_label) {
+      return data.topic_label;
+    }
+  } catch (error) {
+    // Log warning if table doesn't exist - this is expected during initial setup
+    // The feature will gracefully degrade by returning the topicId or fallback label
+    console.warn(
+      'Error loading topic label from database (table may not exist yet):',
+      error instanceof Error ? error.message : error,
+    );
+  }
+
+  // If it's a custom topic ID format but not found, return a fallback
+  if (topicId.startsWith('custom-')) {
+    // Return a generic label with i18n support
+    return i18n.t('groups:customTopic', { defaultValue: 'Custom Topic' });
+  }
+
   // If not found, return the ID itself
   return topicId;
 }
@@ -60,6 +89,69 @@ export async function getTopicLabel(topicId: string): Promise<string> {
  */
 export async function getTopicLabels(topicIds: string[]): Promise<string[]> {
   const labels = await Promise.all(topicIds.map((id) => getTopicLabel(id)));
+  return labels;
+}
+
+/**
+ * Get topic labels for a specific group (more accurate for custom topics)
+ * @param topicIds - Array of topic IDs
+ * @param groupId - The group ID
+ * @returns Array of topic labels
+ */
+export async function getTopicLabelsForGroup(
+  topicIds: string[],
+  groupId: string,
+): Promise<string[]> {
+  const labels = await Promise.all(
+    topicIds.map(async (topicId) => {
+      // Check available topics first
+      const availableTopic = AVAILABLE_TOPICS.find((topic) => topic.id === topicId);
+      if (availableTopic) {
+        return availableTopic.label;
+      }
+
+      // Check custom topics from storage
+      try {
+        const customTopics = await getAllCustomTopics();
+        const customTopic = customTopics.find((topic) => topic.id === topicId);
+        if (customTopic) {
+          return customTopic.label;
+        }
+      } catch (error) {
+        console.error('Error loading custom topics:', error);
+      }
+
+      // Check database for stored topic labels for this specific group
+      try {
+        const { data, error } = await supabase
+          .from('group_topic_labels')
+          .select('topic_label')
+          .eq('group_id', groupId)
+          .eq('topic_id', topicId)
+          .limit(1)
+          .maybeSingle();
+
+        if (!error && data?.topic_label) {
+          return data.topic_label;
+        }
+      } catch (error) {
+        // Log warning if table doesn't exist - this is expected during initial setup
+        // The feature will gracefully degrade by returning the topicId or fallback label
+        console.warn(
+          'Error loading topic label from database (table may not exist yet):',
+          error instanceof Error ? error.message : error,
+        );
+      }
+
+      // If it's a custom topic ID format but not found, return a fallback
+      if (topicId.startsWith('custom-')) {
+        return i18n.t('groups:customTopic', { defaultValue: 'Custom Topic' });
+      }
+
+      // If not found, return the ID itself
+      return topicId;
+    }),
+  );
   return labels;
 }
 

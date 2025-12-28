@@ -15,7 +15,12 @@ import { BackButton } from '../../../components/navigation';
 import { useTheme } from '../../../styles';
 import { GroupPreviewCard, FriendInviteList } from '../../../components/groups';
 import { createPublicGroup } from '../../../services/groups/create';
+import {
+  uploadCoverImageToStorage,
+  deleteCoverImageFromStorage,
+} from '../../../services/groups/storage';
 import { useAppSelector } from '../../../store/hooks';
+import { logger } from '../../../utils/logger';
 import type { RootStackParamList } from '../../../navigation/AppNavigator';
 import type { Step1BasicInfoData } from './Step1BasicInfoScreen';
 import type { Step2TopicsData } from './Step2TopicsScreen';
@@ -95,10 +100,35 @@ export const Step4PreviewScreen: React.FC<Step4PreviewScreenProps> = ({
     try {
       setCreating(true);
 
+      // Upload cover image to storage if it's a local URI
+      let coverImageUrl = step1Data.cover_image_url;
+      let uploadedCoverImageUrl: string | null = null; // Track uploaded image for cleanup if needed
+
+      if (
+        coverImageUrl &&
+        (coverImageUrl.startsWith('file://') || coverImageUrl.startsWith('content://'))
+      ) {
+        try {
+          // Use userId as temporary identifier, will be associated with group after creation
+          coverImageUrl = await uploadCoverImageToStorage(userId, coverImageUrl);
+          uploadedCoverImageUrl = coverImageUrl; // Store for potential cleanup
+        } catch (error: any) {
+          Alert.alert(
+            t('errors.uploadCoverFailed'),
+            error.message || t('errors.uploadCoverFailedDescription'),
+          );
+          setCreating(false);
+          // Cleanup: Delete uploaded image if upload failed after successful storage upload
+          // (Note: uploadCoverImageToStorage throws before uploading if validation fails,
+          // so cleanup is only needed if upload succeeds but group creation fails)
+          return;
+        }
+      }
+
       const payload = {
         name: step1Data.name,
         description: step1Data.description,
-        cover_image_url: step1Data.cover_image_url,
+        cover_image_url: coverImageUrl,
         icon_emoji: step1Data.icon_emoji,
         slug: step3Data.slug,
         topics: step2Data.topics,
@@ -118,6 +148,20 @@ export const Step4PreviewScreen: React.FC<Step4PreviewScreenProps> = ({
           t('errors.createFailed'),
           result.error.message || t('errors.createFailedDescription'),
         );
+        // Cleanup: Delete uploaded cover image if group creation failed
+        if (uploadedCoverImageUrl) {
+          try {
+            await deleteCoverImageFromStorage(uploadedCoverImageUrl);
+          } catch (cleanupError) {
+            // Log but don't show error to user - cleanup failure is not critical
+            logger.warn(
+              'Step4PreviewScreen',
+              'Failed to cleanup uploaded cover image',
+              cleanupError,
+            );
+          }
+        }
+        setCreating(false);
         return;
       }
 
@@ -130,6 +174,15 @@ export const Step4PreviewScreen: React.FC<Step4PreviewScreenProps> = ({
       }
     } catch (error: any) {
       Alert.alert(t('errors.createFailed'), error.message || t('errors.createFailedDescription'));
+      // Cleanup: Delete uploaded cover image if group creation failed
+      if (uploadedCoverImageUrl) {
+        try {
+          await deleteCoverImageFromStorage(uploadedCoverImageUrl);
+        } catch (cleanupError) {
+          // Log but don't show error to user - cleanup failure is not critical
+          logger.warn('Step4PreviewScreen', 'Failed to cleanup uploaded cover image', cleanupError);
+        }
+      }
     } finally {
       setCreating(false);
     }

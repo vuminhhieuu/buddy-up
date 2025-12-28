@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, ScrollView, RefreshControl, Pressable, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { Plus } from 'lucide-react-native';
 import { ScreenContainer, Text, Spacer, EmptyState } from '../../components/ui';
@@ -12,6 +12,7 @@ import { GroupCard } from '../../components/groups/GroupCard';
 import type { StudyGroup } from '../../services/groups/types';
 import type { NavigationProp } from '@react-navigation/native';
 import type { MainTabParamList } from '../../navigation/MainTabsNavigator';
+import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { logger } from '../../utils/logger';
 
 export const CommunityScreen: React.FC = () => {
@@ -75,17 +76,23 @@ export const CommunityScreen: React.FC = () => {
   };
 
   const handleCreateGroup = () => {
-    const parent = (navigation as any).getParent?.();
-    if (parent) {
-      parent.navigate('CreateGroupType');
-    } else {
-      logger.debug('CommunityScreen', 'Create group pressed - no parent navigator');
-    }
+    // Navigate to CreateGroupType screen using CommonActions for type-safe navigation
+    navigation.dispatch(
+      CommonActions.navigate({
+        name: 'CreateGroupType' as never,
+        params: undefined,
+      }),
+    );
   };
 
   const handleGroupPress = (group: StudyGroup) => {
-    // TODO: Navigate to group detail screen when ready
-    logger.debug('CommunityScreen', 'Group pressed', group.id);
+    // Navigate to GroupDetail screen using CommonActions for type-safe navigation
+    navigation.dispatch(
+      CommonActions.navigate({
+        name: 'GroupDetail' as never,
+        params: { groupId: group.id } as never,
+      }),
+    );
   };
 
   // Get user role for a group
