@@ -34,6 +34,7 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
   const { theme } = useTheme();
   const { t } = useTranslation('groups');
   const [topicLabels, setTopicLabels] = useState<string[]>([]);
+  const [coverImageError, setCoverImageError] = useState(false);
 
   // Convert topic IDs to labels
   useEffect(() => {
@@ -55,14 +56,17 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
       <View
         style={{
           height: 120,
-          backgroundColor: coverImageUrl ? 'transparent' : theme.colors.neutral?.[100] || '#F5F5F5',
+          backgroundColor:
+            coverImageUrl && !coverImageError
+              ? 'transparent'
+              : theme.colors.neutral?.[100] || '#F5F5F5',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
           overflow: 'hidden',
         }}
       >
-        {coverImageUrl ? (
+        {coverImageUrl && coverImageUrl.trim() !== '' && !coverImageError ? (
           <Image
             source={{ uri: coverImageUrl }}
             style={{
@@ -70,6 +74,12 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
               height: '100%',
             }}
             resizeMode="cover"
+            onError={() => {
+              setCoverImageError(true);
+            }}
+            onLoad={() => {
+              setCoverImageError(false);
+            }}
           />
         ) : (
           <Image

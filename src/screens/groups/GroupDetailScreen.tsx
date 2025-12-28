@@ -89,6 +89,7 @@ export const GroupDetailScreen: React.FC = () => {
   const [isDisbanding, setIsDisbanding] = useState(false);
   const [showCoverImagePicker, setShowCoverImagePicker] = useState(false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [coverImageError, setCoverImageError] = useState(false);
 
   const loadGroupData = async () => {
     if (!userId || !groupId) return;
@@ -116,6 +117,8 @@ export const GroupDetailScreen: React.FC = () => {
       const groupInfo = groupData as StudyGroup;
       setGroup(groupInfo);
       setIsOwner(groupInfo.creator_id === userId);
+      // Reset cover image error state when loading new group
+      setCoverImageError(false);
 
       // Check if user is a member
       const memberStatus = await isUserMemberOfGroup(groupId, userId);
@@ -453,20 +456,31 @@ export const GroupDetailScreen: React.FC = () => {
         <View
           style={{
             height: 200,
-            backgroundColor: group.cover_image_url
-              ? 'transparent'
-              : theme.colors.neutral?.[100] || '#F5F5F5',
+            backgroundColor:
+              group.cover_image_url && !coverImageError
+                ? 'transparent'
+                : theme.colors.neutral?.[100] || '#F5F5F5',
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
             position: 'relative',
           }}
         >
-          {group.cover_image_url ? (
+          {group.cover_image_url && group.cover_image_url.trim() !== '' && !coverImageError ? (
             <Image
               source={{ uri: group.cover_image_url }}
               style={{ width: '100%', height: '100%' }}
               resizeMode="cover"
+              onError={(error) => {
+                logger.warn('GroupDetailScreen', 'Error loading cover image', {
+                  url: group.cover_image_url,
+                  error,
+                });
+                setCoverImageError(true);
+              }}
+              onLoad={() => {
+                setCoverImageError(false);
+              }}
             />
           ) : (
             <Image
