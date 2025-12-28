@@ -5,6 +5,7 @@
 
 import { supabase } from '../../config/supabase';
 import { logger } from '../../utils/logger';
+import { getTopicLabel } from '../../utils/topicUtils';
 import type { CreatePublicGroupPayload, CreatePublicGroupResult, StudyGroup } from './types';
 
 /**
@@ -198,6 +199,43 @@ export async function createPublicGroup(
             invitationsInsertError,
           );
         }
+      }
+
+      // Save topic labels to database for custom topics
+      // This allows other users to see the correct labels even if they don't have the custom topic in their storage
+      // NOTE: This requires the 'group_topic_labels' table to exist in the database.
+      // The table should have columns: group_id, topic_id, topic_label with a unique constraint on (group_id, topic_id)
+      // If the table doesn't exist, this operation will fail silently and group creation will still succeed.
+      try {
+        const topicLabels = await Promise.all(
+          payload.topics.map(async (topicId) => {
+            const label = await getTopicLabel(topicId);
+            return { topic_id: topicId, topic_label: label };
+          }),
+        );
+
+        // Try to insert into group_topic_labels table
+        // Use upsert to handle duplicates gracefully
+        const { error: topicLabelsError } = await supabase.from('group_topic_labels').upsert(
+          topicLabels.map(({ topic_id, topic_label }) => ({
+            group_id: group.id,
+            topic_id,
+            topic_label,
+          })),
+          {
+            onConflict: 'group_id,topic_id',
+          },
+        );
+
+        if (topicLabelsError) {
+          // Log but don't fail - table might not exist yet or might have schema issues
+          // Group creation will still succeed even if topic labels can't be saved
+          logger.debug('createPublicGroup.topicLabels', topicLabelsError.message, topicLabelsError);
+        }
+      } catch (error) {
+        // Silently fail - table might not exist or there might be other issues
+        // This is a non-critical feature, so group creation should not fail because of it
+        logger.debug('createPublicGroup.topicLabels', 'Error saving topic labels', error);
       }
 
       return {

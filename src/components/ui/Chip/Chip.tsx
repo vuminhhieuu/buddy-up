@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, View, ViewStyle } from 'react-native';
+import { Pressable, View, ViewStyle, TextStyle } from 'react-native';
 import { useTheme } from '../../../styles';
 import { Text } from '../Text/Text';
 
@@ -13,6 +13,7 @@ export type ChipProps = {
   disabled?: boolean;
   variant?: ChipVariant;
   style?: ViewStyle;
+  textStyle?: TextStyle;
   accessibilityLabel?: string;
 };
 
@@ -24,6 +25,7 @@ export const Chip: React.FC<ChipProps> = ({
   disabled = false,
   variant = 'default',
   style,
+  textStyle,
   accessibilityLabel,
 }) => {
   const { theme } = useTheme();
@@ -68,7 +70,13 @@ export const Chip: React.FC<ChipProps> = ({
       <Text
         variant="bodySmall"
         color={isSelected ? 'inverse' : 'secondary'}
-        style={{ fontWeight: '600' as const }}
+        style={[
+          { fontWeight: '700' as const },
+          !isSelected && containerStyle.borderColor === theme.colors.primary[500]
+            ? { color: theme.colors.primary[500] }
+            : {},
+          textStyle,
+        ]}
       >
         {label}
       </Text>

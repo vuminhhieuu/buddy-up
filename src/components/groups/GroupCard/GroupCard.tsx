@@ -129,26 +129,28 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, userRole, onPress }
                   flexDirection: 'row',
                   alignItems: 'center',
                   backgroundColor:
-                    group.privacy_type === 'private'
-                      ? theme.colors.semantic.success
-                      : theme.colors.primary[500],
+                    group.privacy_type === 'public'
+                      ? theme.colors.primary[100]
+                      : theme.colors.semantic.success + '20',
                   paddingHorizontal: theme.spacing[2],
-                  paddingVertical: 2,
+                  paddingVertical: theme.spacing[1],
                   borderRadius: theme.radius.full,
                   gap: theme.spacing[1],
                 }}
               >
                 {group.privacy_type === 'private' ? (
-                  <Lock size={12} color={theme.colors.surface} />
+                  <Lock size={14} color={theme.colors.semantic.success} />
                 ) : (
-                  <Globe size={12} color={theme.colors.surface} />
+                  <Globe size={14} color={theme.colors.primary[500]} />
                 )}
                 <Text
-                  variant="caption"
+                  variant="bodySmall"
                   style={{
-                    color: theme.colors.surface,
+                    color:
+                      group.privacy_type === 'public'
+                        ? theme.colors.primary[500]
+                        : theme.colors.semantic.success,
                     fontWeight: '600' as const,
-                    fontSize: 11,
                   }}
                 >
                   {group.privacy_type === 'public' ? t('step4.public') : t('step4.private')}
@@ -161,20 +163,19 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, userRole, onPress }
                   style={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    backgroundColor: theme.colors.semantic.warning,
+                    backgroundColor: theme.colors.semantic.warning + '20',
                     paddingHorizontal: theme.spacing[2],
-                    paddingVertical: 2,
+                    paddingVertical: theme.spacing[1],
                     borderRadius: theme.radius.full,
                     gap: theme.spacing[1],
                   }}
                 >
-                  <Crown size={12} color={theme.colors.surface} />
+                  <Crown size={14} color={theme.colors.semantic.warning} />
                   <Text
-                    variant="caption"
+                    variant="bodySmall"
                     style={{
-                      color: theme.colors.surface,
+                      color: theme.colors.semantic.warning,
                       fontWeight: '600' as const,
-                      fontSize: 11,
                     }}
                   >
                     {roleLabel}
@@ -200,8 +201,12 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, userRole, onPress }
                     variant="default"
                     disabled
                     style={{
+                      borderColor: theme.colors.primary[500],
                       backgroundColor: theme.colors.surface,
-                      borderColor: theme.colors.border,
+                    }}
+                    textStyle={{
+                      color: theme.colors.primary[500],
+                      fontWeight: '700' as const,
                     }}
                   />
                 ))}

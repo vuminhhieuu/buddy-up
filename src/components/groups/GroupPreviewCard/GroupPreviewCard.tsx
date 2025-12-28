@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, ViewStyle, ImageStyle } from 'react-native';
-import { Globe } from 'lucide-react-native';
+import { Globe, Lock } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
 import { Card } from '../../ui/Card/Card';
 import { Chip } from '../../ui/Chip/Chip';
-import { Avatar } from '../../ui/Avatar/Avatar';
 import { getTopicLabels } from '../../../utils/topicUtils';
 
 export type GroupPreviewCardProps = {
@@ -56,10 +55,11 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
       <View
         style={{
           height: 120,
-          backgroundColor: theme.colors.primary[500],
+          backgroundColor: coverImageUrl ? 'transparent' : theme.colors.neutral?.[100] || '#F5F5F5',
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
+          overflow: 'hidden',
         }}
       >
         {coverImageUrl ? (
@@ -72,30 +72,22 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
             resizeMode="cover"
           />
         ) : (
-          <View
-            style={{
-              width: 80,
-              height: 80,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {iconEmoji ? (
-              <Text style={{ fontSize: 48 }}>{iconEmoji}</Text>
-            ) : (
-              <Globe size={48} color={theme.colors.surface} />
-            )}
-          </View>
+          <Image
+            source={require('../../../../assets/buddyup-logo-128.png')}
+            style={{ width: 96, height: 96, opacity: 0.6 }}
+            resizeMode="contain"
+          />
         )}
       </View>
 
       {/* Content */}
       <View style={{ padding: theme.spacing[4] }}>
-        {/* Header with Icon and Name */}
+        {/* Group Icon with Info */}
         <View
           style={{
             flexDirection: 'row',
-            alignItems: 'center',
+            alignItems: 'flex-start',
+            marginTop: -28 + theme.spacing[2], // Adjust to align with icon top
             marginBottom: theme.spacing[3],
             gap: theme.spacing[3],
           }}
@@ -107,7 +99,7 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
               height: 56,
               borderRadius: theme.radius.full,
               backgroundColor: theme.colors.surface,
-              borderWidth: 2,
+              borderWidth: 3,
               borderColor: theme.colors.border,
               alignItems: 'center',
               justifyContent: 'center',
@@ -116,22 +108,43 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
           >
             {iconEmoji ? (
               <Text style={{ fontSize: 28 }}>{iconEmoji}</Text>
+            ) : privacyType === 'private' ? (
+              <Lock size={28} color={theme.colors.primary[500]} />
             ) : (
               <Globe size={28} color={theme.colors.primary[500]} />
             )}
           </View>
 
-          {/* Name and Privacy */}
+          {/* Group Info */}
           <View style={{ flex: 1 }}>
+            {/* Group Name */}
             <Text
               variant="h6"
               style={{
                 fontWeight: '700' as const,
                 marginBottom: theme.spacing[1],
               }}
+              numberOfLines={2}
             >
               {name}
             </Text>
+
+            {/* Description */}
+            {description && description.trim() && (
+              <Text
+                variant="body"
+                color="secondary"
+                style={{
+                  lineHeight: 20,
+                  marginBottom: theme.spacing[1],
+                }}
+                numberOfLines={2}
+              >
+                {description}
+              </Text>
+            )}
+
+            {/* Privacy Status */}
             <View
               style={{
                 flexDirection: 'row',
@@ -139,25 +152,26 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
                 gap: theme.spacing[1],
               }}
             >
-              <Globe size={14} color={theme.colors.primary[500]} />
-              <Text variant="bodySmall" color="primary" style={{ fontWeight: '600' as const }}>
+              {privacyType === 'private' ? (
+                <Lock size={16} color={theme.colors.semantic.success} />
+              ) : (
+                <Globe size={16} color={theme.colors.primary[500]} />
+              )}
+              <Text
+                variant="bodySmall"
+                style={{
+                  color:
+                    privacyType === 'public'
+                      ? theme.colors.primary[500]
+                      : theme.colors.semantic.success,
+                  fontWeight: '600' as const,
+                }}
+              >
                 {privacyType === 'public' ? t('step4.public') : t('step4.private')}
               </Text>
             </View>
           </View>
         </View>
-
-        {/* Description */}
-        <Text
-          variant="body"
-          color="secondary"
-          style={{
-            marginBottom: theme.spacing[3],
-            lineHeight: 20,
-          }}
-        >
-          {description}
-        </Text>
 
         {/* Topics */}
         {topicLabels.length > 0 && (
@@ -170,7 +184,20 @@ export const GroupPreviewCard: React.FC<GroupPreviewCardProps> = ({
             }}
           >
             {topicLabels.map((label, index) => (
-              <Chip key={index} label={label} variant="default" disabled />
+              <Chip
+                key={index}
+                label={label}
+                variant="default"
+                disabled
+                style={{
+                  borderColor: theme.colors.primary[500],
+                  backgroundColor: theme.colors.surface,
+                }}
+                textStyle={{
+                  color: theme.colors.primary[500],
+                  fontWeight: '700' as const,
+                }}
+              />
             ))}
           </View>
         )}
