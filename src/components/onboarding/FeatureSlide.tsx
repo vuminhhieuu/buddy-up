@@ -1,27 +1,81 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../../styles';
+import { HandshakeLogo } from '../ui/HandshakeLogo';
+import { Target, Flame, BookOpen, type LucideIcon } from 'lucide-react-native';
+
+export type CenterIconType = 'logo' | 'target' | 'flame' | 'book' | 'emoji';
 
 export interface FeatureSlideProps {
   emoji1: string;
   emoji2?: string;
-  centerIcon: string;
+  centerIcon: string; // For backward compatibility, but centerIconType takes precedence
+  centerIconType?: CenterIconType; // New prop to specify icon type
   title: string;
   description: string;
   backgroundColor: string;
   decorativeIcons?: string[];
 }
 
+const ICON_MAP: Record<CenterIconType, LucideIcon | null> = {
+  logo: null, // Handled separately
+  target: Target,
+  flame: Flame,
+  book: BookOpen,
+  emoji: null, // Handled separately
+};
+
 export const FeatureSlide: React.FC<FeatureSlideProps> = ({
   emoji1,
   emoji2,
   centerIcon,
+  centerIconType = 'emoji',
   title,
   description,
   backgroundColor,
   decorativeIcons = ['📊', '⭐', '🔥', '✅'],
 }) => {
   const { theme } = useTheme();
+
+  const renderCenterIcon = () => {
+    if (centerIconType === 'logo') {
+      return (
+        <HandshakeLogo
+          size="small"
+          style={{ width: 32, height: 32 }}
+          backgroundColor={theme.colors.surface}
+        />
+      );
+    }
+
+    const IconComponent = centerIconType !== 'emoji' ? ICON_MAP[centerIconType] : null;
+    if (IconComponent) {
+      return <IconComponent size={28} color={theme.colors.primary[600]} strokeWidth={2.5} />;
+    }
+
+    // Fallback to emoji
+    return <Text style={styles.centerIcon}>{centerIcon}</Text>;
+  };
+
+  const renderContentIcon = () => {
+    if (centerIconType === 'logo') {
+      return (
+        <HandshakeLogo
+          size="small"
+          style={{ width: 28, height: 28 }}
+          backgroundColor={theme.colors.surface}
+        />
+      );
+    }
+
+    const IconComponent = centerIconType !== 'emoji' ? ICON_MAP[centerIconType] : null;
+    if (IconComponent) {
+      return <IconComponent size={24} color={theme.colors.primary[600]} strokeWidth={2.5} />;
+    }
+
+    // Fallback to emoji
+    return <Text style={styles.contentIcon}>{centerIcon}</Text>;
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.surface }]}>
@@ -48,7 +102,7 @@ export const FeatureSlide: React.FC<FeatureSlideProps> = ({
                 <View
                   style={[styles.centerIconCircle, { backgroundColor: theme.colors.primary[400] }]}
                 >
-                  <Text style={styles.centerIcon}>{centerIcon}</Text>
+                  {renderCenterIcon()}
                 </View>
               </View>
 
@@ -63,7 +117,7 @@ export const FeatureSlide: React.FC<FeatureSlideProps> = ({
       {/* Bottom content area */}
       <View style={styles.contentContainer}>
         <View style={[styles.iconCircle, { backgroundColor: theme.colors.primary[50] }]}>
-          <Text style={styles.contentIcon}>{centerIcon}</Text>
+          {renderContentIcon()}
         </View>
 
         <Text

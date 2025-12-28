@@ -10,7 +10,7 @@ import {
   NativeScrollEvent,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { FeatureSlide } from '../../components/onboarding/FeatureSlide';
+import { FeatureSlide, type CenterIconType } from '../../components/onboarding/FeatureSlide';
 import { useTheme } from '../../styles';
 import { ScreenContainer } from '../../components/ui';
 
@@ -23,6 +23,7 @@ interface FeatureData {
   emoji1: string;
   emoji2?: string;
   centerIcon: string;
+  centerIconType?: CenterIconType;
   title: string;
   description: string;
   backgroundColor: string;
@@ -41,6 +42,7 @@ export const FeatureCarouselScreen: React.FC<FeatureCarouselScreenProps> = ({ on
       emoji1: '👨‍🎓',
       emoji2: '👩‍💼',
       centerIcon: '🤝',
+      centerIconType: 'logo',
       title: t('onboarding.carousel.slide1.title'),
       description: t('onboarding.carousel.slide1.description'),
       backgroundColor: '#E8F5E9',
@@ -50,6 +52,7 @@ export const FeatureCarouselScreen: React.FC<FeatureCarouselScreenProps> = ({ on
       emoji1: '📅',
       emoji2: '📝',
       centerIcon: '📚',
+      centerIconType: 'book',
       title: t('onboarding.carousel.slide2.title'),
       description: t('onboarding.carousel.slide2.description'),
       backgroundColor: '#E3F2FD',
@@ -59,6 +62,7 @@ export const FeatureCarouselScreen: React.FC<FeatureCarouselScreenProps> = ({ on
       emoji1: '📊',
       emoji2: '⭐',
       centerIcon: '🎯',
+      centerIconType: 'target',
       title: t('onboarding.carousel.slide3.title'),
       description: t('onboarding.carousel.slide3.description'),
       backgroundColor: '#F3E5F5',
@@ -85,6 +89,7 @@ export const FeatureCarouselScreen: React.FC<FeatureCarouselScreenProps> = ({ on
         emoji1={item.emoji1}
         emoji2={item.emoji2}
         centerIcon={item.centerIcon}
+        centerIconType={item.centerIconType}
         title={item.title}
         description={item.description}
         backgroundColor={item.backgroundColor}

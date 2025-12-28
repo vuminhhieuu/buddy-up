@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle } from 'react-native';
+import { View, Image, StyleSheet, ViewStyle, ImageStyle } from 'react-native';
 import { useTheme } from '../../styles';
 
 type HandshakeLogoSize = 'small' | 'medium' | 'large';
@@ -7,14 +7,12 @@ type HandshakeLogoSize = 'small' | 'medium' | 'large';
 interface HandshakeLogoProps {
   size?: HandshakeLogoSize;
   style?: ViewStyle;
-  emoji?: string;
   backgroundColor?: string;
 }
 
 export const HandshakeLogo: React.FC<HandshakeLogoProps> = ({
   size = 'medium',
   style,
-  emoji = '🤝',
   backgroundColor,
 }) => {
   const { theme } = useTheme();
@@ -22,11 +20,22 @@ export const HandshakeLogo: React.FC<HandshakeLogoProps> = ({
     HandshakeLogoSize,
     { containerSize: number; iconSize: number; borderRadius: number }
   > = {
-    small: { containerSize: 40, iconSize: 20, borderRadius: theme.radius.md },
-    medium: { containerSize: 56, iconSize: 28, borderRadius: theme.radius.lg },
-    large: { containerSize: 72, iconSize: 36, borderRadius: theme.radius.xl },
+    small: { containerSize: 40, iconSize: 24, borderRadius: theme.radius.md },
+    medium: { containerSize: 56, iconSize: 32, borderRadius: theme.radius.lg },
+    large: { containerSize: 72, iconSize: 40, borderRadius: theme.radius.xl },
   };
   const sizeStyle = config[size];
+
+  // Use appropriate logo size based on container size
+  const logoSource = (() => {
+    if (sizeStyle.iconSize <= 24) {
+      return require('../../../assets/buddyup-logo-64.png');
+    } else if (sizeStyle.iconSize <= 32) {
+      return require('../../../assets/buddyup-logo-128.png');
+    } else {
+      return require('../../../assets/buddyup-logo-192.png');
+    }
+  })();
 
   return (
     <View
@@ -36,12 +45,22 @@ export const HandshakeLogo: React.FC<HandshakeLogoProps> = ({
           width: sizeStyle.containerSize,
           height: sizeStyle.containerSize,
           borderRadius: sizeStyle.borderRadius,
-          backgroundColor: backgroundColor ?? theme.colors.primary[400],
+          backgroundColor: backgroundColor ?? theme.colors.surface,
         },
         style,
       ]}
     >
-      <Text style={[styles.icon, { fontSize: sizeStyle.iconSize }]}>{emoji}</Text>
+      <Image
+        source={logoSource}
+        style={[
+          styles.logo,
+          {
+            width: sizeStyle.iconSize,
+            height: sizeStyle.iconSize,
+          },
+        ]}
+        resizeMode="contain"
+      />
     </View>
   );
 };
@@ -51,7 +70,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  icon: {
-    textAlign: 'center',
+  logo: {
+    tintColor: undefined, // Keep original colors
   },
 });
