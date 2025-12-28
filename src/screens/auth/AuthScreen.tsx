@@ -87,7 +87,7 @@ export const AuthScreen: React.FC = () => {
       <ScreenContainer scroll contentContainerStyle={{ paddingBottom: theme.spacing[12] }}>
         {/* Header */}
         <View style={styles.headerContainer}>
-          <HandshakeLogo size="medium" />
+          <HandshakeLogo size="xxlarge" showBackground={false} />
           <Spacer size={2} />
           <Text variant="h4" style={{ fontWeight: '700' as const }}>
             {t('appName', { ns: 'common' })}

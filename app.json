@@ -30,7 +30,7 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.anonymous.buddyup",
       "notification": {
-        "icon": "./assets/buddyup-logo-64.png",
+        "icon": "./assets/buddyup-logo-128.png",
         "color": "#ffffff",
         "sound": "default"
       }

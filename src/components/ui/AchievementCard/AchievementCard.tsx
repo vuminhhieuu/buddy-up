@@ -4,6 +4,7 @@ import { useTheme } from '../../../styles';
 import { Text } from '../Text/Text';
 import { Card } from '../Card/Card';
 import { ProgressBar } from '../ProgressBar/ProgressBar';
+import { HandshakeLogo } from '../HandshakeLogo';
 import type { Achievement } from '../../../types/profile';
 
 export type AchievementCardProps = {
@@ -44,7 +45,11 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
       >
         <View style={styles.content}>
           <View style={styles.emojiContainer}>
-            <Text style={styles.emoji}>{achievement.emoji}</Text>
+            {achievement.id === 'team_player' ? (
+              <HandshakeLogo size="large" backgroundColor={theme.colors.surface} />
+            ) : (
+              <Text style={styles.emoji}>{achievement.emoji}</Text>
+            )}
           </View>
           <View style={styles.textContainer}>
             <Text
