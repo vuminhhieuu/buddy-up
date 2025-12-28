@@ -21,6 +21,7 @@ import { MessageCircle, Calendar, BookOpen, MessageSquare } from 'lucide-react-n
 import { Text } from '../../components/ui/Text/Text';
 import { Spacer } from '../../components/ui/Spacer/Spacer';
 import { ScreenContainer } from '../../components/ui/ScreenContainer/ScreenContainer';
+import { HandshakeLogo } from '../../components/ui/HandshakeLogo';
 import { BuddyBackground } from '../../components/buddy/BuddyBackground/BuddyBackground';
 import type { BuddyStackParamList } from '../../navigation/BuddyStackNavigator';
 import { useAppSelector } from '../../store/hooks';
@@ -338,9 +339,7 @@ export const ConnectionSuccessScreen: React.FC = () => {
                       borderColor: theme.colors.primary[500],
                     }}
                   >
-                    <Text variant="h1" style={{ fontSize: 45 }}>
-                      🤝
-                    </Text>
+                    <HandshakeLogo size="large" backgroundColor={theme.colors.surface} />
                   </View>
                 </Animated.View>
 
