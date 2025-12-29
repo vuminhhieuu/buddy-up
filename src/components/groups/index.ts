@@ -6,3 +6,4 @@ export * from './GroupPreviewCard';
 export * from './FriendInviteList';
 export * from './GroupList';
 export * from './GroupCard';
+export * from './PostCard';
