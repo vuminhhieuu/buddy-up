@@ -40,7 +40,24 @@ export async function getTopicLabel(topicId: string): Promise<string> {
     return availableTopic.label;
   }
 
-  // Check custom topics from storage
+  // Check custom topics from database (shared across all users)
+  try {
+    const { data, error } = await supabase
+      .from('custom_topics')
+      .select('topic_label')
+      .eq('topic_id', topicId)
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data?.topic_label) {
+      return data.topic_label;
+    }
+  } catch (error) {
+    // If table doesn't exist, fallback to local storage
+    logger.debug('getTopicLabel', 'Error loading from custom_topics table', error);
+  }
+
+  // Fallback: Check custom topics from local storage (for backward compatibility)
   try {
     const customTopics = await getAllCustomTopics();
     const customTopic = customTopics.find((topic) => topic.id === topicId);
@@ -48,10 +65,10 @@ export async function getTopicLabel(topicId: string): Promise<string> {
       return customTopic.label;
     }
   } catch (error) {
-    console.error('Error loading custom topics:', error);
+    logger.warn('getTopicLabel', 'Error loading custom topics from storage', error);
   }
 
-  // Check database for stored topic labels (for custom topics created by other users)
+  // Check database for stored topic labels in group_topic_labels (legacy support)
   try {
     const { data, error } = await supabase
       .from('group_topic_labels')
@@ -65,11 +82,7 @@ export async function getTopicLabel(topicId: string): Promise<string> {
     }
   } catch (error) {
     // Log warning if table doesn't exist - this is expected during initial setup
-    // The feature will gracefully degrade by returning the topicId or fallback label
-    console.warn(
-      'Error loading topic label from database (table may not exist yet):',
-      error instanceof Error ? error.message : error,
-    );
+    logger.debug('getTopicLabel', 'Error loading from group_topic_labels table', error);
   }
 
   // If it's a custom topic ID format but not found, return a fallback
@@ -110,7 +123,24 @@ export async function getTopicLabelsForGroup(
         return availableTopic.label;
       }
 
-      // Check custom topics from storage
+      // Check custom topics from database (shared across all users)
+      try {
+        const { data, error } = await supabase
+          .from('custom_topics')
+          .select('topic_label')
+          .eq('topic_id', topicId)
+          .limit(1)
+          .maybeSingle();
+
+        if (!error && data?.topic_label) {
+          return data.topic_label;
+        }
+      } catch (error) {
+        // If table doesn't exist, fallback to local storage
+        logger.debug('getTopicLabelsForGroup', 'Error loading from custom_topics table', error);
+      }
+
+      // Fallback: Check custom topics from local storage (for backward compatibility)
       try {
         const customTopics = await getAllCustomTopics();
         const customTopic = customTopics.find((topic) => topic.id === topicId);
@@ -118,12 +148,13 @@ export async function getTopicLabelsForGroup(
           return customTopic.label;
         }
       } catch (error) {
-        console.error('Error loading custom topics:', error);
+        logger.warn('getTopicLabelsForGroup', 'Error loading custom topics from storage', error);
       }
 
       // Check database for stored topic labels for this specific group
       try {
-        const { data, error } = await supabase
+        // First, try to find label for this specific group
+        const { data: groupData, error: groupError } = await supabase
           .from('group_topic_labels')
           .select('topic_label')
           .eq('group_id', groupId)
@@ -131,8 +162,21 @@ export async function getTopicLabelsForGroup(
           .limit(1)
           .maybeSingle();
 
-        if (!error && data?.topic_label) {
-          return data.topic_label;
+        if (!groupError && groupData?.topic_label) {
+          return groupData.topic_label;
+        }
+
+        // If not found for this group, try to find label from any group with this topic_id
+        // This handles cases where the topic was created in another group
+        const { data: anyGroupData, error: anyGroupError } = await supabase
+          .from('group_topic_labels')
+          .select('topic_label')
+          .eq('topic_id', topicId)
+          .limit(1)
+          .maybeSingle();
+
+        if (!anyGroupError && anyGroupData?.topic_label) {
+          return anyGroupData.topic_label;
         }
       } catch (error) {
         // Log warning if table doesn't exist - this is expected during initial setup
