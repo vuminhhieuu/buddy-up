@@ -232,6 +232,8 @@
     "failedToDisband": "Không thể giải tán nhóm",
     "updateCoverSuccess": "Đã cập nhật ảnh bìa",
     "updateCoverError": "Lỗi cập nhật ảnh bìa",
-    "failedToUpdateCover": "Không thể cập nhật ảnh bìa"
+    "failedToUpdateCover": "Không thể cập nhật ảnh bìa",
+    "languageVietnamese": "Tiếng Việt",
+    "languageEnglish": "English"
   }
 }

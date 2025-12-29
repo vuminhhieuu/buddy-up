@@ -140,3 +140,65 @@ export interface InviteFriendsToGroupResponse {
   error?: string;
   errorCode?: 'INVALID_USERS' | 'NETWORK_ERROR' | 'PERMISSION_DENIED';
 }
+
+/**
+ * Group post data
+ */
+export interface GroupPost {
+  id: string;
+  group_id: string;
+  author_id: string;
+  content: string;
+  image_urls: string[];
+  file_urls: string[];
+  like_count: number;
+  comment_count: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+  // Joined data
+  author?: {
+    id: string;
+    display_name: string | null;
+    avatar_url: string | null;
+  };
+}
+
+/**
+ * Payload for creating a group post
+ */
+export type CreateGroupPostPayload = {
+  group_id: string;
+  content: string;
+  image_urls?: string[];
+  file_urls?: string[];
+};
+
+/**
+ * Response from creating a group post
+ */
+export interface CreateGroupPostResponse {
+  success: boolean;
+  post?: GroupPost;
+  error?: string;
+  errorCode?: 'VALIDATION_ERROR' | 'PERMISSION_DENIED' | 'NETWORK_ERROR';
+}
+
+/**
+ * Response from fetching group posts
+ */
+export interface FetchGroupPostsResponse {
+  success: boolean;
+  posts?: GroupPost[];
+  error?: string;
+  errorCode?: 'UNAUTHORIZED' | 'NETWORK_ERROR';
+}
+
+/**
+ * Response from deleting a group post
+ */
+export interface DeleteGroupPostResponse {
+  success: boolean;
+  error?: string;
+  errorCode?: 'PERMISSION_DENIED' | 'NETWORK_ERROR' | 'NOT_FOUND';
+}

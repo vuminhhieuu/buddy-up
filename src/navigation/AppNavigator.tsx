@@ -13,6 +13,7 @@ import { CreateGroupTypeScreen } from '../screens/groups/CreateGroupTypeScreen';
 import { CreatePublicGroupScreen } from '../screens/groups/CreatePublicGroupScreen';
 import { CreateGroupSuccessScreen } from '../screens/groups/CreateGroupSuccessScreen';
 import { GroupDetailScreen } from '../screens/groups/GroupDetailScreen';
+import { CreateGroupPostScreen } from '../screens/groups/CreateGroupPostScreen';
 import { useAppSelector } from '../store/hooks';
 import { useFirstLaunch } from '../hooks/useFirstLaunch';
 import { useTheme } from '../styles';
@@ -46,6 +47,7 @@ export type RootStackParamList = {
   CreatePublicGroup: { step?: number } | undefined;
   CreateGroupSuccess: { groupId: string; groupName: string };
   GroupDetail: { groupId: string };
+  CreateGroupPost: { groupId: string };
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -102,6 +104,7 @@ export const AppNavigator: React.FC = () => {
             <Stack.Screen name="CreatePublicGroup" component={CreatePublicGroupScreen} />
             <Stack.Screen name="CreateGroupSuccess" component={CreateGroupSuccessScreen} />
             <Stack.Screen name="GroupDetail" component={GroupDetailScreen} />
+            <Stack.Screen name="CreateGroupPost" component={CreateGroupPostScreen} />
           </>
         ) : (
           <Stack.Screen
