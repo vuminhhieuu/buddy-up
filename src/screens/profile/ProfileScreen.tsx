@@ -100,7 +100,9 @@ export const ProfileScreen: React.FC = () => {
       name: finalName,
       level: profileOverview?.level ?? 1,
       subtitle:
-        profileOverview?.subtitle ?? setupProfileData?.studyGoal ?? t('headerSubtitleDefault'),
+        profileOverview?.mainLearningGoal ??
+        setupProfileData?.studyGoal ??
+        t('headerSubtitleDefault'),
       streak: profileOverview?.streak ?? 0,
       totalTime: profileOverview?.totalTime ?? 0,
       xp: profileOverview?.xp ?? 0,

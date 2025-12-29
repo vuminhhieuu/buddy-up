@@ -19,11 +19,11 @@ export async function saveStepForUser(
     Object.entries(payload).forEach(([k, v]) => (processedPayload[k] = v));
   }
   if (processedPayload.study_goal !== undefined) {
-    processedPayload.bio = processedPayload.study_goal;
+    processedPayload.main_learning_goal = processedPayload.study_goal;
     delete processedPayload.study_goal;
   }
   if (processedPayload.studyGoal !== undefined) {
-    processedPayload.bio = processedPayload.studyGoal;
+    processedPayload.main_learning_goal = processedPayload.studyGoal;
     delete processedPayload.studyGoal;
   }
   if (processedPayload.displayName !== undefined) {

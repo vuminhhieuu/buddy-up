@@ -79,6 +79,7 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       onlyVerified: false,
       hideRejected: false,
       prioritizeFreeSchedule: false,
+      onlySaved: false,
     });
     setGoalSearch('');
     onReset();
@@ -460,6 +461,43 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                         </Pressable>
                       </View>
                     )}
+                    {localFilters.onlySaved && (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.primary[100],
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.primary[300],
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="primary"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          {t('filter.onlySaved')}
+                        </Text>
+                        <Pressable
+                          onPress={() => setLocalFilters({ ...localFilters, onlySaved: false })}
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.primary[500],
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    )}
                   </View>
                 </View>
               )}
@@ -648,6 +686,13 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                         setLocalFilters({ ...localFilters, prioritizeFreeSchedule: value })
                       }
                       label={t('filter.prioritizeFreeSchedule')}
+                    />
+                    <ToggleSwitch
+                      value={localFilters.onlySaved || false}
+                      onValueChange={(value) =>
+                        setLocalFilters({ ...localFilters, onlySaved: value })
+                      }
+                      label={t('filter.onlySaved')}
                     />
                   </View>
                 )}

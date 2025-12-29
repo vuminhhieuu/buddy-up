@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, ViewStyle, Pressable } from 'react-native';
+import { View, ViewStyle, Pressable, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Target, Star } from 'lucide-react-native';
+import { Target, Star, User } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
@@ -31,7 +31,8 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
   const { t } = useTranslation('buddy');
   const { theme } = useTheme();
   const requestStatus = data.requestStatus ?? 'idle';
-  const mainGoal = data.bio;
+  const mainGoal = data.mainGoal;
+  const hasBio = data.bio && data.bio.trim().length > 0;
   const hasInterests = data.interests && data.interests.length > 0;
   const hasTimes = data.availableTimes && data.availableTimes.length > 0;
   const sectionTitleStyle = {
@@ -112,9 +113,13 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
     <Card
       padding={6}
       elevation="lg"
-      style={[{ overflow: 'hidden' }, fullHeight && { flex: 1, height: '100%' }, style]}
+      style={[
+        { overflow: 'hidden' },
+        fullHeight && { flex: 1, height: '100%', minHeight: 0 },
+        style,
+      ]}
     >
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, minHeight: 0 }}>
         {/* Header Section */}
         <LinearGradient
           colors={[theme.colors.primary[100], theme.colors.secondary[50]]}
@@ -177,7 +182,12 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
           </Text>
         </LinearGradient>
 
-        <View style={{ flexGrow: 1, gap: theme.spacing[2] }}>
+        <ScrollView
+          style={{ flex: 1, minHeight: 0 }}
+          contentContainerStyle={{ gap: theme.spacing[3], paddingBottom: theme.spacing[2] }}
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled
+        >
           {renderRequestStatus()}
           {/* Main Goal Badge */}
           <View
@@ -199,6 +209,38 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
               {mainGoal}
             </Text>
           </View>
+
+          {/* Bio Section */}
+          {hasBio && (
+            <View>
+              <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
+                {t('card.bio')}
+              </Text>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'flex-start',
+                  gap: theme.spacing[2],
+                  paddingHorizontal: theme.spacing[3],
+                  paddingVertical: theme.spacing[2],
+                  backgroundColor: theme.colors.background,
+                  borderRadius: theme.radius.md,
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                }}
+              >
+                <User size={16} color={theme.colors.text.tertiary} style={{ marginTop: 2 }} />
+                <Text
+                  variant="bodySmall"
+                  color="secondary"
+                  style={{ flex: 1, lineHeight: 20 }}
+                  numberOfLines={3}
+                >
+                  {data.bio}
+                </Text>
+              </View>
+            </View>
+          )}
 
           {/* Learning Interests */}
           <View>
@@ -320,7 +362,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
               </Text>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </View>
     </Card>
   );
@@ -329,7 +371,10 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
     return (
       <Pressable
         onPress={onPress}
-        style={({ pressed }) => [pressed && { opacity: 0.9 }]}
+        style={({ pressed }) => [
+          { flex: 1, width: '100%', height: '100%' },
+          pressed && { opacity: 0.9 },
+        ]}
         accessibilityRole="button"
         accessibilityLabel={`Profile của ${data.name}`}
       >

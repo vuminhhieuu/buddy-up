@@ -1,7 +1,15 @@
 import React, { useMemo, useState } from 'react';
-import { View, Alert, Dimensions, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ActivityIndicator,
+} from 'react-native';
 import { Formik } from 'formik';
 import { useTranslation } from 'react-i18next';
+import { MapPin } from 'lucide-react-native';
 import {
   ScreenContainer,
   Text,
@@ -21,6 +29,8 @@ import {
   setCurrentProfileStep,
   setProfileSetupInProgress,
 } from '../../../store/slices/authSlice';
+import { getCurrentLocation } from '../../../utils/location';
+import { showSuccessToast, showErrorToast } from '../../../utils/toast';
 
 export type ProfileSetupStep1ScreenProps = {
   onNext?: (stepData: { displayName: string; studyGoal: string; avatarUri?: string }) => void;
@@ -36,10 +46,40 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
 
   const [avatarUri, setAvatarUri] = useState<string | undefined>(avatarUrl);
   const [submitting, setSubmitting] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   const handleAvatarSelected = async (uri: string) => {
     setAvatarUri(uri);
     dispatch(setProfileData({ avatarUrl: uri }));
+  };
+
+  const handleGetCurrentLocation = async (
+    setFieldValue: (field: string, value: string) => void,
+  ) => {
+    try {
+      setGettingLocation(true);
+      const result = await getCurrentLocation();
+
+      if (result.success && result.location) {
+        setFieldValue('location', result.location);
+        showSuccessToast(t('profileSetup.locationSuccess'));
+      } else {
+        const errorMessage = result.error || t('profileSetup.locationError');
+        if (result.error === 'Location permission denied') {
+          Alert.alert(
+            t('common.error', { ns: 'common' }),
+            t('profileSetup.locationPermissionDenied'),
+            [{ text: t('common.ok', { ns: 'common' }) }],
+          );
+        } else {
+          showErrorToast(errorMessage);
+        }
+      }
+    } catch (error) {
+      showErrorToast(t('profileSetup.locationError'));
+    } finally {
+      setGettingLocation(false);
+    }
   };
 
   const styles = useMemo(() => {
@@ -110,6 +150,8 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
                 initialValues={{
                   displayName: registeredDisplayName || profileDisplayName || '',
                   studyGoal: profileStudyGoal || '',
+                  bio: profileData?.bio || '',
+                  location: profileData?.location || '',
                 }}
                 validationSchema={profileStep1Schema}
                 onSubmit={async (values, { setStatus }) => {
@@ -133,6 +175,8 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
                       values.displayName,
                       values.studyGoal,
                       uploadedAvatarUrl || avatarUri,
+                      values.bio || undefined,
+                      values.location || undefined,
                     );
 
                     dispatch(
@@ -140,19 +184,27 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
                         displayName: values.displayName,
                         studyGoal: values.studyGoal,
                         avatarUrl: uploadedAvatarUrl || avatarUri,
+                        bio: values.bio || undefined,
+                        location: values.location || undefined,
                       }),
                     );
 
                     try {
-                      const r = await saveStepForUser(
-                        userId,
-                        {
-                          display_name: values.displayName,
-                          bio: values.studyGoal,
-                          avatar_url: uploadedAvatarUrl || avatarUri,
-                        },
-                        true,
-                      );
+                      const step1Payload: Record<string, any> = {
+                        display_name: values.displayName,
+                        main_learning_goal: values.studyGoal,
+                        avatar_url: uploadedAvatarUrl || avatarUri,
+                      };
+
+                      // Only include bio and location if provided
+                      if (values.bio?.trim()) {
+                        step1Payload.bio = values.bio.trim();
+                      }
+                      if (values.location?.trim()) {
+                        step1Payload.location = values.location.trim();
+                      }
+
+                      const r = await saveStepForUser(userId, step1Payload, true);
                       if (r?.error) {
                         const errorMessage = r.error?.message || 'Failed to save step 1';
                         setStatus(errorMessage);
@@ -182,7 +234,16 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
                   }
                 }}
               >
-                {({ handleChange, handleBlur, handleSubmit, values, errors, touched, status }) => (
+                {({
+                  handleChange,
+                  handleBlur,
+                  handleSubmit,
+                  values,
+                  errors,
+                  touched,
+                  status,
+                  setFieldValue,
+                }) => (
                   <>
                     <View>
                       {/* Display Name Input - with required indicator */}
@@ -222,7 +283,7 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
                       </View>
 
                       {/* Study Goal Input - with required indicator */}
-                      <View style={{ marginBottom: theme.spacing[2] }}>
+                      <View style={{ marginBottom: theme.spacing[3] }}>
                         <View
                           style={{
                             flexDirection: 'row',
@@ -252,6 +313,95 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
                             touched.studyGoal && errors.studyGoal ? t(errors.studyGoal) : undefined
                           }
                         />
+                      </View>
+
+                      {/* Bio Input - optional */}
+                      <View style={{ marginBottom: theme.spacing[3] }}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginBottom: theme.spacing[1],
+                          }}
+                        >
+                          <Text variant="body" style={{ fontWeight: '600' as const }}>
+                            {t('profileSetup.bioLabel')}
+                          </Text>
+                          <Text
+                            variant="body"
+                            color="tertiary"
+                            style={{ marginLeft: theme.spacing[1], fontSize: 12 }}
+                          >
+                            {t('profileSetup.bioOptional')}
+                          </Text>
+                        </View>
+                        <Input
+                          placeholder={t('profileSetup.bioPlaceholder')}
+                          value={values.bio}
+                          onChangeText={handleChange('bio')}
+                          onBlur={handleBlur('bio')}
+                          maxLength={500}
+                          multiline
+                          numberOfLines={3}
+                          editable={!submitting}
+                        />
+                      </View>
+
+                      {/* Location Input - optional */}
+                      <View style={{ marginBottom: theme.spacing[2] }}>
+                        <View
+                          style={{
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                            marginBottom: theme.spacing[1],
+                          }}
+                        >
+                          <Text variant="body" style={{ fontWeight: '600' as const }}>
+                            {t('profileSetup.locationLabel')}
+                          </Text>
+                          <Text
+                            variant="body"
+                            color="tertiary"
+                            style={{ marginLeft: theme.spacing[1], fontSize: 12 }}
+                          >
+                            {t('profileSetup.locationOptional')}
+                          </Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', gap: theme.spacing[2] }}>
+                          <View style={{ flex: 1 }}>
+                            <Input
+                              placeholder={t('profileSetup.locationPlaceholder')}
+                              value={values.location}
+                              onChangeText={handleChange('location')}
+                              onBlur={handleBlur('location')}
+                              maxLength={100}
+                              editable={!submitting && !gettingLocation}
+                            />
+                          </View>
+                          <Pressable
+                            onPress={() => handleGetCurrentLocation(setFieldValue)}
+                            disabled={submitting || gettingLocation}
+                            style={{
+                              width: 48,
+                              height: 48,
+                              borderRadius: theme.radius.md,
+                              backgroundColor: theme.colors.primary[100],
+                              borderWidth: 1.5,
+                              borderColor: theme.colors.primary[300],
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              opacity: submitting || gettingLocation ? 0.5 : 1,
+                            }}
+                            accessibilityRole="button"
+                            accessibilityLabel={t('profileSetup.getCurrentLocation')}
+                          >
+                            {gettingLocation ? (
+                              <ActivityIndicator size="small" color={theme.colors.primary[500]} />
+                            ) : (
+                              <MapPin size={20} color={theme.colors.primary[500]} />
+                            )}
+                          </Pressable>
+                        </View>
                       </View>
 
                       {/* Status Error */}

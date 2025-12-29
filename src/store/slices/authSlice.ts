@@ -3,6 +3,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 export interface ProfileSetupData {
   displayName?: string | null;
   studyGoal?: string;
+  bio?: string;
+  location?: string;
   avatarUrl?: string;
 
   availableTimes?: string[];

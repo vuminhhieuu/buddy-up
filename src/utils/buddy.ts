@@ -74,6 +74,10 @@ export function countActiveFilters(filters: BuddyFilters): FilterCount {
     byCategory.advanced += 1;
     total += 1;
   }
+  if (filters.onlySaved) {
+    byCategory.advanced += 1;
+    total += 1;
+  }
 
   return {
     total,
@@ -158,7 +162,7 @@ export function getLearningStyleLucideIcon(
 /**
  * Get available time text (i18n mapped)
  */
-function getAvailableTimeText(time: string): string {
+export function getAvailableTimeText(time: string): string {
   const timeMap: Record<string, string> = {
     morning: i18n.t('filter.availableTime.morning', { ns: 'buddy' }),
     afternoon: i18n.t('filter.availableTime.afternoon', { ns: 'buddy' }),
@@ -173,7 +177,7 @@ function getAvailableTimeText(time: string): string {
 /**
  * Map interest/subject key to i18n label
  */
-function mapInterestToLabel(interest: string): string {
+export function mapInterestToLabel(interest: string): string {
   const subj = AVAILABLE_SUBJECTS.find((s) => s.key === interest);
   if (subj) {
     const ns = (subj as any).namespace || 'common';
@@ -185,7 +189,7 @@ function mapInterestToLabel(interest: string): string {
 /**
  * Get learning style text
  */
-function getLearningStyleText(style: LearningStyle | null): string {
+export function getLearningStyleText(style: LearningStyle | null): string {
   if (!style) return 'Chưa cập nhật';
   const textMap: Record<LearningStyle, string> = {
     serious: 'Nghiêm túc',
@@ -199,7 +203,7 @@ function getLearningStyleText(style: LearningStyle | null): string {
 /**
  * Format location and age string
  */
-function formatLocationAge(location: string | null, age: number | null): string {
+export function formatLocationAge(location: string | null, age: number | null): string {
   const parts: string[] = [];
   if (location) {
     parts.push(`📍 ${location}`);

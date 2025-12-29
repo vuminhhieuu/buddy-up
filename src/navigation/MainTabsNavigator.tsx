@@ -56,6 +56,12 @@ export const MainTabsNavigator: React.FC = () => {
           hideTabBar = nestedRoute !== 'ChatList';
         }
 
+        if (activeRouteName === 'Buddy') {
+          const route = state.routes[state.index];
+          const nestedRoute = getFocusedRouteNameFromRoute(route) ?? 'BuddyMain';
+          hideTabBar = nestedRoute === 'BuddyDetail';
+        }
+
         if (hideTabBar) {
           return null;
         }

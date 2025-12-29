@@ -29,6 +29,7 @@ import {
   Clock,
   Target,
   BookOpen,
+  MapPin,
 } from 'lucide-react-native';
 import { useTheme } from '../../styles';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -42,6 +43,8 @@ import {
 import { fetchProfileScreenData } from '../../services/profile';
 import type { ProfileStackParamList } from '../../navigation/ProfileStackNavigator';
 import type { EditProfileData } from '../../types/profile';
+import { getCurrentLocation } from '../../utils/location';
+import { showSuccessToast, showErrorToast } from '../../utils/toast';
 
 // Import category options from ProfileSetup
 const CATEGORY_OPTIONS = [
@@ -128,10 +131,13 @@ export const EditProfileScreen: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   // Form fields
   const [displayName, setDisplayName] = useState('');
   const [studyGoal, setStudyGoal] = useState('');
+  const [bio, setBio] = useState('');
+  const [location, setLocation] = useState('');
   const [avatarUri, setAvatarUri] = useState<string | undefined>(undefined);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [learningStyle, setLearningStyle] = useState<string>('');
@@ -151,14 +157,18 @@ export const EditProfileScreen: React.FC = () => {
 
         const loadedData: EditProfileData = {
           displayName: profile.name || setupProfileData.displayName || '',
-          bio: profile.subtitle || setupProfileData.studyGoal || '',
+          bio: profile.bio || '',
+          mainLearningGoal: profile.mainLearningGoal || setupProfileData.studyGoal || '',
+          location: profile.location || '',
           availableTimes: setupProfileData.availableTimes || [],
           learningStyle: setupProfileData.learningStyle || '',
           interests: profile.interests || setupProfileData.categories || [],
         };
 
         setDisplayName(loadedData.displayName);
-        setStudyGoal(loadedData.bio);
+        setStudyGoal(loadedData.mainLearningGoal || '');
+        setBio(loadedData.bio || '');
+        setLocation(loadedData.location || '');
         setAvatarUri(profile.avatarUri);
         setAvailableTimes(loadedData.availableTimes || []);
         setLearningStyle(loadedData.learningStyle || '');
@@ -180,7 +190,9 @@ export const EditProfileScreen: React.FC = () => {
 
     const currentData: EditProfileData = {
       displayName,
-      bio: studyGoal,
+      bio,
+      mainLearningGoal: studyGoal,
+      location,
       availableTimes,
       learningStyle,
       interests: selectedInterests,
@@ -188,7 +200,16 @@ export const EditProfileScreen: React.FC = () => {
 
     const changed = JSON.stringify(currentData) !== JSON.stringify(initialData);
     setHasChanges(changed);
-  }, [displayName, studyGoal, availableTimes, learningStyle, selectedInterests, initialData]);
+  }, [
+    displayName,
+    studyGoal,
+    bio,
+    location,
+    availableTimes,
+    learningStyle,
+    selectedInterests,
+    initialData,
+  ]);
 
   const handleAvatarSelected = async (uri: string) => {
     if (!userId) return;
@@ -228,7 +249,9 @@ export const EditProfileScreen: React.FC = () => {
 
       const profileData: EditProfileData = {
         displayName: displayName.trim(),
-        bio: studyGoal.trim(),
+        bio: bio.trim(),
+        mainLearningGoal: studyGoal.trim(),
+        location: location.trim() || undefined,
         availableTimes,
         learningStyle,
         interests: selectedInterests,
@@ -240,7 +263,9 @@ export const EditProfileScreen: React.FC = () => {
       dispatch(
         setProfileSetupData({
           displayName: profileData.displayName,
-          studyGoal: profileData.bio,
+          studyGoal: profileData.mainLearningGoal || '',
+          bio: profileData.bio,
+          location: profileData.location,
           availableTimes: profileData.availableTimes,
           learningStyle: profileData.learningStyle as
             | 'serious'
@@ -322,6 +347,33 @@ export const EditProfileScreen: React.FC = () => {
     setSelectedInterests((prev) => [...prev, trimmed]);
     setCustomInterest('');
   }, [customInterest, selectedInterests]);
+
+  const handleGetCurrentLocation = useCallback(async () => {
+    try {
+      setGettingLocation(true);
+      const result = await getCurrentLocation();
+
+      if (result.success && result.location) {
+        setLocation(result.location);
+        showSuccessToast(t('locationSuccess', { ns: 'common' }));
+      } else {
+        const errorMessage = result.error || t('locationError', { ns: 'common' });
+        if (result.error === 'Location permission denied') {
+          Alert.alert(
+            t('common.error', { ns: 'common' }),
+            t('locationPermissionDenied', { ns: 'common' }),
+            [{ text: t('ok', { ns: 'common' }) }],
+          );
+        } else {
+          showErrorToast(errorMessage);
+        }
+      }
+    } catch (error) {
+      showErrorToast(t('locationError', { ns: 'common' }));
+    } finally {
+      setGettingLocation(false);
+    }
+  }, [t]);
 
   if (loading) {
     return (
@@ -414,6 +466,60 @@ export const EditProfileScreen: React.FC = () => {
               placeholder={t('editProfile.studyGoalPlaceholder')}
               maxLength={200}
             />
+          </View>
+
+          <View style={styles.fieldContainer}>
+            <Text variant="body" style={styles.fieldLabel}>
+              {t('editProfile.bioLabel')}
+            </Text>
+            <Input
+              value={bio}
+              onChangeText={setBio}
+              placeholder={t('editProfile.bioPlaceholder')}
+              maxLength={500}
+              multiline
+              numberOfLines={3}
+            />
+          </View>
+
+          <View style={styles.fieldContainer}>
+            <Text variant="body" style={styles.fieldLabel}>
+              {t('editProfile.locationLabel')}
+            </Text>
+            <View style={{ flexDirection: 'row', gap: theme.spacing[2] }}>
+              <View style={{ flex: 1 }}>
+                <Input
+                  value={location}
+                  onChangeText={setLocation}
+                  placeholder={t('editProfile.locationPlaceholder')}
+                  maxLength={100}
+                  editable={!gettingLocation}
+                />
+              </View>
+              <Pressable
+                onPress={handleGetCurrentLocation}
+                disabled={gettingLocation}
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: theme.radius.md,
+                  backgroundColor: theme.colors.primary[100],
+                  borderWidth: 1.5,
+                  borderColor: theme.colors.primary[300],
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  opacity: gettingLocation ? 0.5 : 1,
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={t('getCurrentLocation', { ns: 'common' })}
+              >
+                {gettingLocation ? (
+                  <ActivityIndicator size="small" color={theme.colors.primary[500]} />
+                ) : (
+                  <MapPin size={20} color={theme.colors.primary[500]} />
+                )}
+              </Pressable>
+            </View>
           </View>
 
           <View style={styles.fieldContainer}>

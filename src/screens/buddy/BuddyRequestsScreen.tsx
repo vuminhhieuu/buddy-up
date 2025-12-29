@@ -130,6 +130,14 @@ export const BuddyRequestsScreen: React.FC = () => {
     showInfoToast(t('requests.filterComingSoon'));
   }, [t]);
 
+  // Handle card press - navigate to detail screen
+  const handleCardPress = useCallback(
+    (card: BuddyCardData) => {
+      navigation.navigate('BuddyDetail', { userId: card.userId });
+    },
+    [navigation],
+  );
+
   return (
     <ScreenContainer contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 0 }}>
       <View style={{ flex: 1 }}>
@@ -199,6 +207,7 @@ export const BuddyRequestsScreen: React.FC = () => {
                 onSwipeLeft={handleSwipeLeft}
                 onSwipeRight={handleSwipeRight}
                 onStackEmpty={handleStackEmpty}
+                onCardPress={handleCardPress}
                 loading={loading}
                 style={{ flex: 1 }}
               />

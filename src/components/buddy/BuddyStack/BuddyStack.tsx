@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, ViewStyle, Dimensions, Text, Pressable } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureDetector, Gesture } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -37,6 +38,7 @@ export type BuddyStackProps = {
   style?: ViewStyle;
   onSaveToggle?: (card: BuddyCardData) => void;
   isSaved?: (cardId: string) => boolean;
+  onCardPress?: (card: BuddyCardData) => void;
 };
 
 export const BuddyStack: React.FC<BuddyStackProps> = ({
@@ -48,9 +50,11 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
   style,
   onSaveToggle,
   isSaved,
+  onCardPress,
 }) => {
   const { t } = useTranslation('buddy');
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
@@ -162,10 +166,10 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
   });
 
   const nextCardStyle = useAnimatedStyle(() => {
-    const nextScale = currentIndex < cards.length - 1 ? 0.95 : 1;
-    const nextOpacity = currentIndex < cards.length - 1 ? 0.8 : 1;
+    // Remove scale to prevent card from being cut off
+    // Keep slight opacity reduction for visual depth
+    const nextOpacity = currentIndex < cards.length - 1 ? 0.9 : 1;
     return {
-      transform: [{ scale: nextScale }],
       opacity: nextOpacity,
     };
   });
@@ -198,7 +202,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
   }
 
   return (
-    <View style={[{ alignItems: 'center' }, style]}>
+    <View style={[{ alignItems: 'center', flex: 1 }, style]}>
       <View
         style={{
           height: CARD_HEIGHT,
@@ -207,6 +211,7 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
           alignSelf: 'center',
           position: 'relative',
           marginTop: theme.spacing[2],
+          marginBottom: showActions ? theme.spacing[2] : 0,
         }}
       >
         {/* Next Card (Back) */}
@@ -221,8 +226,9 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
               },
               nextCardStyle,
             ]}
+            pointerEvents="box-none"
           >
-            <BuddyCard data={nextCard} fullHeight />
+            <BuddyCard data={nextCard} fullHeight onPress={() => onCardPress?.(nextCard)} />
           </Animated.View>
         )}
 
@@ -237,10 +243,11 @@ export const BuddyStack: React.FC<BuddyStackProps> = ({
             },
             animatedStyle,
           ]}
+          pointerEvents="box-none"
         >
           <GestureDetector gesture={panGesture}>
             <View style={{ flex: 1, height: '100%' }}>
-              <BuddyCard data={currentCard} fullHeight />
+              <BuddyCard data={currentCard} fullHeight onPress={() => onCardPress?.(currentCard)} />
             </View>
           </GestureDetector>
         </Animated.View>
