@@ -22,7 +22,6 @@ import { Text } from '../../components/ui/Text/Text';
 import { Spacer } from '../../components/ui/Spacer/Spacer';
 import { ScreenContainer } from '../../components/ui/ScreenContainer/ScreenContainer';
 import { HandshakeLogo } from '../../components/ui/HandshakeLogo';
-import { BuddyBackground } from '../../components/buddy/BuddyBackground/BuddyBackground';
 import type { BuddyStackParamList } from '../../navigation/BuddyStackNavigator';
 import { useAppSelector } from '../../store/hooks';
 import { getCurrentUserId } from '../../utils/buddy';
@@ -248,7 +247,6 @@ export const ConnectionSuccessScreen: React.FC = () => {
   return (
     <ScreenContainer contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 0 }}>
       <View style={{ flex: 1 }}>
-        <BuddyBackground />
         {confettiVisible && (
           <ConfettiCannon
             count={90}

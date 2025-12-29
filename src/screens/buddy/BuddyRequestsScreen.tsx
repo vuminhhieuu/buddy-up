@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '../../components/ui/Text/Text';
 import { Spacer } from '../../components/ui/Spacer/Spacer';
 import { ScreenContainer } from '../../components/ui/ScreenContainer/ScreenContainer';
-import { BuddyBackground } from '../../components/buddy/BuddyBackground/BuddyBackground';
 import { BuddyStack } from '../../components/buddy/BuddyStack/BuddyStack';
 import { Loading } from '../../components/ui/Loading/Loading';
 import { EmptyState } from '../../components/ui/EmptyState/EmptyState';
@@ -134,8 +133,6 @@ export const BuddyRequestsScreen: React.FC = () => {
   return (
     <ScreenContainer contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 0 }}>
       <View style={{ flex: 1 }}>
-        <BuddyBackground />
-
         <View
           style={{ paddingHorizontal: theme.spacing[5], paddingTop: theme.spacing[4], flex: 1 }}
         >

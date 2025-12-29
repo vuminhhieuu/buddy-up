@@ -8,6 +8,7 @@ export type CheckboxProps = {
   checked: boolean;
   onPress: () => void;
   label?: string;
+  leftIcon?: React.ReactNode;
   disabled?: boolean;
   style?: ViewStyle;
   accessibilityLabel?: string;
@@ -17,6 +18,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
   checked,
   onPress,
   label,
+  leftIcon,
   disabled = false,
   style,
   accessibilityLabel,
@@ -63,6 +65,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
       <View style={iconBoxStyle}>
         {checked && <Check color={theme.colors.text.inverse} size={12} strokeWidth={3} />}
       </View>
+      {leftIcon && <View style={{ marginRight: theme.spacing[1] }}>{leftIcon}</View>}
       {label && (
         <Text variant="bodySmall" color="primary" style={{ fontWeight: '500' as const, flex: 1 }}>
           {label}

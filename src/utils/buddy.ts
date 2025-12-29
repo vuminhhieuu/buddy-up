@@ -1,3 +1,4 @@
+import React from 'react';
 import type { RootState } from '../store';
 import type {
   BuddyFilters,
@@ -100,7 +101,7 @@ export function validateFilters(filters: BuddyFilters): { valid: boolean; errors
 }
 
 /**
- * Get available time icon
+ * Get available time icon (emoji - for backward compatibility)
  */
 function getAvailableTimeIcon(time: AvailableTime): string {
   const iconMap: Record<AvailableTime, string> = {
@@ -112,6 +113,46 @@ function getAvailableTimeIcon(time: AvailableTime): string {
     flexible: '🕐',
   };
   return iconMap[time] || '🕐';
+}
+
+/**
+ * Get available time lucide icon component
+ * Returns React component from lucide-react-native
+ */
+export function getAvailableTimeLucideIcon(
+  time: AvailableTime,
+): React.ComponentType<{ size?: number; color?: string }> {
+  // Dynamic import to avoid circular dependencies
+  const { Sun, SunMedium, Moon, Calendar, Clock } = require('lucide-react-native');
+
+  const iconMap: Record<AvailableTime, React.ComponentType<{ size?: number; color?: string }>> = {
+    morning: Sun,
+    afternoon: SunMedium,
+    evening: Moon,
+    late_night: Moon,
+    weekend: Calendar,
+    flexible: Clock,
+  };
+  return iconMap[time] || Clock;
+}
+
+/**
+ * Get learning style lucide icon component
+ * Returns React component from lucide-react-native
+ */
+export function getLearningStyleLucideIcon(
+  style: LearningStyle,
+): React.ComponentType<{ size?: number; color?: string }> {
+  // Dynamic import to avoid circular dependencies
+  const { ClipboardList, Smile, Target, Star } = require('lucide-react-native');
+
+  const iconMap: Record<LearningStyle, React.ComponentType<{ size?: number; color?: string }>> = {
+    serious: ClipboardList,
+    relaxed: Smile,
+    balanced: Target,
+    not_important: Star,
+  };
+  return iconMap[style] || Star;
 }
 
 /**
@@ -184,8 +225,9 @@ export function profileToCardData(profile: BuddyProfile): BuddyCardData {
 
   // Format available times with icons and i18n labels
   const availableTimes = profile.available_times.map((time) => ({
-    icon: getAvailableTimeIcon(time),
+    icon: getAvailableTimeIcon(time), // Keep for backward compatibility
     text: getAvailableTimeText(time),
+    timeValue: time, // Add time value for lucide icon mapping
   }));
 
   // Format learning style

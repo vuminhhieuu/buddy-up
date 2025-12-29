@@ -1,5 +1,6 @@
 import React from 'react';
-import { Animated, StyleSheet } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
+import { ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
 
@@ -28,13 +29,21 @@ export const SwipeHint: React.FC<SwipeHintProps> = ({ visible, message }) => {
     <Animated.View
       style={[styles.container, { opacity, backgroundColor: theme.colors.text.primary }]}
     >
-      <Text
-        variant="bodySmall"
-        color="inverse"
-        style={{ fontWeight: '600' as const, textAlign: 'center' }}
-      >
-        {message}
-      </Text>
+      <View style={styles.content}>
+        <ChevronLeft size={16} color={theme.colors.text.inverse} />
+        <Text
+          variant="bodySmall"
+          color="inverse"
+          style={{
+            fontWeight: '600' as const,
+            textAlign: 'center',
+            marginHorizontal: theme.spacing[2],
+          }}
+        >
+          {message}
+        </Text>
+        <ChevronRight size={16} color={theme.colors.text.inverse} />
+      </View>
     </Animated.View>
   );
 };
@@ -55,5 +64,10 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
     elevation: 4,
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

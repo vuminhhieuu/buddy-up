@@ -7,6 +7,7 @@ export type RadioButtonProps = {
   selected: boolean;
   onPress: () => void;
   label?: string;
+  leftIcon?: React.ReactNode;
   value?: string;
   disabled?: boolean;
   style?: ViewStyle;
@@ -17,6 +18,7 @@ export const RadioButton: React.FC<RadioButtonProps> = ({
   selected,
   onPress,
   label,
+  leftIcon,
   value,
   disabled = false,
   style,
@@ -68,6 +70,7 @@ export const RadioButton: React.FC<RadioButtonProps> = ({
       ]}
     >
       <View style={circleStyle}>{selected && <View style={innerCircleStyle} />}</View>
+      {leftIcon && <View style={{ marginRight: theme.spacing[1] }}>{leftIcon}</View>}
       {label && (
         <Text variant="body" color="primary" style={{ fontWeight: '500' as const, flex: 1 }}>
           {label}

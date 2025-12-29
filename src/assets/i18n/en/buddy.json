@@ -34,27 +34,27 @@
     "searchGoalPlaceholder": "Search goal...",
     "availableTimes": "Available Time",
     "availableTime": {
-      "morning": "☀️ Morning",
-      "afternoon": "🌤️ Afternoon",
-      "evening": "🌙 Evening",
-      "lateNight": "🌃 Late night",
-      "weekend": "🎉 Weekend",
-      "flexible": "⚡ Flexible"
+      "morning": "Morning",
+      "afternoon": "Afternoon",
+      "evening": "Evening",
+      "lateNight": "Late night",
+      "weekend": "Weekend",
+      "flexible": "Flexible"
     },
     "learningStyle": "Learning Style",
     "learningStyleOptions": {
-      "serious": "📋 Serious, with clear plan",
-      "relaxed": "😊 Relaxed, not too stressful",
-      "balanced": "🎯 Study and play, balanced",
-      "notImportant": "💫 Not important"
+      "serious": "Serious, with clear plan",
+      "relaxed": "Relaxed, not too stressful",
+      "balanced": "Study and play, balanced",
+      "notImportant": "Not important"
     },
     "onlineStatus": "Online Status",
     "onlyOnline": "Only show people online now",
     "level": "Level",
     "levelOptions": {
-      "beginner": "🌱 Beginner",
-      "intermediate": "🌿 Intermediate",
-      "advanced": "🌳 Advanced"
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
     },
     "activeFilters": "Active Filters",
     "clearAll": "Clear All",
@@ -71,8 +71,7 @@
     "notUpdated": "Not updated",
     "noInterests": "No learning interests yet",
     "noAvailableTimes": "No schedule shared",
-    "learningStyleTitle": "Learning Style",
-    "viewDetailsHint": "Swipe right to connect and view full profile"
+    "learningStyleTitle": "Learning Style"
   },
   "loading": "Loading...",
   "stack": {
@@ -167,7 +166,7 @@
     "save": "Save",
     "connect": "Connect"
   },
-  "swipeHint": "Swipe left to pass, right to connect ↔️",
+  "swipeHint": "Swipe left to pass, right to connect",
   "toast": {
     "saved": "Profile saved",
     "unsaved": "Removed from saved",
