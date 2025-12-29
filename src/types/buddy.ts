@@ -75,6 +75,8 @@ export interface BuddyFilters {
   hideRejected?: boolean;
   /** Prioritize users with free schedule */
   prioritizeFreeSchedule?: boolean;
+  /** Only show saved profiles */
+  onlySaved?: boolean;
 }
 
 // Note: DEFAULT_BUDDY_FILTERS has been moved to src/constants/buddy.ts

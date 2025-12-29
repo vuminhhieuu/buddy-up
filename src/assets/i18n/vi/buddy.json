@@ -61,7 +61,8 @@
     "advancedOptions": "Tùy chọn nâng cao",
     "onlyVerified": "Chỉ hiện hồ sơ đã xác thực ✓",
     "hideRejected": "Ẩn người đã từ chối trước đó",
-    "prioritizeFreeSchedule": "Ưu tiên người có lịch trống"
+    "prioritizeFreeSchedule": "Ưu tiên người có lịch trống",
+    "onlySaved": "Chỉ hiện hồ sơ đã lưu"
   },
   "card": {
     "learningInterests": "Sở thích học tập",
@@ -181,5 +182,39 @@
     "requestRejected": "Lời mời kết nối đã bị từ chối",
     "requestRejectedMessage": "{{name}} đã từ chối lời mời kết nối của bạn",
     "error": "Không thể tải thông báo"
+  },
+  "detail": {
+    "loading": "Đang tải...",
+    "notFound": "Không tìm thấy hồ sơ",
+    "loadError": "Không thể tải thông tin hồ sơ",
+    "matchPercentage": "{{percentage}}% phù hợp với bạn",
+    "scheduleOverlap": "Có {{hours}} giờ trùng lịch trong tuần!",
+    "verified": "Đã xác thực",
+    "online": "Online",
+    "yearsOld": "tuổi",
+    "minutesAgo": "{{minutes}} phút trước",
+    "mainGoal": "Mục tiêu chính",
+    "goalProgress": "Đã học 3 tháng • Mục tiêu 12/2024",
+    "statistics": "Thống kê",
+    "days": "ngày",
+    "hours": "giờ",
+    "sessions": "buổi",
+    "currentStreak": "Streak hiện tại",
+    "bonusPoints": "Điểm thưởng",
+    "totalStudyHours": "Tổng giờ học",
+    "completed": "Đã hoàn thành",
+    "skip": "Bỏ qua",
+    "sendInvitation": "Gửi lời mời",
+    "sendMessage": "Nhắn tin",
+    "requestPending": "Đã gửi lời mời",
+    "alreadyConnected": "Đã kết nối",
+    "availableSchedule": "Lịch rảnh",
+    "morning": "Sáng",
+    "afternoon": "Chiều",
+    "evening": "Tối",
+    "reviews": "Đánh giá ({{count}})",
+    "twoWeeksAgo": "2 tuần trước",
+    "oneMonthAgo": "1 tháng trước",
+    "viewAllReviews": "Xem tất cả {{count}} đánh giá"
   }
 }

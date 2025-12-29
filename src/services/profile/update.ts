@@ -61,17 +61,28 @@ export async function updateProfileStep1(
   displayName: string,
   studyGoal: string,
   avatarUrl?: string,
+  bio?: string,
+  location?: string,
 ): Promise<void> {
   try {
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        display_name: displayName,
-        bio: studyGoal,
-        avatar_url: avatarUrl || null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', userId);
+    const updateData: Record<string, any> = {
+      display_name: displayName,
+      main_learning_goal: studyGoal,
+      avatar_url: avatarUrl || null,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only update bio if provided
+    if (bio !== undefined) {
+      updateData.bio = bio;
+    }
+
+    // Only update location if provided
+    if (location !== undefined) {
+      updateData.location = location;
+    }
+
+    const { error } = await supabase.from('profiles').update(updateData).eq('user_id', userId);
 
     if (error) {
       throw new Error(`Update failed: ${formatErrorMessage(error)}`);
@@ -91,15 +102,24 @@ export async function updateFullProfile(
   profileData: EditProfileData,
 ): Promise<void> {
   try {
-    const { error } = await supabase
-      .from('profiles')
-      .update({
-        display_name: profileData.displayName,
-        bio: profileData.bio,
-        interests: profileData.interests || [],
-        updated_at: new Date().toISOString(),
-      })
-      .eq('user_id', userId);
+    const updateData: Record<string, any> = {
+      display_name: profileData.displayName,
+      bio: profileData.bio,
+      interests: profileData.interests || [],
+      updated_at: new Date().toISOString(),
+    };
+
+    // Update location if provided
+    if (profileData.location !== undefined) {
+      updateData.location = profileData.location;
+    }
+
+    // Update main_learning_goal if provided (for backward compatibility)
+    if (profileData.mainLearningGoal !== undefined) {
+      updateData.main_learning_goal = profileData.mainLearningGoal;
+    }
+
+    const { error } = await supabase.from('profiles').update(updateData).eq('user_id', userId);
 
     if (error) {
       throw new Error(`Update failed: ${formatErrorMessage(error)}`);

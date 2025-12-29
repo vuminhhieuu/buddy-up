@@ -61,7 +61,8 @@
     "advancedOptions": "Advanced Options",
     "onlyVerified": "Only show verified profiles ✓",
     "hideRejected": "Hide people who previously rejected",
-    "prioritizeFreeSchedule": "Prioritize people with free schedule"
+    "prioritizeFreeSchedule": "Prioritize people with free schedule",
+    "onlySaved": "Show saved profiles only"
   },
   "card": {
     "learningInterests": "Learning Interests",
@@ -181,5 +182,39 @@
     "requestRejected": "Connection request rejected",
     "requestRejectedMessage": "{{name}} has rejected your connection request",
     "error": "Failed to load notifications"
+  },
+  "detail": {
+    "loading": "Loading...",
+    "notFound": "Profile not found",
+    "loadError": "Unable to load profile information",
+    "matchPercentage": "{{percentage}}% match with you",
+    "scheduleOverlap": "{{hours}} hours of overlapping schedule this week!",
+    "verified": "Verified",
+    "online": "Online",
+    "yearsOld": "years old",
+    "minutesAgo": "{{minutes}} minutes ago",
+    "mainGoal": "Main Goal",
+    "goalProgress": "Studied 3 months • Goal 12/2024",
+    "statistics": "Statistics",
+    "days": "days",
+    "hours": "hours",
+    "sessions": "sessions",
+    "currentStreak": "Current streak",
+    "bonusPoints": "Bonus points",
+    "totalStudyHours": "Total study hours",
+    "completed": "Completed",
+    "skip": "Skip",
+    "sendInvitation": "Send invitation",
+    "sendMessage": "Send Message",
+    "requestPending": "Request Pending",
+    "alreadyConnected": "Already Connected",
+    "availableSchedule": "Available Schedule",
+    "morning": "Morning",
+    "afternoon": "Afternoon",
+    "evening": "Evening",
+    "reviews": "Reviews ({{count}})",
+    "twoWeeksAgo": "2 weeks ago",
+    "oneMonthAgo": "1 month ago",
+    "viewAllReviews": "View all {{count}} reviews"
   }
 }

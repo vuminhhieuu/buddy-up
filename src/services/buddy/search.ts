@@ -9,6 +9,7 @@ import { DEFAULT_PAGE, DEFAULT_PAGE_LIMIT } from '../../constants/buddy';
 import { logger } from '../../utils/logger';
 import { getExcludedUserIds } from './connections';
 import { normalizeProfile, type SupabaseProfileRow } from './normalize';
+import { fetchSavedProfileIds } from './savedProfiles';
 
 /**
  * Search buddies based on filters
@@ -72,6 +73,32 @@ export async function searchBuddies(
             query = query.neq('user_id', id);
           });
         }
+      }
+    }
+
+    // Filter by saved profiles if onlySaved is true
+    if (filters.onlySaved) {
+      try {
+        const savedProfileIds = await fetchSavedProfileIds(currentUserId);
+        if (savedProfileIds.length === 0) {
+          // No saved profiles, return empty result
+          return {
+            profiles: [],
+            totalCount: 0,
+            hasMore: false,
+            currentPage: page,
+          };
+        }
+        query = query.in('user_id', savedProfileIds);
+      } catch (error) {
+        logger.error('searchBuddies', 'Error fetching saved profile IDs:', error);
+        // If error fetching saved profiles, return empty result
+        return {
+          profiles: [],
+          totalCount: 0,
+          hasMore: false,
+          currentPage: page,
+        };
       }
     }
 

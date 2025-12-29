@@ -111,6 +111,7 @@ export const DEFAULT_BUDDY_FILTERS: BuddyFilters = {
   onlyVerified: false,
   hideRejected: false,
   prioritizeFreeSchedule: false,
+  onlySaved: false,
 };
 
 // ============================================================================

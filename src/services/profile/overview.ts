@@ -29,7 +29,7 @@ export async function fetchProfileOverview(userId: string): Promise<UserProfile>
       await Promise.all([
         supabase
           .from('profiles')
-          .select('display_name,bio,avatar_url,interests')
+          .select('display_name,bio,avatar_url,interests,main_learning_goal,location')
           .eq('user_id', userId)
           .maybeSingle(),
         supabase
@@ -90,6 +90,9 @@ export async function fetchProfileOverview(userId: string): Promise<UserProfile>
       streak: progressRow?.streak ?? 0,
       totalTime: Number(totalHours.toFixed(1)),
       xp: progressRow?.xp ?? 0,
+      bio: profileRow?.bio || undefined,
+      mainLearningGoal: profileRow?.main_learning_goal || undefined,
+      location: profileRow?.location || undefined,
       interests: profileRow?.interests ?? [],
     };
   } catch (error) {

@@ -11,3 +11,6 @@ export * from './search';
 
 // Profile fetching
 export * from './profile';
+
+// Saved profiles
+export * from './savedProfiles';

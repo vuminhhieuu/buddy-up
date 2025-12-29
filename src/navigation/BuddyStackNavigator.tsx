@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BuddyScreen } from '../screens/buddy/BuddyScreen';
 import { BuddyRequestsScreen } from '../screens/buddy/BuddyRequestsScreen';
 import { ConnectionSuccessScreen } from '../screens/buddy/ConnectionSuccessScreen';
+import { BuddyDetailScreen } from '../screens/buddy/BuddyDetailScreen';
 import type { ConnectionRequest, BuddyProfile } from '../types/buddy';
 
 export type BuddyStackParamList = {
@@ -11,6 +12,9 @@ export type BuddyStackParamList = {
   ConnectionSuccess: {
     connection: ConnectionRequest;
     sender: BuddyProfile;
+  };
+  BuddyDetail: {
+    userId: string;
   };
 };
 
@@ -21,5 +25,6 @@ export const BuddyStackNavigator: React.FC = () => (
     <Stack.Screen name="BuddyMain" component={BuddyScreen} />
     <Stack.Screen name="BuddyRequests" component={BuddyRequestsScreen} />
     <Stack.Screen name="ConnectionSuccess" component={ConnectionSuccessScreen} />
+    <Stack.Screen name="BuddyDetail" component={BuddyDetailScreen} />
   </Stack.Navigator>
 );

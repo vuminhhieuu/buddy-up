@@ -4,6 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BuddyStackParamList } from '../../navigation/BuddyStackNavigator';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +26,9 @@ import {
   selectUnreadRequestsCount,
   fetchIncomingRequestsAsync,
   selectIncomingRequests,
+  fetchSavedProfileIdsAsync,
+  saveProfileAsync,
+  unsaveProfileAsync,
 } from '../../store/slices/buddySlice';
 import { profileToCardData, countActiveFilters } from '../../utils/buddy';
 import { getCurrentUserId } from '../../utils/buddy';
@@ -45,6 +49,7 @@ type NavigationProp = NativeStackNavigationProp<BuddyStackParamList, 'BuddyMain'
 export const BuddyScreen: React.FC = () => {
   const { t } = useTranslation('buddy');
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
   const navigation = useNavigation<NavigationProp>();
   const dispatch = useAppDispatch();
   const {
@@ -55,6 +60,8 @@ export const BuddyScreen: React.FC = () => {
     error,
     totalCount,
     requestStatuses = {},
+    savedProfileIds,
+    savingProfileIds,
   } = useAppSelector((state) => state.buddy);
   const unreadRequestsCount = useAppSelector(selectUnreadRequestsCount);
   const pendingRequests = useAppSelector(selectIncomingRequests);
@@ -63,7 +70,6 @@ export const BuddyScreen: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState(filters.searchQuery || '');
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [debounceTimer, setDebounceTimer] = useState<NodeJS.Timeout | null>(null);
-  const [savedProfiles, setSavedProfiles] = useState<Record<string, boolean>>({});
   const [swipeHintVisible, setSwipeHintVisible] = useState(false);
   const swipeHintTimeout = useRef<NodeJS.Timeout | null>(null);
   const pendingRequestsCount = pendingRequests.length;
@@ -119,6 +125,13 @@ export const BuddyScreen: React.FC = () => {
     };
     checkHint();
   }, []);
+
+  // Fetch saved profiles on mount
+  useEffect(() => {
+    if (currentUserId) {
+      dispatch(fetchSavedProfileIdsAsync(currentUserId));
+    }
+  }, [currentUserId, dispatch]);
 
   // Search function
   const performSearch = useCallback(() => {
@@ -282,6 +295,14 @@ export const BuddyScreen: React.FC = () => {
     // TODO: Handle empty stack (load more or show message)
   };
 
+  // Handle card press - navigate to detail screen
+  const handleCardPress = useCallback(
+    (card: BuddyCardData) => {
+      navigation.navigate('BuddyDetail', { userId: card.userId });
+    },
+    [navigation],
+  );
+
   // Count active filters using utility function
   const activeFiltersCount = countActiveFilters(filters).total;
 
@@ -296,30 +317,26 @@ export const BuddyScreen: React.FC = () => {
 
   const handleToggleSave = useCallback(
     (card: BuddyCardData) => {
-      const alreadySaved = Boolean(savedProfiles[card.userId]);
-      setSavedProfiles((prev) => {
-        const next = { ...prev };
-        if (alreadySaved) {
-          delete next[card.userId];
-        } else {
-          next[card.userId] = true;
-        }
-        return next;
-      });
+      if (!currentUserId) return;
+
+      const alreadySaved = savedProfileIds.includes(card.userId);
+
       if (alreadySaved) {
+        dispatch(unsaveProfileAsync({ userId: currentUserId, savedUserId: card.userId }));
         showInfoToast(t('toast.unsaved'));
       } else {
+        dispatch(saveProfileAsync({ userId: currentUserId, savedUserId: card.userId }));
         showSuccessToast(t('toast.saved'));
       }
     },
-    [savedProfiles, t],
+    [currentUserId, savedProfileIds, dispatch, t],
   );
 
   const isSaved = useCallback(
     (cardId: string) => {
-      return Boolean(savedProfiles[cardId]);
+      return savedProfileIds.includes(cardId);
     },
-    [savedProfiles],
+    [savedProfileIds],
   );
 
   return (
@@ -376,7 +393,7 @@ export const BuddyScreen: React.FC = () => {
             </Pressable>
           ) : null}
 
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, paddingBottom: insets.bottom + theme.spacing[4] }}>
             {loading && results.length === 0 ? (
               <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                 <Loading />
@@ -408,6 +425,7 @@ export const BuddyScreen: React.FC = () => {
                 loading={loading}
                 onSaveToggle={handleToggleSave}
                 isSaved={isSaved}
+                onCardPress={handleCardPress}
                 style={{ flex: 1 }}
               />
             )}

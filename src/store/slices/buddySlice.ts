@@ -26,6 +26,8 @@ export interface BuddyState {
   requestStatuses: Record<string, 'idle' | 'pending' | 'sent' | 'error'>;
   incomingRequests: IncomingRequest[];
   unreadRequestsCount: number;
+  savedProfileIds: string[]; // Array of saved user IDs
+  savingProfileIds: Record<string, boolean>; // Track which profiles are being saved/unsaved
 }
 
 const initialState: BuddyState = {
@@ -40,6 +42,8 @@ const initialState: BuddyState = {
   requestStatuses: {},
   incomingRequests: [],
   unreadRequestsCount: 0,
+  savedProfileIds: [],
+  savingProfileIds: {},
 };
 
 /**
@@ -230,6 +234,56 @@ export const respondToBuddyRequestAsync = createAsyncThunk<
     }
   },
 );
+
+/**
+ * Async thunk to fetch saved profile IDs
+ */
+export const fetchSavedProfileIdsAsync = createAsyncThunk<string[], string, { state: RootState }>(
+  'buddy/fetchSavedProfileIds',
+  async (userId, { rejectWithValue }) => {
+    try {
+      const savedIds = await buddyService.fetchSavedProfileIds(userId);
+      return savedIds;
+    } catch (error: unknown) {
+      const errorMessage = formatErrorMessage(error) || 'Failed to fetch saved profiles';
+      return rejectWithValue(errorMessage);
+    }
+  },
+);
+
+/**
+ * Async thunk to save a profile
+ */
+export const saveProfileAsync = createAsyncThunk<
+  string,
+  { userId: string; savedUserId: string },
+  { state: RootState }
+>('buddy/saveProfile', async ({ userId, savedUserId }, { rejectWithValue }) => {
+  try {
+    await buddyService.saveProfile(userId, savedUserId);
+    return savedUserId;
+  } catch (error: unknown) {
+    const errorMessage = formatErrorMessage(error) || 'Failed to save profile';
+    return rejectWithValue(errorMessage);
+  }
+});
+
+/**
+ * Async thunk to unsave a profile
+ */
+export const unsaveProfileAsync = createAsyncThunk<
+  string,
+  { userId: string; savedUserId: string },
+  { state: RootState }
+>('buddy/unsaveProfile', async ({ userId, savedUserId }, { rejectWithValue }) => {
+  try {
+    await buddyService.unsaveProfile(userId, savedUserId);
+    return savedUserId;
+  } catch (error: unknown) {
+    const errorMessage = formatErrorMessage(error) || 'Failed to unsave profile';
+    return rejectWithValue(errorMessage);
+  }
+});
 
 const buddySlice = createSlice({
   name: 'buddy',
@@ -425,6 +479,51 @@ const buddySlice = createSlice({
         state.error = payload?.error || 'Failed to respond to request';
       });
 
+    // fetchSavedProfileIdsAsync
+    builder
+      .addCase(fetchSavedProfileIdsAsync.pending, (state) => {
+        // No loading state needed for this
+      })
+      .addCase(fetchSavedProfileIdsAsync.fulfilled, (state, action) => {
+        state.savedProfileIds = action.payload;
+      })
+      .addCase(fetchSavedProfileIdsAsync.rejected, (state) => {
+        // Silently fail - saved profiles are not critical
+        state.savedProfileIds = [];
+      });
+
+    // saveProfileAsync
+    builder
+      .addCase(saveProfileAsync.pending, (state, action) => {
+        state.savingProfileIds[action.meta.arg.savedUserId] = true;
+      })
+      .addCase(saveProfileAsync.fulfilled, (state, action) => {
+        const savedUserId = action.payload;
+        state.savingProfileIds[savedUserId] = false;
+        if (!state.savedProfileIds.includes(savedUserId)) {
+          state.savedProfileIds.push(savedUserId);
+        }
+      })
+      .addCase(saveProfileAsync.rejected, (state, action) => {
+        const savedUserId = action.meta.arg.savedUserId;
+        state.savingProfileIds[savedUserId] = false;
+      });
+
+    // unsaveProfileAsync
+    builder
+      .addCase(unsaveProfileAsync.pending, (state, action) => {
+        state.savingProfileIds[action.meta.arg.savedUserId] = true;
+      })
+      .addCase(unsaveProfileAsync.fulfilled, (state, action) => {
+        const savedUserId = action.payload;
+        state.savingProfileIds[savedUserId] = false;
+        state.savedProfileIds = state.savedProfileIds.filter((id) => id !== savedUserId);
+      })
+      .addCase(unsaveProfileAsync.rejected, (state, action) => {
+        const savedUserId = action.meta.arg.savedUserId;
+        state.savingProfileIds[savedUserId] = false;
+      });
+
     // Clear buddy state when user signs out
     builder.addCase(signOutState, (state) => {
       state.incomingRequests = [];
@@ -436,6 +535,8 @@ const buddySlice = createSlice({
       state.hasMore = false;
       state.totalCount = 0;
       state.error = null;
+      state.savedProfileIds = [];
+      state.savingProfileIds = {};
     });
   },
 });

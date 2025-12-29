@@ -16,12 +16,16 @@ export type UserProfile = {
   totalTime: number;
   xp: number;
   bio?: string;
+  mainLearningGoal?: string;
+  location?: string;
   interests?: string[];
 };
 
 export type EditProfileData = {
   displayName: string;
   bio: string;
+  location?: string;
+  mainLearningGoal?: string;
   availableTimes?: string[];
   learningStyle?: string;
   interests?: string[];
