@@ -19,7 +19,11 @@ import { ToggleSwitch } from '../../ui/ToggleSwitch';
 import { SegmentedControl } from '../../ui/SegmentedControl';
 import { Spacer } from '../../ui/Spacer/Spacer';
 import { X, Search, ChevronDown } from 'lucide-react-native';
-import { countActiveFilters } from '../../../utils/buddy';
+import {
+  countActiveFilters,
+  getAvailableTimeLucideIcon,
+  getLearningStyleLucideIcon,
+} from '../../../utils/buddy';
 import type {
   BuddyFilters,
   LearningGoal,
@@ -510,15 +514,28 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                     gap: theme.spacing[3],
                   }}
                 >
-                  {AVAILABLE_TIMES_CONFIG.map((time) => (
-                    <View key={time.value} style={{ width: '47%' }}>
-                      <Checkbox
-                        checked={(localFilters.availableTimes || []).includes(time.value)}
-                        onPress={() => toggleAvailableTime(time.value)}
-                        label={t(time.translationKey)}
-                      />
-                    </View>
-                  ))}
+                  {AVAILABLE_TIMES_CONFIG.map((time) => {
+                    const TimeIcon = getAvailableTimeLucideIcon(time.value);
+                    return (
+                      <View key={time.value} style={{ width: '47%' }}>
+                        <Checkbox
+                          checked={(localFilters.availableTimes || []).includes(time.value)}
+                          onPress={() => toggleAvailableTime(time.value)}
+                          label={t(time.translationKey)}
+                          leftIcon={
+                            <TimeIcon
+                              size={18}
+                              color={
+                                (localFilters.availableTimes || []).includes(time.value)
+                                  ? theme.colors.primary[500]
+                                  : theme.colors.text.secondary
+                              }
+                            />
+                          }
+                        />
+                      </View>
+                    );
+                  })}
                 </View>
               </View>
 
@@ -528,16 +545,29 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                   {t('filter.learningStyle')}
                 </Text>
                 <View style={{ gap: theme.spacing[3] }}>
-                  {LEARNING_STYLES_CONFIG.map((style) => (
-                    <RadioButton
-                      key={style.value}
-                      selected={localFilters.learningStyle === style.value}
-                      onPress={() =>
-                        setLocalFilters({ ...localFilters, learningStyle: style.value })
-                      }
-                      label={t(style.translationKey)}
-                    />
-                  ))}
+                  {LEARNING_STYLES_CONFIG.map((style) => {
+                    const StyleIcon = getLearningStyleLucideIcon(style.value);
+                    return (
+                      <RadioButton
+                        key={style.value}
+                        selected={localFilters.learningStyle === style.value}
+                        onPress={() =>
+                          setLocalFilters({ ...localFilters, learningStyle: style.value })
+                        }
+                        label={t(style.translationKey)}
+                        leftIcon={
+                          <StyleIcon
+                            size={18}
+                            color={
+                              localFilters.learningStyle === style.value
+                                ? theme.colors.primary[500]
+                                : theme.colors.text.secondary
+                            }
+                          />
+                        }
+                      />
+                    );
+                  })}
                 </View>
               </View>
 

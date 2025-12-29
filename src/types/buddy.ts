@@ -136,16 +136,17 @@ export interface BuddyCardData {
   name: string;
   /** Avatar (emoji or URL) */
   avatar: string | null;
-  /** Location and age string (e.g., "📍 TP.HCM • 23 tuổi") */
+  /** Location and age string (e.g., "TP.HCM • 23 tuổi") */
   locationAge: string;
-  /** Main learning goal badge (e.g., "🎯 JLPT N3 - Tháng 12/2024") */
+  /** Main learning goal badge (e.g., "JLPT N3 - Tháng 12/2024") */
   mainGoal: string;
   /** Learning interests tags */
   interests: string[];
   /** Available times with details */
   availableTimes: Array<{
-    icon: string;
+    icon: string; // Deprecated: kept for backward compatibility, use timeValue instead
     text: string;
+    timeValue?: AvailableTime; // Added to support lucide icons
   }>;
   /** Learning style text */
   learningStyle: string;

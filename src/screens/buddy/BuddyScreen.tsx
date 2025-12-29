@@ -10,7 +10,6 @@ import { useTranslation } from 'react-i18next';
 import { Text } from '../../components/ui/Text/Text';
 import { Spacer } from '../../components/ui/Spacer/Spacer';
 import { ScreenContainer } from '../../components/ui/ScreenContainer/ScreenContainer';
-import { BuddyBackground } from '../../components/buddy/BuddyBackground/BuddyBackground';
 import { BuddyHero } from '../../components/buddy/BuddyHero/BuddyHero';
 import { SwipeHint } from '../../components/buddy/SwipeHint/SwipeHint';
 import { FilterModal } from '../../components/buddy/FilterModal/FilterModal';
@@ -326,7 +325,6 @@ export const BuddyScreen: React.FC = () => {
   return (
     <ScreenContainer contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 0 }}>
       <View style={{ flex: 1 }}>
-        <BuddyBackground />
         <SwipeHint visible={swipeHintVisible} message={t('swipeHint')} />
 
         <View
@@ -393,7 +391,6 @@ export const BuddyScreen: React.FC = () => {
                 description={error}
                 actionLabel={t('retry')}
                 onActionPress={performSearch}
-                icon={<Text style={{ fontSize: 48 }}>⚠️</Text>}
               />
             ) : cardData.length === 0 ? (
               <EmptyState
@@ -401,7 +398,6 @@ export const BuddyScreen: React.FC = () => {
                 description={t('noResultsMessage')}
                 actionLabel={t('resetFilters')}
                 onActionPress={handleFilterReset}
-                icon={<Text style={{ fontSize: 48 }}>🔍</Text>}
               />
             ) : (
               <BuddyStack

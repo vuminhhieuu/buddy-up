@@ -34,27 +34,27 @@
     "searchGoalPlaceholder": "Tìm mục tiêu...",
     "availableTimes": "Thời gian rảnh",
     "availableTime": {
-      "morning": "☀️ Buổi sáng",
-      "afternoon": "🌤️ Buổi trưa",
-      "evening": "🌙 Buổi tối",
-      "lateNight": "🌃 Đêm muộn",
-      "weekend": "🎉 Cuối tuần",
-      "flexible": "⚡ Linh hoạt"
+      "morning": "Buổi sáng",
+      "afternoon": "Buổi trưa",
+      "evening": "Buổi tối",
+      "lateNight": "Đêm muộn",
+      "weekend": "Cuối tuần",
+      "flexible": "Linh hoạt"
     },
     "learningStyle": "Phong cách học",
     "learningStyleOptions": {
-      "serious": "📋 Nghiêm túc, có kế hoạch rõ ràng",
-      "relaxed": "😊 Thoải mái, không quá căng thẳng",
-      "balanced": "🎯 Vừa học vừa chơi, cân bằng",
-      "notImportant": "💫 Không quan trọng"
+      "serious": "Nghiêm túc, có kế hoạch rõ ràng",
+      "relaxed": "Thoải mái, không quá căng thẳng",
+      "balanced": "Vừa học vừa chơi, cân bằng",
+      "notImportant": "Không quan trọng"
     },
     "onlineStatus": "Trạng thái online",
     "onlyOnline": "Chỉ hiện người online ngay",
     "level": "Trình độ",
     "levelOptions": {
-      "beginner": "🌱 Mới bắt đầu",
-      "intermediate": "🌿 Trung bình",
-      "advanced": "🌳 Nâng cao"
+      "beginner": "Mới bắt đầu",
+      "intermediate": "Trung bình",
+      "advanced": "Nâng cao"
     },
     "activeFilters": "Bộ lọc đang chọn",
     "clearAll": "Xóa tất cả",
@@ -71,8 +71,7 @@
     "notUpdated": "Chưa cập nhật",
     "noInterests": "Chưa thêm sở thích học tập",
     "noAvailableTimes": "Chưa chia sẻ thời gian rảnh",
-    "learningStyleTitle": "Phong cách học",
-    "viewDetailsHint": "Vuốt phải để kết nối hoặc xem chi tiết đầy đủ"
+    "learningStyleTitle": "Phong cách học"
   },
   "loading": "Đang tải...",
   "stack": {
@@ -167,7 +166,7 @@
     "save": "Lưu",
     "connect": "Kết nối"
   },
-  "swipeHint": "Vuốt trái để bỏ qua, vuốt phải để kết nối ↔️",
+  "swipeHint": "Vuốt trái để bỏ qua, vuốt phải để kết nối",
   "toast": {
     "saved": "Đã lưu hồ sơ",
     "unsaved": "Đã bỏ lưu",

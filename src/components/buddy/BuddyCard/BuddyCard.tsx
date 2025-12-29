@@ -1,12 +1,14 @@
 import React from 'react';
 import { View, ViewStyle, Pressable } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Target, Star } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
 import { Avatar } from '../../ui/Avatar/Avatar';
 import { Card } from '../../ui/Card/Card';
 import { Spacer } from '../../ui/Spacer/Spacer';
+import { getAvailableTimeLucideIcon } from '../../../utils/buddy';
 import type { BuddyCardData } from '../../../types/buddy';
 
 export type BuddyCardProps = {
@@ -29,26 +31,29 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
   const { t } = useTranslation('buddy');
   const { theme } = useTheme();
   const requestStatus = data.requestStatus ?? 'idle';
+  const mainGoal = data.bio;
   const hasInterests = data.interests && data.interests.length > 0;
   const hasTimes = data.availableTimes && data.availableTimes.length > 0;
   const sectionTitleStyle = {
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
-    marginBottom: theme.spacing[2],
+    marginBottom: theme.spacing[1],
     fontWeight: '600' as const,
+    fontSize: 11,
   };
   const placeholderPill = (label: string) => (
     <View
       style={{
-        paddingHorizontal: theme.spacing[3],
-        paddingVertical: theme.spacing[2],
-        borderRadius: theme.radius.full,
+        paddingHorizontal: theme.spacing[2],
+        paddingVertical: theme.spacing[1],
+        borderRadius: theme.radius.md,
         borderWidth: 1,
         borderColor: theme.colors.border,
         backgroundColor: theme.colors.background,
+        alignSelf: 'flex-start',
       }}
     >
-      <Text variant="bodySmall" color="tertiary">
+      <Text variant="bodySmall" color="tertiary" style={{ fontSize: 12 }}>
         {label}
       </Text>
     </View>
@@ -172,16 +177,16 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
           </Text>
         </LinearGradient>
 
-        <View style={{ flexGrow: 1, gap: theme.spacing[5] }}>
+        <View style={{ flexGrow: 1, gap: theme.spacing[2] }}>
           {renderRequestStatus()}
           {/* Main Goal Badge */}
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              gap: theme.spacing[2],
-              paddingHorizontal: theme.spacing[4],
-              paddingVertical: theme.spacing[2],
+              gap: theme.spacing[1],
+              paddingHorizontal: theme.spacing[3],
+              paddingVertical: theme.spacing[1],
               backgroundColor: theme.colors.primary[50],
               borderRadius: theme.radius.full,
               borderWidth: 1.5,
@@ -189,11 +194,9 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
               alignSelf: 'flex-start',
             }}
           >
-            <Text variant="body" color="primary" style={{ fontWeight: '700' as const }}>
-              🎯
-            </Text>
+            <Target size={16} color={theme.colors.primary[500]} />
             <Text variant="bodySmall" color="primary" style={{ fontWeight: '700' as const }}>
-              {data.mainGoal}
+              {mainGoal}
             </Text>
           </View>
 
@@ -206,7 +209,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
               style={{
                 flexDirection: 'row',
                 flexWrap: 'wrap',
-                gap: theme.spacing[2],
+                gap: theme.spacing[1],
               }}
             >
               {hasInterests
@@ -214,15 +217,19 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
                     <View
                       key={`interest-${interest}-${index}`}
                       style={{
-                        paddingHorizontal: theme.spacing[3],
-                        paddingVertical: theme.spacing[2],
+                        paddingHorizontal: theme.spacing[2],
+                        paddingVertical: theme.spacing[1],
                         backgroundColor: theme.colors.secondary[50],
-                        borderRadius: 10,
-                        borderWidth: 1.5,
+                        borderRadius: theme.radius.md,
+                        borderWidth: 1,
                         borderColor: theme.colors.secondary[200],
                       }}
                     >
-                      <Text variant="bodySmall" color="info" style={{ fontWeight: '600' as const }}>
+                      <Text
+                        variant="bodySmall"
+                        color="info"
+                        style={{ fontWeight: '600' as const, fontSize: 12 }}
+                      >
                         {interest}
                       </Text>
                     </View>
@@ -231,98 +238,88 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
             </View>
           </View>
 
-          {/* Available Times */}
+          {/* Available Times - Compact Layout */}
           <View>
             <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
               {t('card.availableTimes')}
             </Text>
             {hasTimes ? (
-              <View style={{ gap: theme.spacing[2] }}>
-                {data.availableTimes.map((time, index) => (
-                  <View
-                    key={`time-${time.text}-${index}`}
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: theme.spacing[2],
-                      paddingVertical: theme.spacing[1],
-                    }}
-                  >
-                    <Text variant="body" color="primary">
-                      {time.icon}
-                    </Text>
-                    <Text variant="bodySmall" color="primary" style={{ flex: 1 }}>
-                      {time.text}
-                    </Text>
-                  </View>
-                ))}
+              <View
+                style={{
+                  flexDirection: 'row',
+                  flexWrap: 'wrap',
+                  gap: theme.spacing[1],
+                }}
+              >
+                {data.availableTimes.map((time, index) => {
+                  const TimeIcon = time.timeValue
+                    ? getAvailableTimeLucideIcon(time.timeValue)
+                    : null;
+                  return (
+                    <View
+                      key={`time-${time.text}-${index}`}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: theme.spacing[1],
+                        paddingHorizontal: theme.spacing[2],
+                        paddingVertical: theme.spacing[1],
+                        backgroundColor: theme.colors.primary[50],
+                        borderRadius: theme.radius.md,
+                        borderWidth: 1,
+                        borderColor: theme.colors.primary[200],
+                      }}
+                    >
+                      {TimeIcon && <TimeIcon size={14} color={theme.colors.primary[500]} />}
+                      <Text
+                        variant="bodySmall"
+                        color="primary"
+                        style={{ fontWeight: '500' as const, fontSize: 12 }}
+                      >
+                        {time.text}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
             ) : (
               placeholderPill(t('card.noAvailableTimes'))
             )}
           </View>
 
-          {/* Learning Style */}
+          {/* Learning Style - Compact Badge */}
           <View>
             <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
               {t('card.learningStyleTitle')}
             </Text>
             <View
               style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: theme.spacing[1],
+                paddingHorizontal: theme.spacing[2],
+                paddingVertical: theme.spacing[1],
                 backgroundColor: theme.colors.semantic.warning + '20',
-                padding: theme.spacing[3],
-                borderRadius: theme.radius.md,
+                borderRadius: theme.radius.full,
                 borderWidth: 1.5,
                 borderColor: theme.colors.semantic.warning + '40',
+                alignSelf: 'flex-start',
               }}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[1] }}>
-                <Text variant="body" color="warning">
-                  ⭐
-                </Text>
-                <Text
-                  variant="bodySmall"
-                  color="warning"
-                  style={{ fontWeight: '600' as const, flex: 1 }}
-                >
-                  {data.learningStyle || t('card.notUpdated')}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Bio */}
-          {data.bio && (
-            <View>
-              <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
-                {t('card.bio')}
-              </Text>
+              <Star
+                size={14}
+                color={theme.colors.semantic.warning}
+                fill={theme.colors.semantic.warning}
+              />
               <Text
                 variant="bodySmall"
-                color="secondary"
-                style={{ lineHeight: 22 }}
-                numberOfLines={3}
-                ellipsizeMode="tail"
+                color="warning"
+                style={{ fontWeight: '600' as const, fontSize: 12 }}
               >
-                {data.bio}
+                {data.learningStyle || t('card.notUpdated')}
               </Text>
             </View>
-          )}
-        </View>
-
-        <View
-          style={{
-            padding: theme.spacing[3],
-            backgroundColor: theme.colors.primary[50],
-            borderRadius: theme.radius.md,
-            borderWidth: 1,
-            borderColor: theme.colors.primary[100],
-            marginTop: theme.spacing[5],
-          }}
-        >
-          <Text variant="caption" color="primary" style={{ textAlign: 'center' }}>
-            {t('card.viewDetailsHint')}
-          </Text>
+          </View>
         </View>
       </View>
     </Card>
