@@ -24,6 +24,7 @@ import {
   getAvailableTimeLucideIcon,
   getLearningStyleLucideIcon,
 } from '../../../utils/buddy';
+import { AcademicFilters } from './AcademicFilters';
 import type {
   BuddyFilters,
   LearningGoal,
@@ -80,6 +81,13 @@ export const FilterModal: React.FC<FilterModalProps> = ({
       hideRejected: false,
       prioritizeFreeSchedule: false,
       onlySaved: false,
+      // Academic filters
+      university: undefined,
+      major: undefined,
+      subjects: [],
+      projects: [],
+      prioritizeSameUniversity: false,
+      prioritizeSameMajor: false,
     });
     setGoalSearch('');
     onReset();
@@ -230,6 +238,172 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                       gap: theme.spacing[2],
                     }}
                   >
+                    {/* University */}
+                    {localFilters.university && (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.primary[100],
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.primary[300],
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="primary"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          🏫 {localFilters.university}
+                        </Text>
+                        <Pressable
+                          onPress={() =>
+                            setLocalFilters({ ...localFilters, university: undefined })
+                          }
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.primary[500],
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    )}
+                    {/* Major */}
+                    {localFilters.major && (
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.secondary[100],
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.secondary[300],
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="info"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          📚 {localFilters.major}
+                        </Text>
+                        <Pressable
+                          onPress={() => setLocalFilters({ ...localFilters, major: undefined })}
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.secondary[500],
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    )}
+                    {/* Subjects */}
+                    {localFilters.subjects?.map((subject) => (
+                      <View
+                        key={subject}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.semantic.success + '20',
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.semantic.success + '40',
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="success"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          📖 {subject}
+                        </Text>
+                        <Pressable
+                          onPress={() =>
+                            setLocalFilters({
+                              ...localFilters,
+                              subjects: localFilters.subjects?.filter((s) => s !== subject),
+                            })
+                          }
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.semantic.success,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    ))}
+                    {/* Projects */}
+                    {localFilters.projects?.map((project) => (
+                      <View
+                        key={project}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          backgroundColor: theme.colors.semantic.warning + '20',
+                          borderRadius: theme.radius.full,
+                          paddingLeft: theme.spacing[3],
+                          paddingRight: theme.spacing[2],
+                          paddingVertical: theme.spacing[2],
+                          borderWidth: 1.5,
+                          borderColor: theme.colors.semantic.warning + '40',
+                        }}
+                      >
+                        <Text
+                          variant="bodySmall"
+                          color="warning"
+                          style={{ fontWeight: '500' as const }}
+                        >
+                          💼 {project}
+                        </Text>
+                        <Pressable
+                          onPress={() =>
+                            setLocalFilters({
+                              ...localFilters,
+                              projects: localFilters.projects?.filter((p) => p !== project),
+                            })
+                          }
+                          style={{
+                            marginLeft: theme.spacing[2],
+                            width: 20,
+                            height: 20,
+                            borderRadius: 10,
+                            backgroundColor: theme.colors.semantic.warning,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}
+                        >
+                          <X size={12} color={theme.colors.surface} />
+                        </Pressable>
+                      </View>
+                    ))}
                     {/* Learning Goals */}
                     {localFilters.learningGoals?.map((goal) => (
                       <View
@@ -502,6 +676,33 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 </View>
               )}
 
+              {/* Academic Filters (NEW - HIGHEST PRIORITY) */}
+              <View style={{ marginBottom: theme.spacing[8] }}>
+                <Text
+                  variant="h5"
+                  color="primary"
+                  style={{ marginBottom: theme.spacing[4], fontWeight: '700' as const }}
+                >
+                  {t('filter.academicFilters')}
+                </Text>
+                <AcademicFilters
+                  university={localFilters.university}
+                  major={localFilters.major}
+                  subjects={localFilters.subjects}
+                  projects={localFilters.projects}
+                  onUniversityChange={(value) =>
+                    setLocalFilters({ ...localFilters, university: value })
+                  }
+                  onMajorChange={(value) => setLocalFilters({ ...localFilters, major: value })}
+                  onSubjectsChange={(value) =>
+                    setLocalFilters({ ...localFilters, subjects: value })
+                  }
+                  onProjectsChange={(value) =>
+                    setLocalFilters({ ...localFilters, projects: value })
+                  }
+                />
+              </View>
+
               {/* Learning Goals */}
               <View style={{ marginBottom: theme.spacing[8] }}>
                 <Text variant="h6" color="primary" style={{ marginBottom: theme.spacing[3] }}>
@@ -666,6 +867,20 @@ export const FilterModal: React.FC<FilterModalProps> = ({
                 </Pressable>
                 {advancedExpanded && (
                   <View style={{ gap: theme.spacing[4], marginTop: theme.spacing[4] }}>
+                    <ToggleSwitch
+                      value={localFilters.prioritizeSameUniversity || false}
+                      onValueChange={(value) =>
+                        setLocalFilters({ ...localFilters, prioritizeSameUniversity: value })
+                      }
+                      label={t('filter.prioritizeSameUniversity')}
+                    />
+                    <ToggleSwitch
+                      value={localFilters.prioritizeSameMajor || false}
+                      onValueChange={(value) =>
+                        setLocalFilters({ ...localFilters, prioritizeSameMajor: value })
+                      }
+                      label={t('filter.prioritizeSameMajor')}
+                    />
                     <ToggleSwitch
                       value={localFilters.onlyVerified || false}
                       onValueChange={(value) =>

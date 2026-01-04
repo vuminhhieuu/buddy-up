@@ -26,6 +26,13 @@ export type SupabaseProfileRow = {
   location: string | null;
   main_learning_goal: string | null;
   learning_interests: string[] | null;
+
+  // Academic fields (NEW)
+  university: string | null;
+  major: string | null;
+  current_subjects: string[] | null;
+  current_projects: string[] | null;
+
   created_at: string;
   updated_at: string;
 };
@@ -55,6 +62,13 @@ export function normalizeProfile(row: SupabaseProfileRow): BuddyProfile {
     location: row.location ?? null,
     main_learning_goal: row.main_learning_goal ?? null,
     learning_interests: row.learning_interests ?? [],
+
+    // Academic fields (NEW)
+    university: row.university ?? null,
+    major: row.major ?? null,
+    current_subjects: row.current_subjects ?? [],
+    current_projects: row.current_projects ?? [],
+
     created_at: row.created_at,
     updated_at: row.updated_at,
   };

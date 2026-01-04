@@ -70,7 +70,8 @@
     "timeFlexible": "Flexible",
     "styleSerious": "Serious, well-planned",
     "styleRelaxed": "Relaxed, low-pressure",
-    "styleBalanced": "Balanced between discipline and flexibility"
+    "styleBalanced": "Balanced between discipline and flexibility",
+    "academicInfo": "Academic Information"
   },
   "errors": {
     "loadFailed": "Unable to load profile data",

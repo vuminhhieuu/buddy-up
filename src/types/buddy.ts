@@ -77,6 +77,22 @@ export interface BuddyFilters {
   prioritizeFreeSchedule?: boolean;
   /** Only show saved profiles */
   onlySaved?: boolean;
+
+  // ============================================================================
+  // Academic filters (NEW)
+  // ============================================================================
+  /** Filter by university */
+  university?: string;
+  /** Filter by major/field of study */
+  major?: string;
+  /** Filter by subjects (multi-select) */
+  subjects?: string[];
+  /** Filter by projects (multi-select) */
+  projects?: string[];
+  /** Prioritize same university */
+  prioritizeSameUniversity?: boolean;
+  /** Prioritize same major */
+  prioritizeSameMajor?: boolean;
 }
 
 // Note: DEFAULT_BUDDY_FILTERS has been moved to src/constants/buddy.ts
@@ -122,6 +138,19 @@ export interface BuddyProfile {
   main_learning_goal: string | null;
   /** Learning interests/tags */
   learning_interests: string[];
+
+  // ============================================================================
+  // Academic fields (NEW)
+  // ============================================================================
+  /** University/School name */
+  university: string | null;
+  /** Major/Field of study */
+  major: string | null;
+  /** Current subjects/courses */
+  current_subjects: string[];
+  /** Current projects */
+  current_projects: string[];
+
   /** Timestamps */
   created_at: string;
   updated_at: string;
@@ -249,6 +278,7 @@ export interface FilterCount {
     availableTimes: number;
     learningStyle: number;
     level: number;
+    academic: number; // NEW: university, major, subjects, projects
     advanced: number;
   };
 }

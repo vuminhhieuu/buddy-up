@@ -188,12 +188,12 @@ export const ProfileSetupStep3Screen: React.FC<ProfileSetupStep3ScreenProps> = (
     <ScreenContainer scroll>
       <View style={{ flex: 1 }}>
         <ProfileSetupHeader
-          step={3}
-          progress={0.75}
-          rightText={t('profileSetup.progress75')}
+          currentStep={3}
+          totalSteps={5}
+          title=""
+          subtitle=""
           onBack={onBack}
           showSkipButton={true}
-          containerStyle={styles.header}
         />
         <View
           style={{

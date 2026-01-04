@@ -3,6 +3,7 @@ import { ProfileSetupStep1Screen } from './ProfileSetup/ProfileSetupStep1Screen'
 import { ProfileSetupStep2Screen } from './ProfileSetup/ProfileSetupStep2Screen';
 import { ProfileSetupStep3Screen } from './ProfileSetup/ProfileSetupStep3Screen';
 import ProfileSetupStep4Screen from './ProfileSetup/ProfileSetupStep4Screen';
+import { ProfileSetupStep5Screen } from './ProfileSetup/ProfileSetupStep5Screen';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { setProfileSetupInProgress, setProfileData } from '../../store/slices/authSlice';
 import { logger } from '../../utils/logger';
@@ -53,7 +54,9 @@ export const ProfileSetupScreen: React.FC = () => {
         />
       );
     case 4:
-      return <ProfileSetupStep4Screen onBack={() => setStep(3)} />;
+      return <ProfileSetupStep5Screen onBack={() => setStep(3)} onNext={() => setStep(5)} />;
+    case 5:
+      return <ProfileSetupStep4Screen onBack={() => setStep(4)} />;
     default:
       return <ProfileSetupStep1Screen onNext={handleNextFromStep1} onSkip={handleFinish} />;
   }

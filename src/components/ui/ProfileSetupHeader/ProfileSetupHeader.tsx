@@ -7,15 +7,35 @@ import { useTheme } from '../../../styles';
 import { useTranslation } from 'react-i18next';
 
 export type ProfileSetupHeaderProps = {
-  step: number;
-  progress: number;
+  // New props (preferred)
+  currentStep?: number;
+  totalSteps?: number;
+  title?: string;
+  subtitle?: string;
+  // Legacy props (for backward compatibility)
+  /**
+   * @deprecated Use currentStep instead
+   */
+  step?: number;
+  /**
+   * @deprecated Use totalSteps instead
+   */
+  progress?: number;
+  /**
+   * @deprecated This prop is no longer used
+   */
   rightText?: string;
+  // Common props
   onBack?: () => void;
   showSkipButton?: boolean;
   containerStyle?: ViewStyle;
 };
 
 export const ProfileSetupHeader: React.FC<ProfileSetupHeaderProps> = ({
+  currentStep,
+  totalSteps,
+  title,
+  subtitle,
   step,
   progress,
   rightText,
@@ -26,17 +46,23 @@ export const ProfileSetupHeader: React.FC<ProfileSetupHeaderProps> = ({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
+  // Use new props if provided, otherwise fall back to legacy props
+  const displayStep = currentStep ?? step ?? 1;
+  const displayTotal = totalSteps ?? 4;
+  const displayProgress = progress ?? displayStep / displayTotal;
+  const displayTitle = title ?? rightText ?? '';
+
   return (
     <ProcessHeader
-      leftText={t('profileSetup.step', { current: step })}
-      rightText={rightText || ''}
+      leftText={t('profileSetup.stepProgress', { current: displayStep, total: displayTotal })}
+      rightText={displayTitle}
       leftColor={theme.colors.primary[500]}
       rightColor={theme.colors.text.tertiary}
       leftFontSize={theme.typography.scale.sm}
       rightFontSize={theme.typography.scale.sm}
       leftFontWeight="700"
       rightFontWeight="normal"
-      progress={progress}
+      progress={displayProgress}
       progressBarColor={theme.colors.primary[500]}
       progressBarBgColor={theme.colors.border}
       containerStyle={containerStyle}

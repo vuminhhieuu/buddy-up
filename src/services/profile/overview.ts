@@ -29,7 +29,9 @@ export async function fetchProfileOverview(userId: string): Promise<UserProfile>
       await Promise.all([
         supabase
           .from('profiles')
-          .select('display_name,bio,avatar_url,interests,main_learning_goal,location')
+          .select(
+            'display_name,bio,avatar_url,interests,main_learning_goal,location,university,major,current_subjects,current_projects',
+          )
           .eq('user_id', userId)
           .maybeSingle(),
         supabase
@@ -94,6 +96,11 @@ export async function fetchProfileOverview(userId: string): Promise<UserProfile>
       mainLearningGoal: profileRow?.main_learning_goal || undefined,
       location: profileRow?.location || undefined,
       interests: profileRow?.interests ?? [],
+      // Academic fields
+      university: profileRow?.university || undefined,
+      major: profileRow?.major || undefined,
+      current_subjects: profileRow?.current_subjects ?? [],
+      current_projects: profileRow?.current_projects ?? [],
     };
   } catch (error) {
     logger.warn('fetchProfileOverview', 'Failed:', error);

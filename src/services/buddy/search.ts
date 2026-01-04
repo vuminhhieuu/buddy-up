@@ -48,6 +48,28 @@ export async function searchBuddies(
       query = query.eq('level', filters.level);
     }
 
+    // ============================================================================
+    // Academic Filters (NEW)
+    // ============================================================================
+
+    if (filters.university) {
+      // Use ilike for partial matching (e.g., "UIT" matches "Đại học Công nghệ Thông tin")
+      query = query.ilike('university', `%${filters.university}%`);
+    }
+
+    if (filters.major) {
+      // Use ilike for partial matching
+      query = query.ilike('major', `%${filters.major}%`);
+    }
+
+    if (filters.subjects && filters.subjects.length > 0) {
+      query = query.overlaps('current_subjects', filters.subjects);
+    }
+
+    if (filters.projects && filters.projects.length > 0) {
+      query = query.overlaps('current_projects', filters.projects);
+    }
+
     if (filters.onlyOnline) {
       query = query.eq('is_online', true);
     }

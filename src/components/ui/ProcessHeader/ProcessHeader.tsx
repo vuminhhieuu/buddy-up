@@ -53,13 +53,9 @@ export const ProcessHeader: React.FC<ProcessHeaderProps> = ({
             fontWeight: parseFontWeight(leftFontWeight),
             fontSize: leftFontSize,
             color: leftColor,
-            flex: 1,
             textAlign: 'left',
           }}
           numberOfLines={1}
-          ellipsizeMode="tail"
-          adjustsFontSizeToFit={true}
-          minimumFontScale={0.7}
         >
           {leftText}
         </Text>
@@ -70,13 +66,9 @@ export const ProcessHeader: React.FC<ProcessHeaderProps> = ({
             fontSize: rightFontSize,
             color: rightColor,
             marginLeft: 8,
-            flex: 1,
             textAlign: 'right',
           }}
           numberOfLines={1}
-          ellipsizeMode="tail"
-          adjustsFontSizeToFit={true}
-          minimumFontScale={0.7}
         >
           {rightText}
         </Text>
@@ -97,7 +89,7 @@ export const ProcessHeader: React.FC<ProcessHeaderProps> = ({
 
 const styles = StyleSheet.create({
   header: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 0, // Changed from 16 to 0 to match content padding
     paddingVertical: 8,
   },
   progressBar: {

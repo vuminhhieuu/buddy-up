@@ -104,11 +104,11 @@ export const ProfileSetupStep1Screen: React.FC<ProfileSetupStep1ScreenProps> = (
         <View style={{ flex: 1 }}>
           {/* Header */}
           <ProfileSetupHeader
-            step={1}
-            progress={0.25}
-            rightText={t('profileSetup.basicInfo')}
+            currentStep={1}
+            totalSteps={5}
+            title=""
+            subtitle=""
             showSkipButton={true}
-            containerStyle={styles.header}
           />
 
           {/* Content - Fixed */}

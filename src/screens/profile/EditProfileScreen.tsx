@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { ScreenContainer, Text, Spacer, Input } from '../../components/ui';
 import { BackButton } from '../../components/navigation/BackButton';
 import { AvatarPickerSection } from '../../components/ui/AvatarPickerSection/AvatarPickerSection';
+import { AcademicInfoSection } from '../../components/profile/AcademicInfoSection';
 import {
   Sun,
   CloudSun,
@@ -30,6 +31,7 @@ import {
   Target,
   BookOpen,
   MapPin,
+  GraduationCap,
 } from 'lucide-react-native';
 import { useTheme } from '../../styles';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
@@ -144,6 +146,12 @@ export const EditProfileScreen: React.FC = () => {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [customInterest, setCustomInterest] = useState('');
 
+  // Academic fields (NEW)
+  const [university, setUniversity] = useState<string | undefined>(undefined);
+  const [major, setMajor] = useState<string | undefined>(undefined);
+  const [subjects, setSubjects] = useState<string[]>([]);
+  const [projects, setProjects] = useState<string[]>([]);
+
   const [initialData, setInitialData] = useState<EditProfileData | null>(null);
 
   // Load current profile data
@@ -155,6 +163,12 @@ export const EditProfileScreen: React.FC = () => {
         const result = await fetchProfileScreenData(userId);
         const profile = result.profile;
 
+        // Load academic data
+        const academicUniversity = profile.university || undefined;
+        const academicMajor = profile.major || undefined;
+        const academicSubjects = profile.current_subjects || [];
+        const academicProjects = profile.current_projects || [];
+
         const loadedData: EditProfileData = {
           displayName: profile.name || setupProfileData.displayName || '',
           bio: profile.bio || '',
@@ -163,6 +177,11 @@ export const EditProfileScreen: React.FC = () => {
           availableTimes: setupProfileData.availableTimes || [],
           learningStyle: setupProfileData.learningStyle || '',
           interests: profile.interests || setupProfileData.categories || [],
+          // Academic fields
+          university: academicUniversity,
+          major: academicMajor,
+          subjects: academicSubjects,
+          projects: academicProjects,
         };
 
         setDisplayName(loadedData.displayName);
@@ -173,6 +192,13 @@ export const EditProfileScreen: React.FC = () => {
         setAvailableTimes(loadedData.availableTimes || []);
         setLearningStyle(loadedData.learningStyle || '');
         setSelectedInterests(loadedData.interests || []);
+
+        // Set academic data
+        setUniversity(academicUniversity);
+        setMajor(academicMajor);
+        setSubjects(academicSubjects);
+        setProjects(academicProjects);
+
         setInitialData(loadedData);
       } catch (err) {
         Alert.alert(t('common.error', { ns: 'common' }), t('errors.loadFailed'));
@@ -188,7 +214,7 @@ export const EditProfileScreen: React.FC = () => {
   useEffect(() => {
     if (!initialData) return;
 
-    const currentData: EditProfileData = {
+    const currentData = {
       displayName,
       bio,
       mainLearningGoal: studyGoal,
@@ -196,6 +222,10 @@ export const EditProfileScreen: React.FC = () => {
       availableTimes,
       learningStyle,
       interests: selectedInterests,
+      university: university || undefined,
+      major: major || undefined,
+      subjects: subjects || [],
+      projects: projects || [],
     };
 
     const changed = JSON.stringify(currentData) !== JSON.stringify(initialData);
@@ -208,6 +238,10 @@ export const EditProfileScreen: React.FC = () => {
     availableTimes,
     learningStyle,
     selectedInterests,
+    university,
+    major,
+    subjects,
+    projects,
     initialData,
   ]);
 
@@ -247,7 +281,12 @@ export const EditProfileScreen: React.FC = () => {
     try {
       setSaving(true);
 
-      const profileData: EditProfileData = {
+      const profileData: EditProfileData & {
+        university?: string;
+        major?: string;
+        subjects?: string[];
+        projects?: string[];
+      } = {
         displayName: displayName.trim(),
         bio: bio.trim(),
         mainLearningGoal: studyGoal.trim(),
@@ -255,6 +294,11 @@ export const EditProfileScreen: React.FC = () => {
         availableTimes,
         learningStyle,
         interests: selectedInterests,
+        // Academic fields (NEW)
+        university: university || undefined,
+        major: major || undefined,
+        subjects: subjects || [],
+        projects: projects || [],
       };
 
       await updateFullProfile(userId, profileData);
@@ -750,6 +794,31 @@ export const EditProfileScreen: React.FC = () => {
               </Text>
             </Pressable>
           </View>
+
+          <Spacer size={6} />
+
+          {/* Thông tin học thuật (NEW) */}
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconContainer}>
+              <GraduationCap size={20} color={theme.colors.primary[500]} />
+            </View>
+            <Text variant="h6" style={styles.sectionTitle}>
+              {t('editProfile.academicInfo')}
+            </Text>
+          </View>
+
+          <Spacer size={3} />
+
+          <AcademicInfoSection
+            university={university}
+            major={major}
+            subjects={subjects}
+            projects={projects}
+            onUniversityChange={setUniversity}
+            onMajorChange={setMajor}
+            onSubjectsChange={setSubjects}
+            onProjectsChange={setProjects}
+          />
 
           <Spacer size={8} />
 

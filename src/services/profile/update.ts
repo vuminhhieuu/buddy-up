@@ -95,7 +95,7 @@ export async function updateProfileStep1(
 /**
  * Update full user profile with all editable fields
  * @param userId - User ID
- * @param profileData - Profile data to update
+ * @param profileData - Profile data to update (including academic fields)
  */
 export async function updateFullProfile(
   userId: string,
@@ -117,6 +117,20 @@ export async function updateFullProfile(
     // Update main_learning_goal if provided (for backward compatibility)
     if (profileData.mainLearningGoal !== undefined) {
       updateData.main_learning_goal = profileData.mainLearningGoal;
+    }
+
+    // Update academic fields (NEW)
+    if (profileData.university !== undefined) {
+      updateData.university = profileData.university || null;
+    }
+    if (profileData.major !== undefined) {
+      updateData.major = profileData.major || null;
+    }
+    if (profileData.subjects !== undefined) {
+      updateData.current_subjects = profileData.subjects || [];
+    }
+    if (profileData.projects !== undefined) {
+      updateData.current_projects = profileData.projects || [];
     }
 
     const { error } = await supabase.from('profiles').update(updateData).eq('user_id', userId);

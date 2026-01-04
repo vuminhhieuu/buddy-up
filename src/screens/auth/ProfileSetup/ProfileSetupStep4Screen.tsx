@@ -18,6 +18,7 @@ import { CATEGORY_GROUPS } from './ProfileSetupStep3Screen';
 
 export type ProfileSetupStep4ScreenProps = {
   onBack?: () => void;
+  onNext?: () => void;
 };
 
 /**
@@ -53,7 +54,7 @@ const formatSubjectDisplayName = (categoryKey: string, t: (key: string) => strin
   return categoryKey.charAt(0).toUpperCase() + categoryKey.slice(1);
 };
 
-const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBack }) => {
+const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBack, onNext }) => {
   const navigation =
     useNavigation<
       CompositeNavigationProp<
@@ -129,12 +130,12 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
   return (
     <ScreenContainer>
       <ProfileSetupHeader
-        step={4}
-        progress={1}
-        rightText=""
+        currentStep={5}
+        totalSteps={5}
+        title=""
+        subtitle=""
         onBack={onBack}
         showSkipButton={false}
-        containerStyle={styles.header}
       />
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'flex-start' }}>
         {/* Completion icon */}
@@ -311,25 +312,14 @@ const ProfileSetupStep4Screen: React.FC<ProfileSetupStep4ScreenProps> = ({ onBac
             </View>
           </View>
         </View>
-        {/* Button: Find a study buddy now */}
+        {/* Button: Start Now */}
         <Pressable
           style={[styles.button, { width: '90%' }]}
           onPress={handleFindBuddy}
           accessibilityRole="button"
         >
           <Text variant="h4" style={{ color: theme.colors.text.inverse, fontWeight: '700' }}>
-            {t('profileSetup.findBuddyButton')}
-          </Text>
-        </Pressable>
-        {/* Link / Button: Explore the app first */}
-        <Pressable
-          onPress={handleExploreApp}
-          accessibilityRole="button"
-          accessibilityLabel={t('profileSetup.exploreAppLink', { defaultValue: 'Explore the app' })}
-          style={{ alignSelf: 'center', marginTop: theme.spacing[2] }}
-        >
-          <Text variant="body" color="tertiary" style={styles.link}>
-            {t('profileSetup.exploreAppLink')}
+            {t('profileSetup.startNowButton')}
           </Text>
         </Pressable>
       </View>

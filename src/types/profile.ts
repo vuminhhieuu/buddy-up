@@ -19,6 +19,11 @@ export type UserProfile = {
   mainLearningGoal?: string;
   location?: string;
   interests?: string[];
+  // Academic fields
+  university?: string;
+  major?: string;
+  current_subjects?: string[];
+  current_projects?: string[];
 };
 
 export type EditProfileData = {
@@ -29,6 +34,11 @@ export type EditProfileData = {
   availableTimes?: string[];
   learningStyle?: string;
   interests?: string[];
+  // Academic fields
+  university?: string;
+  major?: string;
+  subjects?: string[];
+  projects?: string[];
 };
 
 export type Achievement = {

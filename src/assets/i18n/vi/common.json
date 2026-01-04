@@ -68,6 +68,7 @@
     "skipButton": "Bỏ qua",
     "progress75": "Hoàn thành 75%",
     "step": "Bước {{current}}/4",
+    "stepProgress": "Bước {{current}}/{{total}}",
     "headerTitle": "Thiết lập hồ sơ",
     "basicInfo": "Thông tin cơ bản",
     "step1Title": "Tạo hồ sơ của bạn",
@@ -124,6 +125,7 @@
     "addCustomSubject": "Thêm môn học tùy chỉnh",
     "customSubjectPlaceholder": "Nhập tên môn học của bạn",
     "findBuddyButton": "Tìm bạn học ngay",
+    "startNowButton": "Bắt đầu ngay",
     "exploreAppLink": "Khám phá ứng dụng trước",
     "noNameSet": "Chưa đặt tên",
     "newLearnerLabel": "Học viên mới"
