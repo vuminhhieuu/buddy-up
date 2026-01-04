@@ -70,7 +70,8 @@
     "timeFlexible": "Linh hoạt",
     "styleSerious": "Nghiêm túc, có kế hoạch rõ ràng",
     "styleRelaxed": "Thoải mái, không quá căng thẳng",
-    "styleBalanced": "Cân bằng giữa kỷ luật và linh hoạt"
+    "styleBalanced": "Cân bằng giữa kỷ luật và linh hoạt",
+    "academicInfo": "Thông tin học thuật"
   },
   "errors": {
     "loadFailed": "Không thể tải dữ liệu hồ sơ",

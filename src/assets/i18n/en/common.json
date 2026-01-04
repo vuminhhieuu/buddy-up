@@ -68,6 +68,7 @@
     "skipButton": "Skip",
     "progress75": "75% completed",
     "step": "Step {{current}}/4",
+    "stepProgress": "Step {{current}}/{{total}}",
     "headerTitle": "Profile Setup",
     "basicInfo": "Basic Information",
     "step1Title": "Create Your Profile",
@@ -125,6 +126,7 @@
     "addCustomSubject": "Add Custom Subject",
     "customSubjectPlaceholder": "Enter your subject name",
     "findBuddyButton": "Find a study buddy now",
+    "startNowButton": "Start Now",
     "exploreAppLink": "Explore the app first",
     "noNameSet": "No name set",
     "newLearnerLabel": "New learner"

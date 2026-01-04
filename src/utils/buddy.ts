@@ -30,6 +30,7 @@ export function countActiveFilters(filters: BuddyFilters): FilterCount {
     availableTimes: 0,
     learningStyle: 0,
     level: 0,
+    academic: 0, // NEW
     advanced: 0,
   };
 
@@ -57,6 +58,24 @@ export function countActiveFilters(filters: BuddyFilters): FilterCount {
     total += 1;
   }
 
+  // Academic filters (NEW)
+  if (filters.university) {
+    byCategory.academic += 1;
+    total += 1;
+  }
+  if (filters.major) {
+    byCategory.academic += 1;
+    total += 1;
+  }
+  if (filters.subjects && filters.subjects.length > 0) {
+    byCategory.academic += filters.subjects.length;
+    total += filters.subjects.length;
+  }
+  if (filters.projects && filters.projects.length > 0) {
+    byCategory.academic += filters.projects.length;
+    total += filters.projects.length;
+  }
+
   // Advanced options
   if (filters.onlyOnline) {
     byCategory.advanced += 1;
@@ -75,6 +94,14 @@ export function countActiveFilters(filters: BuddyFilters): FilterCount {
     total += 1;
   }
   if (filters.onlySaved) {
+    byCategory.advanced += 1;
+    total += 1;
+  }
+  if (filters.prioritizeSameUniversity) {
+    byCategory.advanced += 1;
+    total += 1;
+  }
+  if (filters.prioritizeSameMajor) {
     byCategory.advanced += 1;
     total += 1;
   }

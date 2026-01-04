@@ -112,6 +112,14 @@ export const DEFAULT_BUDDY_FILTERS: BuddyFilters = {
   hideRejected: false,
   prioritizeFreeSchedule: false,
   onlySaved: false,
+
+  // Academic filters (NEW)
+  university: undefined,
+  major: undefined,
+  subjects: [],
+  projects: [],
+  prioritizeSameUniversity: false,
+  prioritizeSameMajor: false,
 };
 
 // ============================================================================

@@ -1,2 +1,2 @@
 export { FilterModal } from './FilterModal';
-export type { FilterModalProps } from './FilterModal';
+export { AcademicFilters } from './AcademicFilters';

@@ -20,15 +20,26 @@ export interface UserProgress {
 
 /**
  * Match calculation weights
+ * Priority: University > Major > Subjects > Projects > Level > Others
+ * Total weight: 1.0 (100%)
  */
 const WEIGHTS = {
-  learningGoals: 0.3, // 30%
-  availableTimes: 0.25, // 25%
-  learningStyle: 0.2, // 20%
-  level: 0.15, // 15%
-  location: 0.05, // 5%
-  learningInterests: 0.03, // 3%
-  streak: 0.02, // 2% (bonus if both > 7)
+  // Academic matching (highest priority)
+  university: 0.25, // 25% - Same university is very important
+  major: 0.2, // 20% - Same major is important
+  subjects: 0.15, // 15% - Common subjects
+  projects: 0.1, // 10% - Common projects
+  level: 0.1, // 10% - Same level
+
+  // Learning preferences
+  learningGoals: 0.08, // 8% - General learning goals
+  availableTimes: 0.06, // 6% - Available times
+  learningStyle: 0.03, // 3% - Learning style
+
+  // Other factors
+  location: 0.015, // 1.5% - Location
+  learningInterests: 0.01, // 1% - Learning interests
+  streak: 0.005, // 0.5% - Streak bonus
 } as const;
 
 /**
@@ -46,6 +57,14 @@ export function calculateMatchPercentage(
   user2Progress?: UserProgress,
 ): number {
   // Calculate score for each factor
+  // Academic factors (highest priority)
+  const universityScore = calculateUniversityScore(user1.university, user2.university);
+  const majorScore = calculateMajorScore(user1.major, user2.major);
+  const subjectsScore = calculateSubjectsScore(user1.current_subjects, user2.current_subjects);
+  const projectsScore = calculateProjectsScore(user1.current_projects, user2.current_projects);
+  const levelScore = calculateLevelScore(user1.level, user2.level);
+
+  // Learning preferences
   const learningGoalsScore = calculateLearningGoalsScore(
     user1.learning_goals,
     user2.learning_goals,
@@ -58,7 +77,8 @@ export function calculateMatchPercentage(
     user1.learning_style,
     user2.learning_style,
   );
-  const levelScore = calculateLevelScore(user1.level, user2.level);
+
+  // Other factors
   const locationScore = calculateLocationScore(user1.location, user2.location);
   const learningInterestsScore = calculateLearningInterestsScore(
     user1.learning_interests,
@@ -68,10 +88,14 @@ export function calculateMatchPercentage(
 
   // Calculate weighted average
   const totalScore =
+    universityScore * WEIGHTS.university +
+    majorScore * WEIGHTS.major +
+    subjectsScore * WEIGHTS.subjects +
+    projectsScore * WEIGHTS.projects +
+    levelScore * WEIGHTS.level +
     learningGoalsScore * WEIGHTS.learningGoals +
     availableTimesScore * WEIGHTS.availableTimes +
     learningStyleScore * WEIGHTS.learningStyle +
-    levelScore * WEIGHTS.level +
     locationScore * WEIGHTS.location +
     learningInterestsScore * WEIGHTS.learningInterests +
     streakScore * WEIGHTS.streak;
@@ -79,6 +103,154 @@ export function calculateMatchPercentage(
   // Round to nearest integer
   return Math.round(totalScore);
 }
+
+// ============================================================================
+// Academic Matching Functions (NEW)
+// ============================================================================
+
+/**
+ * Calculate university match score (0-100)
+ * Same university = 100, different = 0
+ */
+function calculateUniversityScore(uni1: string | null, uni2: string | null): number {
+  if (!uni1 || !uni2) return 50; // Neutral if either is null
+
+  // Normalize for comparison (lowercase, trim)
+  const normalized1 = uni1.toLowerCase().trim();
+  const normalized2 = uni2.toLowerCase().trim();
+
+  if (normalized1 === normalized2) return 100;
+
+  // Partial match bonus (e.g., "UIT" matches "Đại học Công nghệ Thông tin")
+  if (normalized1.includes(normalized2) || normalized2.includes(normalized1)) {
+    return 80;
+  }
+
+  return 0;
+}
+
+/**
+ * Calculate major match score (0-100)
+ * Same major = 100, related majors = 50, different = 0
+ */
+function calculateMajorScore(major1: string | null, major2: string | null): number {
+  if (!major1 || !major2) return 50; // Neutral if either is null
+
+  // Normalize for comparison
+  const normalized1 = major1.toLowerCase().trim();
+  const normalized2 = major2.toLowerCase().trim();
+
+  if (normalized1 === normalized2) return 100;
+
+  // Related majors (IT-related fields)
+  const itRelated = [
+    'công nghệ thông tin',
+    'khoa học máy tính',
+    'kỹ thuật phần mềm',
+    'hệ thống thông tin',
+    'an toàn thông tin',
+    'trí tuệ nhân tạo',
+    'khoa học dữ liệu',
+  ];
+
+  const isIT1 = itRelated.some((major) => normalized1.includes(major));
+  const isIT2 = itRelated.some((major) => normalized2.includes(major));
+
+  if (isIT1 && isIT2) return 60; // Related IT majors
+
+  // Partial match bonus
+  if (normalized1.includes(normalized2) || normalized2.includes(normalized1)) {
+    return 50;
+  }
+
+  return 0;
+}
+
+/**
+ * Calculate subjects match score (0-100)
+ * Based on number of common subjects
+ */
+function calculateSubjectsScore(subjects1: string[], subjects2: string[]): number {
+  if (subjects1.length === 0 && subjects2.length === 0) return 50; // Neutral if both empty
+  if (subjects1.length === 0 || subjects2.length === 0) return 0;
+
+  // Normalize subjects for comparison
+  const normalized1 = subjects1.map((s) => s.toLowerCase().trim());
+  const normalized2 = subjects2.map((s) => s.toLowerCase().trim());
+
+  const set1 = new Set(normalized1);
+  const set2 = new Set(normalized2);
+  let matches = 0;
+
+  // Exact matches
+  set1.forEach((subject) => {
+    if (set2.has(subject)) matches++;
+  });
+
+  // Partial matches (e.g., "IE307" matches "IE307 - Phát triển ứng dụng di động")
+  if (matches === 0) {
+    normalized1.forEach((s1) => {
+      normalized2.forEach((s2) => {
+        if (s1.includes(s2) || s2.includes(s1)) {
+          matches += 0.5; // Partial match counts as 0.5
+        }
+      });
+    });
+  }
+
+  const maxSubjects = Math.max(subjects1.length, subjects2.length);
+  return Math.min(100, (matches / maxSubjects) * 100);
+}
+
+/**
+ * Calculate projects match score (0-100)
+ * Based on number of common projects or project types
+ */
+function calculateProjectsScore(projects1: string[], projects2: string[]): number {
+  if (projects1.length === 0 && projects2.length === 0) return 50; // Neutral if both empty
+  if (projects1.length === 0 || projects2.length === 0) return 0;
+
+  // Normalize projects for comparison
+  const normalized1 = projects1.map((p) => p.toLowerCase().trim());
+  const normalized2 = projects2.map((p) => p.toLowerCase().trim());
+
+  const set1 = new Set(normalized1);
+  const set2 = new Set(normalized2);
+  let matches = 0;
+
+  // Exact matches
+  set1.forEach((project) => {
+    if (set2.has(project)) matches++;
+  });
+
+  // Partial matches (e.g., both have "đồ án tốt nghiệp")
+  // Only check if no exact matches found, and track which pairs we've already counted
+  if (matches === 0) {
+    const countedPairs = new Set<string>();
+    const projectTypes = ['đồ án', 'dự án', 'hackathon', 'nghiên cứu'];
+
+    normalized1.forEach((p1, idx1) => {
+      normalized2.forEach((p2, idx2) => {
+        const pairKey = `${idx1}-${idx2}`;
+        if (countedPairs.has(pairKey)) return;
+
+        // Check for common project types
+        const hasCommonType = projectTypes.some((type) => p1.includes(type) && p2.includes(type));
+        if (hasCommonType) {
+          matches += 0.3; // Common type counts as 0.3
+          countedPairs.add(pairKey);
+        }
+      });
+    });
+  }
+
+  const maxProjects = Math.max(projects1.length, projects2.length);
+  return Math.min(100, (matches / maxProjects) * 100);
+}
+
+// ============================================================================
+// Existing Matching Functions
+// ============================================================================
 
 /**
  * Calculate learning goals match score (0-100)
@@ -193,6 +365,10 @@ function calculateStreakScore(streak1: number, streak2: number): number {
  */
 export interface CommonPoint {
   type:
+    | 'university'
+    | 'major'
+    | 'subject'
+    | 'project'
     | 'learning_goal'
     | 'available_time'
     | 'learning_style'
@@ -219,6 +395,78 @@ export function getCommonPoints(
   user2Progress?: UserProgress,
 ): CommonPoint[] {
   const points: CommonPoint[] = [];
+
+  // ============================================================================
+  // Academic Common Points (HIGHEST PRIORITY)
+  // ============================================================================
+
+  // Same university
+  if (user1.university && user2.university) {
+    const normalized1 = user1.university.toLowerCase().trim();
+    const normalized2 = user2.university.toLowerCase().trim();
+    if (normalized1 === normalized2) {
+      points.push({
+        type: 'university',
+        label: `Cùng trường ${user1.university}`,
+        icon: '🏫',
+        value: user1.university,
+      });
+    }
+  }
+
+  // Same major
+  if (user1.major && user2.major) {
+    const normalized1 = user1.major.toLowerCase().trim();
+    const normalized2 = user2.major.toLowerCase().trim();
+    if (normalized1 === normalized2) {
+      points.push({
+        type: 'major',
+        label: `Cùng ngành ${user1.major}`,
+        icon: '📚',
+        value: user1.major,
+      });
+    }
+  }
+
+  // Common subjects
+  if (user1.current_subjects.length > 0 && user2.current_subjects.length > 0) {
+    const normalized1 = user1.current_subjects.map((s) => s.toLowerCase().trim());
+    const normalized2 = user2.current_subjects.map((s) => s.toLowerCase().trim());
+
+    user1.current_subjects.forEach((subject, index) => {
+      const normalizedSubject = normalized1[index];
+      if (normalized2.includes(normalizedSubject)) {
+        points.push({
+          type: 'subject',
+          label: `Cùng học ${subject}`,
+          icon: '📖',
+          value: subject,
+        });
+      }
+    });
+  }
+
+  // Common projects
+  if (user1.current_projects.length > 0 && user2.current_projects.length > 0) {
+    const normalized1 = user1.current_projects.map((p) => p.toLowerCase().trim());
+    const normalized2 = user2.current_projects.map((p) => p.toLowerCase().trim());
+
+    user1.current_projects.forEach((project, index) => {
+      const normalizedProject = normalized1[index];
+      if (normalized2.includes(normalizedProject)) {
+        points.push({
+          type: 'project',
+          label: `Cùng làm ${project}`,
+          icon: '💼',
+          value: project,
+        });
+      }
+    });
+  }
+
+  // ============================================================================
+  // Learning Common Points
+  // ============================================================================
 
   // Common learning goals
   const commonGoals = user1.learning_goals.filter((goal) => user2.learning_goals.includes(goal));
