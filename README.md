@@ -10,10 +10,10 @@
 **Buddy Up** ra đời từ nhu cầu kết nối sinh viên, giúp họ dễ dàng tìm kiếm bạn học có cùng môn học, lịch học, hoặc mục tiêu rèn luyện.
 Ứng dụng cung cấp:
 
-* Chat realtime (1–1 & nhóm học)
-* Lên lịch buổi học
-* Nhận thông báo nhắc nhở và hoạt động mới
-* Thống kê hiệu quả học tập
+- Chat realtime (1–1 & nhóm học)
+- Lên lịch buổi học
+- Nhận thông báo nhắc nhở và hoạt động mới
+- Thống kê hiệu quả học tập
 
 ---
 
@@ -24,7 +24,7 @@
 | 👤 **User & Auth**          | Đăng ký, đăng nhập, cập nhật hồ sơ        | Xác thực Supabase, lưu dữ liệu người dùng      |
 | 🔎 **Matching**             | Tìm kiếm bạn học phù hợp                  | Dựa trên thông tin học, sở thích, kỹ năng      |
 | 💬 **Chat & Group**         | Nhắn tin 1–1, chat nhóm, gửi lời mời nhóm | Sử dụng Supabase Realtime (channels)           |
-| 🗓️ **Schedule & Reminder** | Quản lý lịch học, nhắc nhở tự động        | Đồng bộ thời gian & gửi notification trong app |
+| 🗓️ **Schedule & Reminder**  | Quản lý lịch học, nhắc nhở tự động        | Đồng bộ thời gian & gửi notification trong app |
 | 📈 **Analytics & Progress** | Theo dõi tiến độ, thống kê hoạt động học  | Giao diện biểu đồ & thống kê tuần/tháng        |
 | ⚙️ **Settings**             | Tuỳ chỉnh cá nhân, theme, thông báo       | Lưu trữ cục bộ (AsyncStorage)                  |
 | 🔐 **Security**             | Bảo mật dữ liệu người dùng                | RLS Policies (Supabase) + Authentication       |
@@ -38,11 +38,11 @@
 **Kiến trúc tổng thể:**
 Ứng dụng tuân theo mô hình **Client–Backend-as-a-Service**, nơi:
 
-* **Frontend (Mobile)**: React Native + Expo
-* **Backend**: Supabase (Auth, Postgres, Storage, Realtime)
-* **Realtime Layer**: Supabase Realtime (channels)
-* **Storage**: Supabase Storage
-* **Automation & CI/CD**: GitHub Actions + Expo EAS
+- **Frontend (Mobile)**: React Native + Expo
+- **Backend**: Supabase (Auth, Postgres, Storage, Realtime)
+- **Realtime Layer**: Supabase Realtime (channels)
+- **Storage**: Supabase Storage
+- **Automation & CI/CD**: GitHub Actions + Expo EAS
 
 ```
 [React Native App]
@@ -56,12 +56,12 @@
 
 **Các module chính:**
 
-* **Auth Module** – quản lý đăng ký/đăng nhập
-* **Match Module** – logic matching người dùng
-* **Chat Module** – chat realtime, nhóm học
-* **StudyGroup Module** – nhóm học + lịch học
-* **Notification Module** – in-app notification
-* **Analytics Module** – thống kê & báo cáo
+- **Auth Module** – quản lý đăng ký/đăng nhập
+- **Match Module** – logic matching người dùng
+- **Chat Module** – chat realtime, nhóm học
+- **StudyGroup Module** – nhóm học + lịch học
+- **Notification Module** – in-app notification
+- **Analytics Module** – thống kê & báo cáo
 
 ---
 
@@ -69,17 +69,17 @@
 
 > Trích từ **Tech Stack Decision Record (ADR)**
 
-| Hạng mục             | Công nghệ                                      | Ghi chú                             |
-| -------------------- | ---------------------------------------------- | ----------------------------------- |
-| **Frontend**         | React Native (Expo) + TypeScript               | Phát triển nhanh, đa nền tảng       |
-| **State Management** | Redux Toolkit                                  | Quy ước mạnh, dễ mở rộng            |
-| **Backend**          | Supabase (Auth, Postgres, Storage, Realtime)   | Realtime + serverless               |
-| **Database**         | Postgres (Supabase)                            | Lợi thế SQL + RLS                   |
-| **Design**           | Figma                                          | Wireframe + Mockup đồng bộ          |
-| **Testing**          | Jest + Detox                                   | Unit + E2E test                     |
-| **CI/CD**            | GitHub Actions + Expo EAS                      | Build/test/deploy tự động           |
-| **Security**         | RLS Policies + Env secrets                     | Bảo mật dữ liệu người dùng          |
-| **i18n**             | i18next + react-i18next                        | Đa ngôn ngữ trong app               |
+| Hạng mục             | Công nghệ                                    | Ghi chú                       |
+| -------------------- | -------------------------------------------- | ----------------------------- |
+| **Frontend**         | React Native (Expo) + TypeScript             | Phát triển nhanh, đa nền tảng |
+| **State Management** | Redux Toolkit                                | Quy ước mạnh, dễ mở rộng      |
+| **Backend**          | Supabase (Auth, Postgres, Storage, Realtime) | Realtime + serverless         |
+| **Database**         | Postgres (Supabase)                          | Lợi thế SQL + RLS             |
+| **Design**           | Figma                                        | Wireframe + Mockup đồng bộ    |
+| **Testing**          | Jest + Detox                                 | Unit + E2E test               |
+| **CI/CD**            | GitHub Actions + Expo EAS                    | Build/test/deploy tự động     |
+| **Security**         | RLS Policies + Env secrets                   | Bảo mật dữ liệu người dùng    |
+| **i18n**             | i18next + react-i18next                      | Đa ngôn ngữ trong app         |
 
 ---
 
@@ -165,9 +165,9 @@ buddy-up/
 
 ### 🔹 Yêu cầu
 
-* Node.js **v20.19.4+**
-* npm **v10+**
-* Expo CLI
+- Node.js **v20.19.4+**
+- npm **v10+**
+- Expo CLI
 
 ### 🔹 Cài đặt
 
@@ -183,7 +183,7 @@ npm install
 npx expo start
 
 # Env
-copy file .example.env thành .env và đổi real key
+copy file .env.example thành .env và đổi real key
 ```
 
 ---
@@ -194,16 +194,17 @@ copy file .example.env thành .env và đổi real key
 
 Bật:
 
-* Authentication → Email/Password (hoặc Social/OAuth nếu cần)
-* Database → Tạo schema/tables cần thiết
-* Realtime → Enable Realtime cho tables cần theo dõi
-* Storage → Create bucket (nếu cần)
+- Authentication → Email/Password (hoặc Social/OAuth nếu cần)
+- Database → Tạo schema/tables cần thiết (xem `supabase/migrations/`)
+- Realtime → Enable Realtime cho tables: `profiles`, `conversations`, `messages`
+- Storage → Create bucket: `avatars`, `attachments`
+- Row Level Security → Enable RLS policies cho tất cả tables
 
 ### 2️⃣ Tạo file `.env`
 
-```
-SUPABASE_URL=https://YOUR-PROJECT.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```env
+EXPO_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
+EXPO_PUBLIC_SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ```
 
 ### 3️⃣ Supabase config
@@ -229,49 +230,115 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 });
 ```
 
-### 4️⃣ Cài đặt packages
+### 4️⃣ Database Migration & Schema Setup
 
 ```bash
-npm i @supabase/supabase-js @react-native-async-storage/async-storage react-native-url-polyfill
-# (tuỳ chọn) RTK/RTK Query
-npm i @reduxjs/toolkit react-redux
-# i18n
-npm i i18next react-i18next
+# Cài đặt Supabase CLI
+npm install -g supabase
+
+# Login và link project
+supabase login
+supabase link --project-ref YOUR-PROJECT-REF
+
+# Chạy migrations
+supabase db reset
+# hoặc
+supabase db push
 ```
 
-### 5️⃣ Thiết lập i18n
-
-`src/config/i18n.ts`
-
-```ts
-import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
-import en from '../assets/i18n/en/common.json';
-import vi from '../assets/i18n/vi/common.json';
-
-i18n.use(initReactI18next).init({
-  compatibilityJSON: 'v3',
-  lng: 'vi',
-  fallbackLng: 'en',
-  resources: {
-    en: { common: en },
-    vi: { common: vi },
-  },
-  ns: ['common'],
-  defaultNS: 'common',
-});
-
-export default i18n;
-```
-
-Sử dụng trong component:
-
-```ts
-import { useTranslation } from 'react-i18next';
-
-const { t } = useTranslation();
-// t('welcome')
-```
 ---
 
+## 8. Thiết lập Firebase & Push Notifications
 
+### 1️⃣ Tạo Firebase Project
+
+1. Vào [Firebase Console](https://console.firebase.google.com/)
+2. Tạo project mới: **buddy-up-12f3c**
+3. Enable **Cloud Messaging (FCM)** trong Project Settings
+
+### 2️⃣ Thiết lập Platform Configuration
+
+#### a. Android - Tải Google Services file
+
+1. Trong Firebase Console → Project Settings → General
+2. Chọn Android app hoặc tạo mới với package name: `com.anonymous.buddyup`
+3. Tải file `google-services.json`
+4. **Đặt file vào thư mục gốc** của project:
+
+```
+buddy-up/
+├── google-services.json     ← Đặt ở đây (Android)
+├── package.json
+├── App.tsx
+└── ...
+```
+
+#### b. iOS - Tải GoogleService-Info.plist
+
+1. Trong Firebase Console → Project Settings → General
+2. Chọn iOS app hoặc tạo mới với Bundle ID: `com.anonymous.buddyup`
+3. Tải file `GoogleService-Info.plist`
+4. **Đặt file vào thư mục ios/buddyup/**:
+
+```
+buddy-up/
+├── ios/
+│   └── buddyup/
+│       ├── GoogleService-Info.plist     ← Đặt ở đây (iOS)
+│       └── ...
+└── ...
+```
+
+#### c. Cập nhật app.json
+
+```json
+{
+  "expo": {
+    "android": {
+      "googleServicesFile": "./google-services.json",
+      "package": "com.anonymous.buddyup"
+    },
+    "ios": {
+      "googleServicesFile": "./ios/buddyup/GoogleService-Info.plist",
+      "bundleIdentifier": "com.anonymous.buddyup"
+    }
+  }
+}
+```
+
+### 3️⃣ Thiết lập Firebase Admin SDK
+
+#### a. Tạo Service Account
+
+1. Firebase Console → Project Settings → Service Accounts
+2. Click **Generate new private key**
+3. Tải file JSON (tên sẽ giống: `buddy-up-12f3c-firebase-adminsdk-fbsvc-22690a068c.json`)
+4. **Đặt file vào thư mục gốc** của project:
+
+```
+buddy-up/
+├── buddy-up-12f3c-firebase-adminsdk-fbsvc-22690a068c.json     ← Đặt ở đây
+├── google-services.json
+├── package.json
+└── ...
+```
+
+#### b. Cấu hình Supabase Edge Functions
+
+1. Upload service account key lên Supabase:
+
+```bash
+# Vào thư mục supabase functions
+cd supabase/functions/send-notification
+
+# Set secret (thay đổi path tới file của bạn)
+supabase secrets set FIREBASE_SERVICE_ACCOUNT_KEY="$(cat ../../../buddy-up-12f3c-firebase-adminsdk-fbsvc-22690a068c.json)"
+```
+
+2. Deploy function:
+
+```bash
+supabase functions deploy send-notification
+```
+
+---
