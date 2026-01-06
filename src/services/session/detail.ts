@@ -1,6 +1,7 @@
 import { supabase } from '../../config/supabase';
 import { logger } from '../../utils/logger';
 import { NotificationType } from '../../types/notifications';
+import { SessionAttachment } from '../../types/sessionAttachment';
 
 export interface SessionParticipant {
   user_id: string;
@@ -22,7 +23,9 @@ export interface SessionDetail {
   scheduled_end: string | null;
   status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
   location: string | null;
+  offline_location?: string | null;
   participants: SessionParticipant[];
+  attachments: SessionAttachment[];
 }
 
 export async function fetchSessionDetail(sessionId: string): Promise<{
@@ -105,6 +108,17 @@ export async function fetchSessionDetail(sessionId: string): Promise<{
       });
     }
 
+    // Fetch attachments
+    const { data: attachments, error: attachmentsError } = await supabase
+      .from('study_session_attachments')
+      .select('*')
+      .eq('session_id', sessionId)
+      .order('created_at', { ascending: true });
+
+    if (attachmentsError) {
+      logger.error('fetchSessionDetail', 'Attachments error:', attachmentsError);
+    }
+
     const result: SessionDetail = {
       id: session.id,
       creator_id: session.creator_id,
@@ -117,7 +131,9 @@ export async function fetchSessionDetail(sessionId: string): Promise<{
       scheduled_end: session.scheduled_end,
       status: session.status,
       location: session.location,
+      offline_location: session.offline_location ?? null,
       participants: participantsList,
+      attachments: attachments || [],
     };
 
     logger.debug('fetchSessionDetail', 'Session loaded:', result);

@@ -9,11 +9,13 @@ import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/nativ
 import {
   Calendar,
   Clock,
-  Timer,
   Users,
   Link as LinkIcon,
-  Copy,
   FileText,
+  Paperclip,
+  MapPin,
+  Image as ImageIcon,
+  BookOpen,
 } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -32,6 +34,7 @@ import { AVAILABLE_SUBJECTS } from '../../constants/subjects';
 import type { NavigationProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
 import { SessionCompletionModal } from '../../components/session/SessionCompletionModal';
+import { SessionAttachmentsView } from '../../components/session/SessionAttachmentsView';
 
 export const SessionDetailScreen: React.FC = () => {
   const { t } = useTranslation('session');
@@ -50,6 +53,8 @@ export const SessionDetailScreen: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [expandedImages, setExpandedImages] = useState(false);
+  const [expandedDocuments, setExpandedDocuments] = useState(false);
 
   useEffect(() => {
     loadSession();
@@ -110,12 +115,6 @@ export const SessionDetailScreen: React.FC = () => {
     setSession(data);
     setLoading(false);
   }, [sessionId, t, navigation]);
-
-  const handleCopyLink = () => {
-    // Copy to clipboard
-    showSuccessToast(t('detail.toast.linkCopied'));
-    showSuccessToast(t('detail.linkCopied'));
-  };
 
   const handleJoinMeeting = async () => {
     if (!session?.location) {
@@ -475,20 +474,6 @@ export const SessionDetailScreen: React.FC = () => {
                 {session.title}
               </Text>
 
-              <View
-                style={{ flexDirection: 'row', alignItems: 'center', marginTop: theme.spacing[2] }}
-              >
-                <Text variant="body" style={{ fontSize: 16 }}>
-                  🎓
-                </Text>
-                <Text
-                  variant="body"
-                  style={{ marginLeft: theme.spacing[2], color: theme.colors.text.secondary }}
-                >
-                  {session.creator_name}
-                </Text>
-              </View>
-
               {session.subject && (
                 <View
                   style={{
@@ -497,14 +482,11 @@ export const SessionDetailScreen: React.FC = () => {
                     marginTop: theme.spacing[2],
                   }}
                 >
-                  <Text variant="body" style={{ fontSize: 16 }}>
-                    📚
-                  </Text>
+                  <BookOpen size={18} color={theme.colors.text.secondary} />
                   <Text
                     variant="body"
                     style={{ marginLeft: theme.spacing[2], color: theme.colors.text.secondary }}
                   >
-                    {t('subjectLabel')}:{' '}
                     {(() => {
                       const subj = AVAILABLE_SUBJECTS.find((s) => s.key === session.subject);
                       if (subj) {
@@ -513,6 +495,14 @@ export const SessionDetailScreen: React.FC = () => {
                       }
                       return session.subject;
                     })()}
+                  </Text>
+                </View>
+              )}
+
+              {session.description && (
+                <View style={{ marginTop: theme.spacing[2] }}>
+                  <Text variant="body" style={{ color: theme.colors.text.secondary }}>
+                    {session.description}
                   </Text>
                 </View>
               )}
@@ -534,6 +524,40 @@ export const SessionDetailScreen: React.FC = () => {
             </View>
           </View>
 
+          {/* Notes Card - moved below header */}
+          {session.attachments && session.attachments.some((a) => a.type === 'note') && (
+            <View
+              style={[
+                styles.infoCard,
+                { backgroundColor: theme.colors.surface, marginTop: theme.spacing[4] },
+              ]}
+            >
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  marginBottom: theme.spacing[2],
+                }}
+              >
+                <FileText size={20} color={theme.colors.primary[500]} />
+                <Text variant="h6" style={{ fontWeight: '700', marginLeft: theme.spacing[2] }}>
+                  {t('notes')}
+                </Text>
+              </View>
+              {session.attachments
+                .filter((a) => a.type === 'note')
+                .map((note, idx) => (
+                  <Text
+                    key={note.id}
+                    variant="body"
+                    style={{ marginTop: idx === 0 ? 0 : theme.spacing[2] }}
+                  >
+                    {note.note_content}
+                  </Text>
+                ))}
+            </View>
+          )}
+
           {/* Info Card */}
           <View
             style={[
@@ -543,152 +567,61 @@ export const SessionDetailScreen: React.FC = () => {
           >
             <View style={styles.infoRow}>
               <Calendar size={20} color={theme.colors.primary[500]} />
-              <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
-                <Text variant="caption" color="tertiary">
-                  {t('detail.date')}
-                </Text>
-                <Text variant="body" style={{ fontWeight: '600', marginTop: 4 }}>
-                  {weekday}, {dateStr}
-                </Text>
-              </View>
+              <Text variant="body" style={{ marginLeft: theme.spacing[3], fontWeight: '600' }}>
+                {weekday}, {dateStr}
+              </Text>
             </View>
 
             <View style={[styles.infoRow, { marginTop: theme.spacing[4] }]}>
               <Clock size={20} color={theme.colors.primary[500]} />
-              <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
-                <Text variant="caption" color="tertiary">
-                  {t('detail.time')}
-                </Text>
-                <Text variant="body" style={{ fontWeight: '600', marginTop: 4 }}>
-                  {timeStr} - {endTimeStr}
-                </Text>
-              </View>
+              <Text variant="body" style={{ marginLeft: theme.spacing[3], fontWeight: '600' }}>
+                {timeStr} - {endTimeStr} ({durationText})
+              </Text>
             </View>
 
-            <View style={[styles.infoRow, { marginTop: theme.spacing[4] }]}>
-              <Timer size={20} color={theme.colors.primary[500]} />
-              <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
-                <Text variant="caption" color="tertiary">
-                  {t('detail.duration')}
-                </Text>
-                <Text variant="body" style={{ fontWeight: '600', marginTop: 4 }}>
-                  {durationText}
-                </Text>
-              </View>
-            </View>
-
-            {/* Description section styled like other info rows */}
-            {session.description && (
-              <View style={[styles.infoRow, { marginTop: theme.spacing[4] }]}>
-                {/* Use FileText icon for description */}
-                <FileText size={20} color={theme.colors.primary[500]} />
-                <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
-                  <Text variant="caption" color="tertiary">
-                    {t('statusLabel')}
-                  </Text>
-                  <Text variant="body" style={{ fontWeight: '600', marginTop: 4 }}>
-                    {session.description}
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            {/* Always show countdown/remaining for upcoming sessions */}
+            {/* Show countdown for upcoming sessions */}
             {isUpcoming && (
               <View style={[styles.infoRow, { marginTop: theme.spacing[4] }]}>
-                <Users size={20} color="#F59E0B" />
-                <View style={{ marginLeft: theme.spacing[3], flex: 1 }}>
-                  <Text variant="caption" color="tertiary">
-                    {t('detail.remaining')}
-                  </Text>
-                  <Text
-                    variant="body"
-                    style={{ fontWeight: '600', marginTop: 4, color: theme.colors.primary[500] }}
-                  >
-                    {countdownText}
-                  </Text>
-                </View>
-              </View>
-            )}
-            {/* For ongoing/completed/cancelled, do not show countdown/remaining */}
-          </View>
-
-          {/* Location Card - Google Meet for online, Offline info for offline */}
-          {session.location ? (
-            <View
-              style={[
-                styles.infoCard,
-                { backgroundColor: theme.colors.surface, marginTop: theme.spacing[4] },
-              ]}
-            >
-              <Text variant="h6" style={{ fontWeight: '700' }}>
-                {t('detail.googleMeet')}
-              </Text>
-
-              <Pressable
-                onPress={handleCopyLink}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: '#F0F9FF',
-                  padding: theme.spacing[3],
-                  borderRadius: theme.radius.md,
-                  marginTop: theme.spacing[4],
-                }}
-              >
-                <LinkIcon size={18} color={theme.colors.primary[500]} />
+                <Clock size={20} color="#F59E0B" />
                 <Text
                   variant="body"
                   style={{
-                    marginLeft: theme.spacing[2],
+                    marginLeft: theme.spacing[3],
+                    fontWeight: '600',
                     color: theme.colors.primary[500],
-                    flex: 1,
                   }}
-                  numberOfLines={1}
                 >
-                  {session.location}
-                </Text>
-                <Copy size={18} color={theme.colors.primary[500]} />
-              </Pressable>
-
-              <Button
-                label={t('detail.joinMeeting')}
-                onPress={handleJoinMeeting}
-                variant="primary"
-                size="lg"
-                style={{ marginTop: theme.spacing[4] }}
-              />
-            </View>
-          ) : (
-            <View
-              style={[
-                styles.infoCard,
-                { backgroundColor: theme.colors.surface, marginTop: theme.spacing[4] },
-              ]}
-            >
-              <Text variant="h6" style={{ fontWeight: '700' }}>
-                {t('locationTitle')}
-              </Text>
-
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  backgroundColor: theme.colors.neutral[50],
-                  padding: theme.spacing[3],
-                  borderRadius: theme.radius.md,
-                  marginTop: theme.spacing[4],
-                }}
-              >
-                <Text
-                  variant="body"
-                  style={{ color: theme.colors.text.primary, fontWeight: '600' }}
-                >
-                  {t('offline')}
+                  {countdownText}
                 </Text>
               </View>
-            </View>
-          )}
+            )}
+
+            {/* Show location (online link or offline address) */}
+            {session.location ? (
+              <View style={[styles.infoRow, { marginTop: theme.spacing[4] }]}>
+                <LinkIcon size={20} color={theme.colors.primary[500]} />
+                <Pressable
+                  onPress={handleJoinMeeting}
+                  style={{ marginLeft: theme.spacing[3], flex: 1 }}
+                >
+                  <Text
+                    variant="body"
+                    style={{ color: theme.colors.primary[500], fontWeight: '600' }}
+                    numberOfLines={1}
+                  >
+                    {session.location}
+                  </Text>
+                </Pressable>
+              </View>
+            ) : session.offline_location ? (
+              <View style={[styles.infoRow, { marginTop: theme.spacing[4] }]}>
+                <MapPin size={20} color={theme.colors.primary[500]} />
+                <Text variant="body" style={{ marginLeft: theme.spacing[3], fontWeight: '600' }}>
+                  {session.offline_location}
+                </Text>
+              </View>
+            ) : null}
+          </View>
 
           {/* Participants Card */}
           <View
@@ -769,6 +702,106 @@ export const SessionDetailScreen: React.FC = () => {
               </View>
             ))}
           </View>
+
+          {/* Attachments Card - Only Images and Documents (excluding notes) */}
+          {session.attachments &&
+            session.attachments.filter((a) => a.type !== 'note').length > 0 && (
+              <View
+                style={[
+                  styles.infoCard,
+                  { backgroundColor: theme.colors.surface, marginTop: theme.spacing[4] },
+                ]}
+              >
+                {/* Images Section with Toggle */}
+                {session.attachments.some((a) => a.type === 'image') && (
+                  <View style={{ marginBottom: theme.spacing[3] }}>
+                    <Pressable
+                      onPress={() => setExpandedImages(!expandedImages)}
+                      style={{
+                        paddingVertical: theme.spacing[2],
+                        paddingHorizontal: theme.spacing[2],
+                        borderRadius: theme.radius.md,
+                        backgroundColor: theme.colors.neutral[50],
+                        borderWidth: 1,
+                        borderColor: theme.colors.border,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <ImageIcon size={18} color={theme.colors.text.primary} />
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            marginLeft: theme.spacing[2],
+                            color: theme.colors.text.primary,
+                          }}
+                        >
+                          Hình ảnh ({session.attachments.filter((a) => a.type === 'image').length})
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 16, color: theme.colors.text.primary }}>
+                        {expandedImages ? '▼' : '▶'}
+                      </Text>
+                    </Pressable>
+                    {expandedImages && (
+                      <View style={{ marginTop: theme.spacing[2] }}>
+                        <SessionAttachmentsView
+                          attachments={session.attachments.filter((a) => a.type === 'image')}
+                          readOnly={true}
+                        />
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {/* Documents Section with Toggle */}
+                {session.attachments.some((a) => a.type === 'document') && (
+                  <View>
+                    <Pressable
+                      onPress={() => setExpandedDocuments(!expandedDocuments)}
+                      style={{
+                        paddingVertical: theme.spacing[2],
+                        paddingHorizontal: theme.spacing[2],
+                        borderRadius: theme.radius.md,
+                        backgroundColor: theme.colors.neutral[50],
+                        borderWidth: 1,
+                        borderColor: theme.colors.border,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <FileText size={18} color={theme.colors.text.primary} />
+                        <Text
+                          style={{
+                            fontWeight: '600',
+                            marginLeft: theme.spacing[2],
+                            color: theme.colors.text.primary,
+                          }}
+                        >
+                          Tài liệu (
+                          {session.attachments.filter((a) => a.type === 'document').length})
+                        </Text>
+                      </View>
+                      <Text style={{ fontSize: 16, color: theme.colors.text.primary }}>
+                        {expandedDocuments ? '▼' : '▶'}
+                      </Text>
+                    </Pressable>
+                    {expandedDocuments && (
+                      <View style={{ marginTop: theme.spacing[2] }}>
+                        <SessionAttachmentsView
+                          attachments={session.attachments.filter((a) => a.type === 'document')}
+                          readOnly={true}
+                        />
+                      </View>
+                    )}
+                  </View>
+                )}
+              </View>
+            )}
 
           {/* Bottom Actions - Accept/Decline for invited user in readOnly mode */}
           {readOnly && isInvited && (

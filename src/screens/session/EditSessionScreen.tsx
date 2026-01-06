@@ -12,6 +12,8 @@ import {
   Alert,
   Modal,
   ActivityIndicator,
+  Image as RNImage,
+  TextInput,
 } from 'react-native';
 import { ScreenContainer } from '../../components/ui/ScreenContainer/ScreenContainer';
 import { Input } from '../../components/ui/Input/Input';
@@ -19,7 +21,7 @@ import { Button } from '../../components/ui/Button/Button';
 import { Text } from '../../components/ui/Text/Text';
 import { Avatar } from '../../components/ui/Avatar/Avatar';
 import { useTheme } from '../../styles';
-import { Calendar, Clock } from 'lucide-react-native';
+import { Calendar, Clock, Image, FileText, StickyNote, X, Plus } from 'lucide-react-native';
 import { BackButton } from '../../components/navigation/BackButton';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -34,6 +36,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AVAILABLE_SUBJECTS } from '../../constants/subjects';
 import type { NavigationProp } from '@react-navigation/native';
 import type { RootStackParamList } from '../../navigation/AppNavigator';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
+import {
+  uploadSessionImage,
+  uploadSessionDocument,
+  addSessionAttachment,
+  createSessionNote,
+  deleteSessionAttachment,
+} from '../../services/session/attachments';
+import type { SessionAttachment } from '../../types/sessionAttachment';
 
 export const EditSessionScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -64,6 +76,17 @@ export const EditSessionScreen: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationType, setLocationType] = useState<'online' | 'offline'>('online');
   const [link, setLink] = useState('');
+  const [offlineLocation, setOfflineLocation] = useState('');
+
+  // Attachment states
+  const [existingAttachments, setExistingAttachments] = useState<SessionAttachment[]>([]);
+  const [images, setImages] = useState<string[]>([]);
+  const [documents, setDocuments] = useState<{ uri: string; name: string }[]>([]);
+  const [notes, setNotes] = useState<string[]>([]);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [currentNote, setCurrentNote] = useState('');
+  const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
+  const [deletedAttachmentIds, setDeletedAttachmentIds] = useState<string[]>([]);
 
   useEffect(() => {
     loadSession();
@@ -135,6 +158,12 @@ export const EditSessionScreen: React.FC = () => {
       setLink(data.location);
     } else {
       setLocationType('offline');
+      setOfflineLocation(data.offline_location || '');
+    }
+
+    // Load existing attachments
+    if (data.attachments && data.attachments.length > 0) {
+      setExistingAttachments(data.attachments);
     }
 
     setLoading(false);
@@ -217,6 +246,7 @@ export const EditSessionScreen: React.FC = () => {
       scheduled_start: startDate.toISOString(),
       scheduled_end: endDate.toISOString(),
       location: locationType === 'online' ? link || null : null,
+      offline_location: locationType === 'offline' ? offlineLocation.trim() || null : null,
       description: statusText?.trim() ? statusText.trim() : null,
     };
 
@@ -229,6 +259,59 @@ export const EditSessionScreen: React.FC = () => {
         showErrorToast(msg);
         logger.error('EditSessionScreen', 'updateSession error:', error);
         return;
+      }
+
+      // Handle attachments after session update
+      if (
+        images.length > 0 ||
+        documents.length > 0 ||
+        notes.length > 0 ||
+        deletedAttachmentIds.length > 0
+      ) {
+        setIsUploadingAttachments(true);
+        try {
+          // Delete removed attachments
+          for (const attachmentId of deletedAttachmentIds) {
+            await deleteSessionAttachment(attachmentId);
+          }
+
+          // Upload new images
+          for (const imageUri of images) {
+            try {
+              const { url, size, name } = await uploadSessionImage(imageUri);
+              await addSessionAttachment(sessionId, {
+                type: 'image',
+                name,
+                url,
+                created_by: userId,
+              });
+            } catch (err) {
+              logger.error('EditSessionScreen', 'Failed to upload image', err);
+            }
+          } // Upload new documents
+          for (const doc of documents) {
+            try {
+              const { url, size, name } = await uploadSessionDocument(doc.uri, doc.name);
+              await addSessionAttachment(sessionId, {
+                type: 'document',
+                name,
+                url,
+                created_by: userId,
+              });
+            } catch (err) {
+              logger.error('EditSessionScreen', 'Failed to upload document', err);
+            }
+          } // Create new notes
+          for (const note of notes) {
+            try {
+              await createSessionNote(sessionId, note, userId);
+            } catch (err) {
+              logger.error('EditSessionScreen', 'Failed to save note', err);
+            }
+          }
+        } finally {
+          setIsUploadingAttachments(false);
+        }
       }
 
       showSuccessToast(t('edit.updateSuccess'));
@@ -295,6 +378,69 @@ export const EditSessionScreen: React.FC = () => {
       const mm = String(candidate.getMinutes()).padStart(2, '0');
       setTime(`${hh}:${mm}`);
     }
+  };
+
+  // Attachment handlers
+  const handlePickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        setImages([...images, ...result.assets.map((a) => a.uri)]);
+      }
+    } catch (error) {
+      logger.error('EditSessionScreen', 'Failed to pick image', error);
+      showErrorToast(t('errors.imagePick'));
+    }
+  };
+
+  const handlePickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf',
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const newDocs = result.assets.map((asset) => ({
+          uri: asset.uri,
+          name: asset.name,
+        }));
+        setDocuments([...documents, ...newDocs]);
+      }
+    } catch (error) {
+      logger.error('EditSessionScreen', 'Failed to pick document', error);
+      showErrorToast(t('errors.documentPick'));
+    }
+  };
+
+  const handleAddNote = () => {
+    if (currentNote.trim()) {
+      setNotes([...notes, currentNote.trim()]);
+      setCurrentNote('');
+      setShowNoteModal(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+
+  const removeDocument = (index: number) => {
+    setDocuments(documents.filter((_, i) => i !== index));
+  };
+
+  const removeNote = (index: number) => {
+    setNotes(notes.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteExistingAttachment = async (attachmentId: string) => {
+    setDeletedAttachmentIds([...deletedAttachmentIds, attachmentId]);
+    setExistingAttachments(existingAttachments.filter((a) => a.id !== attachmentId));
   };
 
   if (loading || !session) {
@@ -815,7 +961,354 @@ export const EditSessionScreen: React.FC = () => {
               value={link}
               onChangeText={setLink}
             />
-          ) : null}
+          ) : (
+            <Input
+              label={t('locationTitle')}
+              labelBold
+              placeholder="Nhập địa điểm học trực tiếp"
+              value={offlineLocation}
+              onChangeText={setOfflineLocation}
+            />
+          )}
+
+          {/* Notes Section */}
+          <View>
+            <Text
+              variant="h6"
+              style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+            >
+              {t('addNote')}
+            </Text>
+
+            {/* Note Input */}
+            <TextInput
+              placeholder={t('notePlaceholder')}
+              value={currentNote}
+              onChangeText={setCurrentNote}
+              multiline
+              numberOfLines={4}
+              style={{
+                backgroundColor: theme.colors.background,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: theme.radius.md,
+                padding: theme.spacing[3],
+                marginBottom: theme.spacing[2],
+                minHeight: 80,
+                textAlignVertical: 'top',
+                fontSize: 15,
+                fontFamily: theme.typography.families.body,
+                color: theme.colors.text.primary,
+              }}
+              placeholderTextColor={theme.colors.text.tertiary}
+            />
+
+            {/* Add Note Button */}
+            <Pressable
+              onPress={handleAddNote}
+              disabled={!currentNote.trim()}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                backgroundColor: currentNote.trim()
+                  ? theme.colors.primary[500]
+                  : theme.colors.border,
+                borderRadius: theme.radius.md,
+                paddingHorizontal: theme.spacing[4],
+                paddingVertical: theme.spacing[3],
+                marginBottom: theme.spacing[3],
+              }}
+            >
+              <Text variant="body" style={{ color: 'white', fontWeight: '600' as const }}>
+                Thêm ghi chú
+              </Text>
+            </Pressable>
+
+            {/* Existing notes */}
+            {existingAttachments.filter((a) => a.type === 'note').length > 0 && (
+              <View style={{ marginBottom: theme.spacing[3], gap: theme.spacing[2] }}>
+                {existingAttachments
+                  .filter((a) => a.type === 'note' && a.note_content)
+                  .map((note) => (
+                    <View
+                      key={note.id}
+                      style={{
+                        backgroundColor: theme.colors.semantic.warning + '20',
+                        borderWidth: 1,
+                        borderColor: theme.colors.semantic.warning + '80',
+                        borderRadius: theme.radius.md,
+                        paddingHorizontal: theme.spacing[3],
+                        paddingVertical: theme.spacing[3],
+                      }}
+                    >
+                      <View
+                        style={{
+                          flexDirection: 'row',
+                          justifyContent: 'space-between',
+                          alignItems: 'flex-start',
+                        }}
+                      >
+                        <Text variant="caption" style={{ flex: 1, paddingRight: theme.spacing[2] }}>
+                          {note.note_content}
+                        </Text>
+                        <Pressable onPress={() => handleDeleteExistingAttachment(note.id)}>
+                          <X size={18} color={theme.colors.semantic.error} />
+                        </Pressable>
+                      </View>
+                    </View>
+                  ))}
+              </View>
+            )}
+
+            {/* New notes */}
+            {notes.length > 0 && (
+              <View style={{ marginBottom: theme.spacing[3], gap: theme.spacing[2] }}>
+                {notes.map((note, idx) => (
+                  <View
+                    key={`new-note-${idx}`}
+                    style={{
+                      backgroundColor: theme.colors.semantic.warning + '20',
+                      borderWidth: 1,
+                      borderColor: theme.colors.semantic.warning + '80',
+                      borderRadius: theme.radius.md,
+                      paddingHorizontal: theme.spacing[3],
+                      paddingVertical: theme.spacing[3],
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      <Text variant="caption" style={{ flex: 1, paddingRight: theme.spacing[2] }}>
+                        {note}
+                      </Text>
+                      <Pressable onPress={() => removeNote(idx)}>
+                        <X size={18} color={theme.colors.semantic.error} />
+                      </Pressable>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Attachments Section */}
+          <View>
+            <Text
+              variant="h6"
+              style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+            >
+              {t('attachmentsTitle')}
+            </Text>
+
+            {/* Images */}
+            <Pressable
+              onPress={handlePickImage}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: theme.colors.background,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: theme.radius.md,
+                paddingHorizontal: theme.spacing[4],
+                paddingVertical: theme.spacing[3],
+                gap: theme.spacing[3],
+                marginBottom: theme.spacing[3],
+              }}
+            >
+              <Text variant="body" color="primary" style={{ fontSize: 16 }}>
+                +
+              </Text>
+              <Text variant="body" color="primary">
+                Hình ảnh (
+                {images.length + existingAttachments.filter((a) => a.type === 'image').length})
+              </Text>
+            </Pressable>
+
+            {/* Existing images */}
+            {existingAttachments.filter((a) => a.type === 'image').length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginBottom: theme.spacing[3] }}
+              >
+                {existingAttachments
+                  .filter((a) => a.type === 'image')
+                  .map((att) => (
+                    <View key={att.id} style={{ marginRight: theme.spacing[3] }}>
+                      <View
+                        style={{
+                          width: 120,
+                          height: 120,
+                          borderRadius: theme.radius.md,
+                          overflow: 'hidden',
+                          backgroundColor: theme.colors.background,
+                          borderWidth: 1,
+                          borderColor: theme.colors.border,
+                        }}
+                      >
+                        <RNImage
+                          source={{ uri: att.url }}
+                          style={{ width: '100%', height: '100%' }}
+                        />
+                        <Pressable
+                          onPress={() => handleDeleteExistingAttachment(att.id)}
+                          style={{
+                            position: 'absolute',
+                            top: 8,
+                            right: 8,
+                            backgroundColor: '#00000080',
+                            borderRadius: 999,
+                            padding: 4,
+                          }}
+                        >
+                          <X size={16} color="white" />
+                        </Pressable>
+                      </View>
+                      <Text
+                        variant="caption"
+                        style={{ marginTop: theme.spacing[1], maxWidth: 120 }}
+                      >
+                        {att.name || 'image'}
+                      </Text>
+                    </View>
+                  ))}
+              </ScrollView>
+            )}
+
+            {/* New images */}
+            {images.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginBottom: theme.spacing[3] }}
+              >
+                {images.map((uri, idx) => (
+                  <View key={`new-img-${idx}`} style={{ marginRight: theme.spacing[3] }}>
+                    <View
+                      style={{
+                        width: 120,
+                        height: 120,
+                        borderRadius: theme.radius.md,
+                        overflow: 'hidden',
+                        backgroundColor: theme.colors.background,
+                        borderWidth: 1,
+                        borderColor: theme.colors.border,
+                      }}
+                    >
+                      <RNImage source={{ uri }} style={{ width: '100%', height: '100%' }} />
+                      <Pressable
+                        onPress={() => removeImage(idx)}
+                        style={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          backgroundColor: '#00000080',
+                          borderRadius: 999,
+                          padding: 4,
+                        }}
+                      >
+                        <X size={16} color="white" />
+                      </Pressable>
+                    </View>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+
+            {/* Documents */}
+            <Pressable
+              onPress={handlePickDocument}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: theme.colors.background,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: theme.radius.md,
+                paddingHorizontal: theme.spacing[4],
+                paddingVertical: theme.spacing[3],
+                gap: theme.spacing[3],
+                marginBottom: theme.spacing[3],
+              }}
+            >
+              <Text variant="body" color="primary" style={{ fontSize: 16 }}>
+                +
+              </Text>
+              <Text variant="body" color="primary">
+                Tài liệu (
+                {documents.length + existingAttachments.filter((a) => a.type === 'document').length}
+                )
+              </Text>
+            </Pressable>
+
+            {/* Existing documents */}
+            {existingAttachments.filter((a) => a.type === 'document').length > 0 && (
+              <View style={{ marginBottom: theme.spacing[3], gap: theme.spacing[2] }}>
+                {existingAttachments
+                  .filter((a) => a.type === 'document')
+                  .map((doc) => (
+                    <View
+                      key={doc.id}
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: theme.colors.background,
+                        borderWidth: 1,
+                        borderColor: theme.colors.border,
+                        borderRadius: theme.radius.md,
+                        paddingHorizontal: theme.spacing[4],
+                        paddingVertical: theme.spacing[3],
+                        gap: theme.spacing[3],
+                      }}
+                    >
+                      <FileText size={18} color={theme.colors.text.secondary} />
+                      <Text style={{ flex: 1 }} numberOfLines={1}>
+                        {doc.name || 'document.pdf'}
+                      </Text>
+                      <Pressable onPress={() => handleDeleteExistingAttachment(doc.id)}>
+                        <X size={18} color={theme.colors.semantic.error} />
+                      </Pressable>
+                    </View>
+                  ))}
+              </View>
+            )}
+
+            {/* New documents */}
+            {documents.length > 0 && (
+              <View style={{ marginBottom: theme.spacing[3], gap: theme.spacing[2] }}>
+                {documents.map((doc, idx) => (
+                  <View
+                    key={`new-doc-${idx}`}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: theme.colors.background,
+                      borderWidth: 1,
+                      borderColor: theme.colors.border,
+                      borderRadius: theme.radius.md,
+                      paddingHorizontal: theme.spacing[4],
+                      paddingVertical: theme.spacing[3],
+                      gap: theme.spacing[3],
+                    }}
+                  >
+                    <FileText size={18} color={theme.colors.text.secondary} />
+                    <Text style={{ flex: 1 }} numberOfLines={1}>
+                      {doc.name}
+                    </Text>
+                    <Pressable onPress={() => removeDocument(idx)}>
+                      <X size={18} color={theme.colors.semantic.error} />
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
 
           <View style={{ marginTop: theme.spacing[8] }}>
             <Button
@@ -824,8 +1317,13 @@ export const EditSessionScreen: React.FC = () => {
               variant="primary"
               size="lg"
               style={{ width: '100%' }}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingAttachments}
             />
+            {isUploadingAttachments && (
+              <Text variant="caption" color="tertiary" style={{ marginTop: theme.spacing[2] }}>
+                Đang tải tệp đính kèm...
+              </Text>
+            )}
           </View>
         </KeyboardAwareScrollView>
       </ScreenContainer>
