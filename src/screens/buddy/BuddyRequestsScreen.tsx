@@ -1,16 +1,17 @@
 import React, { useEffect, useCallback, useMemo, useState } from 'react';
-import { View } from 'react-native';
+import { View, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { useTranslation } from 'react-i18next';
+import { ArrowLeft, Search } from 'lucide-react-native';
 import { Text } from '../../components/ui/Text/Text';
 import { Spacer } from '../../components/ui/Spacer/Spacer';
+import { Input } from '../../components/ui/Input/Input';
 import { ScreenContainer } from '../../components/ui/ScreenContainer/ScreenContainer';
 import { BuddyStack } from '../../components/buddy/BuddyStack/BuddyStack';
 import { Loading } from '../../components/ui/Loading/Loading';
 import { EmptyState } from '../../components/ui/EmptyState/EmptyState';
-import { BuddyHero } from '../../components/buddy/BuddyHero/BuddyHero';
 import {
   fetchIncomingRequestsAsync,
   respondToBuddyRequestAsync,
@@ -126,10 +127,6 @@ export const BuddyRequestsScreen: React.FC = () => {
     setSearchQuery('');
   }, []);
 
-  const handleFilterPress = useCallback(() => {
-    showInfoToast(t('requests.filterComingSoon'));
-  }, [t]);
-
   // Handle card press - navigate to detail screen
   const handleCardPress = useCallback(
     (card: BuddyCardData) => {
@@ -144,18 +141,62 @@ export const BuddyRequestsScreen: React.FC = () => {
         <View
           style={{ paddingHorizontal: theme.spacing[5], paddingTop: theme.spacing[4], flex: 1 }}
         >
-          <BuddyHero
-            searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
-            onClearSearch={handleClearSearch}
-            onBackPress={() => {
-              if (navigation.canGoBack()) {
-                navigation.goBack();
-              }
-            }}
-            onFilterPress={handleFilterPress}
-            activeFiltersCount={searchQuery ? 1 : 0}
-          />
+          {/* Header with back button and search */}
+          <View style={{ marginBottom: theme.spacing[4] }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: theme.spacing[3],
+              }}
+            >
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: theme.radius.lg,
+                  backgroundColor: theme.colors.surface,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: theme.colors.border,
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={t('requests.goBack')}
+              >
+                <ArrowLeft size={20} color={theme.colors.text.primary} />
+              </Pressable>
+
+              <View style={{ flex: 1 }}>
+                <Input
+                  placeholder={t('searchPlaceholder')}
+                  value={searchQuery}
+                  onChangeText={handleSearchChange}
+                  left={<Search size={18} color={theme.colors.text.tertiary} />}
+                  right={
+                    searchQuery.length > 0 ? (
+                      <Pressable
+                        onPress={handleClearSearch}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                      >
+                        <Text variant="bodySmall" color="secondary">
+                          ✕
+                        </Text>
+                      </Pressable>
+                    ) : undefined
+                  }
+                  style={{
+                    paddingVertical: theme.spacing[2],
+                  }}
+                />
+              </View>
+            </View>
+          </View>
 
           <View style={{ marginBottom: theme.spacing[4] }}>
             <Text variant="h6" color="primary" style={{ fontWeight: '600' }}>

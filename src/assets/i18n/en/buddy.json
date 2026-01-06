@@ -87,6 +87,7 @@
     "learningInterests": "Learning Interests",
     "availableTimes": "Available Time",
     "bio": "Bio",
+    "location": "Location",
     "age": "{{age}} years old",
     "notUpdated": "Not updated",
     "noInterests": "No learning interests yet",
@@ -190,7 +191,7 @@
   "toast": {
     "saved": "Profile saved",
     "unsaved": "Removed from saved",
-    "connected": "Invitation sent! 💚",
+    "connected": "Invitation sent!",
     "skipped": "Profile dismissed"
   },
   "notifications": {

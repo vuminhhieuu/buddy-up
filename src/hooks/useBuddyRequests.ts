@@ -11,7 +11,8 @@ import { showSuccessToast, showInfoToast } from '../utils/toast';
 import { useTranslation } from 'react-i18next';
 import { logger } from '../utils/logger';
 
-const SYNC_INTERVAL_MS = 10000;
+// Sync incoming requests every 60 seconds (background sync)
+const SYNC_INTERVAL_MS = 60000;
 
 /**
  * Type guard to validate ConnectionRequest payload from Supabase Realtime

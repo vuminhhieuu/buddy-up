@@ -411,11 +411,12 @@ const buddySlice = createSlice({
     // fetchIncomingRequestsAsync
     builder
       .addCase(fetchIncomingRequestsAsync.pending, (state) => {
-        state.loading = true;
+        // Don't set loading = true to avoid triggering re-renders in BuddyScreen
+        // This is a background sync operation
         state.error = null;
       })
       .addCase(fetchIncomingRequestsAsync.fulfilled, (state, action) => {
-        state.loading = false;
+        // Don't change loading state - this is a background sync
         // Merge with existing requests (avoid duplicates and preserve read status)
         const existingMap = new Map(state.incomingRequests.map((req) => [req.id, req]));
         const mergedRequests: IncomingRequest[] = [];
@@ -447,8 +448,9 @@ const buddySlice = createSlice({
         state.error = null;
       })
       .addCase(fetchIncomingRequestsAsync.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
+        // Don't change loading state - this is a background sync
+        // Only log error, don't show to user
+        logger.warn('buddySlice', 'Failed to fetch incoming requests:', action.payload);
       });
 
     // respondToBuddyRequestAsync
