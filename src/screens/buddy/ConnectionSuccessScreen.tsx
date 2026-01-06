@@ -277,8 +277,11 @@ export const ConnectionSuccessScreen: React.FC = () => {
             >
               <BackButton
                 onPress={() => {
-                  // Navigate back to BuddyRequests screen in the stack
-                  navigation.navigate('BuddyRequests');
+                  // Navigate back to main Buddy screen (reset stack to avoid loop)
+                  navigation.reset({
+                    index: 0,
+                    routes: [{ name: 'BuddyMain' }],
+                  });
                 }}
                 accessibilityLabel={t('requests.goBack')}
                 style={{

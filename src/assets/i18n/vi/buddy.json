@@ -87,6 +87,7 @@
     "learningInterests": "Sở thích học tập",
     "availableTimes": "Thời gian rảnh",
     "bio": "Giới thiệu",
+    "location": "Địa điểm",
     "age": "{{age}} tuổi",
     "notUpdated": "Chưa cập nhật",
     "noInterests": "Chưa thêm sở thích học tập",
@@ -190,7 +191,7 @@
   "toast": {
     "saved": "Đã lưu hồ sơ",
     "unsaved": "Đã bỏ lưu",
-    "connected": "Đã gửi lời mời kết nối! 💚",
+    "connected": "Đã gửi lời mời kết nối!",
     "skipped": "Đã bỏ qua"
   },
   "notifications": {

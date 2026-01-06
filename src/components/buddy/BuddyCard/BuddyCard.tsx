@@ -1,14 +1,12 @@
 import React from 'react';
 import { View, ViewStyle, Pressable, ScrollView } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Target, Star, User } from 'lucide-react-native';
+import { MapPin } from 'lucide-react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../styles';
 import { Text } from '../../ui/Text/Text';
 import { Avatar } from '../../ui/Avatar/Avatar';
 import { Card } from '../../ui/Card/Card';
 import { Spacer } from '../../ui/Spacer/Spacer';
-import { getAvailableTimeLucideIcon } from '../../../utils/buddy';
 import type { BuddyCardData } from '../../../types/buddy';
 
 export type BuddyCardProps = {
@@ -35,30 +33,17 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
   const hasBio = data.bio && data.bio.trim().length > 0;
   const hasInterests = data.interests && data.interests.length > 0;
   const hasTimes = data.availableTimes && data.availableTimes.length > 0;
+
+  // Extract location from locationAge (e.g., "TP.HCM • 23 tuổi" -> "TP.HCM")
+  const location = data.locationAge?.split('•')[0]?.trim() || data.locationAge;
+
   const sectionTitleStyle = {
     textTransform: 'uppercase' as const,
     letterSpacing: 0.5,
-    marginBottom: theme.spacing[1],
+    marginBottom: theme.spacing[2],
     fontWeight: '600' as const,
     fontSize: 11,
   };
-  const placeholderPill = (label: string) => (
-    <View
-      style={{
-        paddingHorizontal: theme.spacing[2],
-        paddingVertical: theme.spacing[1],
-        borderRadius: theme.radius.md,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        backgroundColor: theme.colors.background,
-        alignSelf: 'flex-start',
-      }}
-    >
-      <Text variant="bodySmall" color="tertiary" style={{ fontSize: 12 }}>
-        {label}
-      </Text>
-    </View>
-  );
 
   const renderRequestStatus = () => {
     if (requestStatus === 'idle') return null;
@@ -89,13 +74,14 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
     return (
       <View
         style={{
-          paddingHorizontal: theme.spacing[4],
+          paddingHorizontal: theme.spacing[3],
           paddingVertical: theme.spacing[1],
           borderRadius: theme.radius.full,
           borderWidth: 1.5,
           borderColor: config.borderColor,
           backgroundColor: config.backgroundColor,
           alignSelf: 'flex-start',
+          marginBottom: theme.spacing[2],
         }}
       >
         <Text
@@ -111,7 +97,7 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
 
   const cardContent = (
     <Card
-      padding={6}
+      padding={5}
       elevation="lg"
       style={[
         { overflow: 'hidden' },
@@ -121,247 +107,150 @@ export const BuddyCard: React.FC<BuddyCardProps> = ({
     >
       <View style={{ flex: 1, minHeight: 0 }}>
         {/* Header Section */}
-        <LinearGradient
-          colors={[theme.colors.primary[100], theme.colors.secondary[50]]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+        <View
           style={{
-            paddingVertical: theme.spacing[6],
-            paddingHorizontal: theme.spacing[6],
+            paddingVertical: theme.spacing[4],
+            paddingHorizontal: theme.spacing[3],
             alignItems: 'center',
+            backgroundColor: theme.colors.primary[100],
             borderTopLeftRadius: theme.radius.lg,
             borderTopRightRadius: theme.radius.lg,
-            marginHorizontal: -theme.spacing[6],
-            marginTop: -theme.spacing[6],
-            marginBottom: theme.spacing[4],
+            marginHorizontal: -theme.spacing[5],
+            marginTop: -theme.spacing[5],
+            marginBottom: theme.spacing[3],
+            position: 'relative',
             overflow: 'hidden',
           }}
         >
+          {/* Decorative circle */}
           <View
             pointerEvents="none"
             style={{
               position: 'absolute',
-              width: 180,
-              height: 180,
-              borderRadius: 90,
-              backgroundColor: theme.colors.primary[200],
-              opacity: 0.2,
+              width: 100,
+              height: 100,
+              borderRadius: 50,
+              backgroundColor: 'rgba(255, 255, 255, 0.35)',
               top: -30,
               right: -20,
             }}
           />
-          <View
-            pointerEvents="none"
-            style={{
-              position: 'absolute',
-              width: 140,
-              height: 140,
-              borderRadius: 70,
-              backgroundColor: theme.colors.secondary[200],
-              opacity: 0.2,
-              bottom: -40,
-              left: -30,
-            }}
-          />
           <Avatar
-            size="xxl"
+            size="xl"
             uri={data.avatar && data.avatar.startsWith('http') ? data.avatar : undefined}
             name={data.avatar && !data.avatar.startsWith('http') ? data.avatar : data.name}
           />
-          <Spacer size={4} />
+          <Spacer size={2} />
           <Text
-            variant="h2"
+            variant="h3"
             color="primary"
             style={{ fontFamily: theme.typography.families.display }}
           >
             {data.name}
           </Text>
           <Spacer size={1} />
-          <Text variant="bodySmall" color="secondary">
-            {data.locationAge}
+          {/* Main Goal in header (replacing location) */}
+          <Text variant="bodySmall" color="secondary" style={{ textAlign: 'center' }}>
+            {mainGoal}
           </Text>
-        </LinearGradient>
+        </View>
 
         <ScrollView
           style={{ flex: 1, minHeight: 0 }}
-          contentContainerStyle={{ gap: theme.spacing[3], paddingBottom: theme.spacing[2] }}
+          contentContainerStyle={{ paddingBottom: theme.spacing[2] }}
           showsVerticalScrollIndicator={false}
           nestedScrollEnabled
         >
           {renderRequestStatus()}
-          {/* Main Goal Badge */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: theme.spacing[1],
-              paddingHorizontal: theme.spacing[3],
-              paddingVertical: theme.spacing[1],
-              backgroundColor: theme.colors.primary[50],
-              borderRadius: theme.radius.full,
-              borderWidth: 1.5,
-              borderColor: theme.colors.primary[200],
-              alignSelf: 'flex-start',
-            }}
-          >
-            <Target size={16} color={theme.colors.primary[500]} />
-            <Text variant="bodySmall" color="primary" style={{ fontWeight: '700' as const }}>
-              {mainGoal}
+
+          {/* Learning Interests */}
+          <View style={{ marginBottom: theme.spacing[4] }}>
+            <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
+              {t('card.learningInterests')}
+            </Text>
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing[2] }}>
+              {hasInterests ? (
+                data.interests.map((interest, index) => (
+                  <View
+                    key={`interest-${interest}-${index}`}
+                    style={{
+                      paddingHorizontal: theme.spacing[3],
+                      paddingVertical: theme.spacing[2],
+                      backgroundColor: theme.colors.surface,
+                      borderRadius: theme.radius.full,
+                      borderWidth: 1.5,
+                      borderColor: theme.colors.primary[300],
+                    }}
+                  >
+                    <Text variant="bodySmall" color="primary" style={{ fontWeight: '500' }}>
+                      {interest}
+                    </Text>
+                  </View>
+                ))
+              ) : (
+                <Text variant="bodySmall" color="tertiary" style={{ fontStyle: 'italic' }}>
+                  {t('card.noInterests')}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* Available Times */}
+          <View style={{ marginBottom: theme.spacing[4] }}>
+            <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
+              {t('card.availableTimes')}
+            </Text>
+            <View style={{ gap: theme.spacing[1] }}>
+              {hasTimes ? (
+                data.availableTimes.map((time, index) => (
+                  <Text key={`time-${time.text}-${index}`} variant="body" color="secondary">
+                    {time.text}
+                  </Text>
+                ))
+              ) : (
+                <Text variant="bodySmall" color="tertiary" style={{ fontStyle: 'italic' }}>
+                  {t('card.noAvailableTimes')}
+                </Text>
+              )}
+            </View>
+          </View>
+
+          {/* Learning Style */}
+          <View style={{ marginBottom: theme.spacing[4] }}>
+            <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
+              {t('card.learningStyleTitle')}
+            </Text>
+            <Text variant="body" color="secondary">
+              {data.learningStyle || t('card.notUpdated')}
             </Text>
           </View>
 
-          {/* Bio Section */}
-          {hasBio && (
-            <View>
+          {/* Location - moved near bio */}
+          {location && (
+            <View style={{ marginBottom: theme.spacing[4] }}>
               <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
-                {t('card.bio')}
+                {t('card.location')}
               </Text>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'flex-start',
-                  gap: theme.spacing[2],
-                  paddingHorizontal: theme.spacing[3],
-                  paddingVertical: theme.spacing[2],
-                  backgroundColor: theme.colors.background,
-                  borderRadius: theme.radius.md,
-                  borderWidth: 1,
-                  borderColor: theme.colors.border,
-                }}
-              >
-                <User size={16} color={theme.colors.text.tertiary} style={{ marginTop: 2 }} />
-                <Text
-                  variant="bodySmall"
-                  color="secondary"
-                  style={{ flex: 1, lineHeight: 20 }}
-                  numberOfLines={3}
-                >
-                  {data.bio}
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[1] }}>
+                <MapPin size={14} color={theme.colors.text.secondary} />
+                <Text variant="body" color="secondary">
+                  {location}
                 </Text>
               </View>
             </View>
           )}
 
-          {/* Learning Interests */}
-          <View>
-            <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
-              {t('card.learningInterests')}
-            </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                flexWrap: 'wrap',
-                gap: theme.spacing[1],
-              }}
-            >
-              {hasInterests
-                ? data.interests.map((interest, index) => (
-                    <View
-                      key={`interest-${interest}-${index}`}
-                      style={{
-                        paddingHorizontal: theme.spacing[2],
-                        paddingVertical: theme.spacing[1],
-                        backgroundColor: theme.colors.secondary[50],
-                        borderRadius: theme.radius.md,
-                        borderWidth: 1,
-                        borderColor: theme.colors.secondary[200],
-                      }}
-                    >
-                      <Text
-                        variant="bodySmall"
-                        color="info"
-                        style={{ fontWeight: '600' as const, fontSize: 12 }}
-                      >
-                        {interest}
-                      </Text>
-                    </View>
-                  ))
-                : placeholderPill(t('card.noInterests'))}
-            </View>
-          </View>
-
-          {/* Available Times - Compact Layout */}
-          <View>
-            <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
-              {t('card.availableTimes')}
-            </Text>
-            {hasTimes ? (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  gap: theme.spacing[1],
-                }}
-              >
-                {data.availableTimes.map((time, index) => {
-                  const TimeIcon = time.timeValue
-                    ? getAvailableTimeLucideIcon(time.timeValue)
-                    : null;
-                  return (
-                    <View
-                      key={`time-${time.text}-${index}`}
-                      style={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: theme.spacing[1],
-                        paddingHorizontal: theme.spacing[2],
-                        paddingVertical: theme.spacing[1],
-                        backgroundColor: theme.colors.primary[50],
-                        borderRadius: theme.radius.md,
-                        borderWidth: 1,
-                        borderColor: theme.colors.primary[200],
-                      }}
-                    >
-                      {TimeIcon && <TimeIcon size={14} color={theme.colors.primary[500]} />}
-                      <Text
-                        variant="bodySmall"
-                        color="primary"
-                        style={{ fontWeight: '500' as const, fontSize: 12 }}
-                      >
-                        {time.text}
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
-            ) : (
-              placeholderPill(t('card.noAvailableTimes'))
-            )}
-          </View>
-
-          {/* Learning Style - Compact Badge */}
-          <View>
-            <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
-              {t('card.learningStyleTitle')}
-            </Text>
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: theme.spacing[1],
-                paddingHorizontal: theme.spacing[2],
-                paddingVertical: theme.spacing[1],
-                backgroundColor: theme.colors.semantic.warning + '20',
-                borderRadius: theme.radius.full,
-                borderWidth: 1.5,
-                borderColor: theme.colors.semantic.warning + '40',
-                alignSelf: 'flex-start',
-              }}
-            >
-              <Star
-                size={14}
-                color={theme.colors.semantic.warning}
-                fill={theme.colors.semantic.warning}
-              />
-              <Text
-                variant="bodySmall"
-                color="warning"
-                style={{ fontWeight: '600' as const, fontSize: 12 }}
-              >
-                {data.learningStyle || t('card.notUpdated')}
+          {/* Bio Section - at the bottom */}
+          {hasBio && (
+            <View>
+              <Text variant="caption" color="tertiary" style={sectionTitleStyle}>
+                {t('card.bio')}
+              </Text>
+              <Text variant="body" color="secondary" style={{ lineHeight: 22 }} numberOfLines={4}>
+                {data.bio}
               </Text>
             </View>
-          </View>
+          )}
         </ScrollView>
       </View>
     </Card>

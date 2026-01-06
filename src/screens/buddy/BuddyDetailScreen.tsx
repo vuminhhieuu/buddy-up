@@ -282,9 +282,23 @@ export const BuddyDetailScreen: React.FC = () => {
   const hasGoals = profile.learning_goals.length > 0;
   const mainGoal = profile.main_learning_goal || profile.learning_goals[0] || null;
 
+  const hasAvatar = profile.avatar_url && profile.avatar_url.startsWith('http');
+
   return (
     <ScreenContainer contentContainerStyle={{ paddingHorizontal: 0, paddingTop: 0 }}>
       <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+        {/* Fixed Back Button - Always on top */}
+        <View
+          style={{
+            position: 'absolute',
+            top: insets.top + theme.spacing[2],
+            left: theme.spacing[4],
+            zIndex: 100,
+          }}
+        >
+          <BackButton onPress={() => navigation.goBack()} />
+        </View>
+
         <ScrollView
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: theme.spacing[4] }}
@@ -292,24 +306,20 @@ export const BuddyDetailScreen: React.FC = () => {
         >
           {/* Profile Header with Avatar Background - Full Width, Extended */}
           <ImageBackground
-            source={
-              profile.avatar_url && profile.avatar_url.startsWith('http')
-                ? { uri: profile.avatar_url }
-                : undefined
-            }
+            source={hasAvatar ? { uri: profile.avatar_url } : undefined}
             style={{
-              minHeight: 300,
-              paddingTop: insets.top + theme.spacing[4],
-              paddingBottom: theme.spacing[20],
+              minHeight: 280,
+              paddingTop: insets.top + theme.spacing[16],
+              paddingBottom: theme.spacing[16],
               paddingHorizontal: theme.spacing[4],
-              justifyContent: 'space-between',
+              justifyContent: 'flex-end',
             }}
             imageStyle={{
               resizeMode: 'cover',
             }}
           >
             {/* Overlay for better text readability */}
-            {profile.avatar_url && profile.avatar_url.startsWith('http') && (
+            {hasAvatar && (
               <View
                 style={{
                   position: 'absolute',
@@ -317,18 +327,18 @@ export const BuddyDetailScreen: React.FC = () => {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                  backgroundColor: 'rgba(0, 0, 0, 0.35)',
                 }}
               />
             )}
 
             {/* Fallback gradient if no avatar */}
-            {(!profile.avatar_url || !profile.avatar_url.startsWith('http')) && (
+            {!hasAvatar && (
               <LinearGradient
                 colors={[
+                  theme.colors.primary[300],
                   theme.colors.primary[200],
                   theme.colors.primary[100],
-                  theme.colors.primary[50],
                 ]}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 0, y: 1 }}
@@ -341,17 +351,6 @@ export const BuddyDetailScreen: React.FC = () => {
                 }}
               />
             )}
-
-            {/* Back Button - Top left */}
-            <View
-              style={{
-                width: '100%',
-                flexDirection: 'row',
-                justifyContent: 'flex-start',
-              }}
-            >
-              <BackButton onPress={() => navigation.goBack()} />
-            </View>
 
             {/* Name and Info - Bottom left */}
             <View
@@ -372,10 +371,10 @@ export const BuddyDetailScreen: React.FC = () => {
               >
                 <Text
                   variant="h2"
-                  color="inverse"
                   style={{
                     fontFamily: theme.typography.families.display,
                     fontWeight: '700' as const,
+                    color: hasAvatar ? theme.colors.text.inverse : theme.colors.text.primary,
                   }}
                 >
                   {profile.display_name}
@@ -415,31 +414,44 @@ export const BuddyDetailScreen: React.FC = () => {
                     justifyContent: 'flex-start',
                   }}
                 >
-                  {profile.location && <MapPin size={14} color={theme.colors.semantic.error} />}
+                  {profile.location && (
+                    <MapPin
+                      size={14}
+                      color={hasAvatar ? theme.colors.text.inverse : theme.colors.semantic.error}
+                    />
+                  )}
                   {profile.age && (
                     <Text
                       variant="bodySmall"
-                      color="inverse"
-                      style={{ fontWeight: '500' as const }}
+                      style={{
+                        fontWeight: '500' as const,
+                        color: hasAvatar ? theme.colors.text.inverse : theme.colors.text.secondary,
+                      }}
                     >
                       {profile.age} {t('detail.yearsOld')}
                     </Text>
                   )}
                   {profile.age && profile.location && (
-                    <Text variant="bodySmall" color="inverse">
+                    <Text
+                      variant="bodySmall"
+                      style={{
+                        color: hasAvatar ? theme.colors.text.inverse : theme.colors.text.secondary,
+                      }}
+                    >
                       •
                     </Text>
                   )}
                   {profile.location && (
                     <Text
                       variant="bodySmall"
-                      color="inverse"
-                      style={{ fontWeight: '500' as const }}
+                      style={{
+                        fontWeight: '500' as const,
+                        color: hasAvatar ? theme.colors.text.inverse : theme.colors.text.secondary,
+                      }}
                     >
                       {profile.location}
                     </Text>
                   )}
-                  {/* TODO: Add distance calculation if available - show as "2.5km" */}
                 </View>
               )}
 
@@ -454,7 +466,13 @@ export const BuddyDetailScreen: React.FC = () => {
                       backgroundColor: theme.colors.semantic.success,
                     }}
                   />
-                  <Text variant="bodySmall" color="inverse" style={{ fontWeight: '500' as const }}>
+                  <Text
+                    variant="bodySmall"
+                    style={{
+                      fontWeight: '500' as const,
+                      color: hasAvatar ? theme.colors.text.inverse : theme.colors.text.secondary,
+                    }}
+                  >
                     {t('detail.online')} {t('detail.minutesAgo', { minutes: 5 })}
                   </Text>
                 </View>

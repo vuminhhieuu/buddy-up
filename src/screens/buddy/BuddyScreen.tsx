@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from 'react';
 import { View, Keyboard, Pressable } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -75,6 +74,8 @@ export const BuddyScreen: React.FC = () => {
   const pendingRequestsCount = pendingRequests.length;
   const hasPendingRequests = pendingRequestsCount > 0;
   const hasFetchedRequests = useRef(false);
+  const hasInitialLoaded = useRef(false);
+  const isSearching = useRef(false);
 
   // Convert profiles to card data (memoized to avoid recalculation on every render)
   const visibleProfiles = useMemo(
@@ -133,34 +134,43 @@ export const BuddyScreen: React.FC = () => {
     }
   }, [currentUserId, dispatch]);
 
-  // Search function
-  const performSearch = useCallback(() => {
-    if (!currentUserId) return;
+  // Search function - optimized to prevent unnecessary re-renders
+  const performSearch = useCallback(
+    (searchOverride?: string) => {
+      if (!currentUserId || isSearching.current) return;
 
-    const updatedFilters: BuddyFilters = {
-      ...filters,
-      searchQuery: searchQuery.trim() || undefined,
-    };
+      isSearching.current = true;
 
-    dispatch(setFilters(updatedFilters));
-    dispatch(
-      searchBuddiesAsync({
-        filters: updatedFilters,
-        currentUserId,
-      }),
-    );
-  }, [currentUserId, searchQuery, filters, dispatch]);
+      const searchValue = searchOverride !== undefined ? searchOverride : searchQuery;
+      const updatedFilters: BuddyFilters = {
+        ...filters,
+        searchQuery: searchValue.trim() || undefined,
+      };
 
-  // Debounced search
+      dispatch(setFilters(updatedFilters));
+      dispatch(
+        searchBuddiesAsync({
+          filters: updatedFilters,
+          currentUserId,
+        }),
+      ).finally(() => {
+        isSearching.current = false;
+      });
+    },
+    [currentUserId, searchQuery, filters, dispatch],
+  );
+
+  // Debounced search - only triggers when searchQuery changes by user input
   useEffect(() => {
+    // Skip if no user or if this is the initial mount
+    if (!currentUserId || !hasInitialLoaded.current) return;
+
     if (debounceTimer) {
       clearTimeout(debounceTimer);
     }
 
-    if (!currentUserId) return;
-
     const timer = setTimeout(() => {
-      performSearch();
+      performSearch(searchQuery);
     }, SEARCH_DEBOUNCE_MS);
 
     setDebounceTimer(timer);
@@ -169,11 +179,12 @@ export const BuddyScreen: React.FC = () => {
       if (timer) clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
+  }, [searchQuery, currentUserId]);
 
-  // Initial search on mount
+  // Initial search on mount - runs only once
   useEffect(() => {
-    if (currentUserId && results.length === 0 && !loading) {
+    if (currentUserId && !hasInitialLoaded.current && !loading) {
+      hasInitialLoaded.current = true;
       performSearch();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -190,15 +201,20 @@ export const BuddyScreen: React.FC = () => {
   // Handle filter apply
   const handleFilterApply = useCallback(
     (newFilters: BuddyFilters) => {
+      if (isSearching.current) return;
+
       dispatch(setFilters(newFilters));
       setFilterModalVisible(false);
       if (currentUserId) {
+        isSearching.current = true;
         dispatch(
           searchBuddiesAsync({
             filters: newFilters,
             currentUserId,
           }),
-        );
+        ).finally(() => {
+          isSearching.current = false;
+        });
       }
     },
     [currentUserId, dispatch],
@@ -210,16 +226,21 @@ export const BuddyScreen: React.FC = () => {
 
   // Handle filter reset
   const handleFilterReset = useCallback(() => {
+    if (isSearching.current) return;
+
     dispatch(resetFilters());
     setSearchQuery('');
     setFilterModalVisible(false);
     if (currentUserId) {
+      isSearching.current = true;
       dispatch(
         searchBuddiesAsync({
           filters: DEFAULT_BUDDY_FILTERS,
           currentUserId,
         }),
-      );
+      ).finally(() => {
+        isSearching.current = false;
+      });
     }
   }, [currentUserId, dispatch]);
 
@@ -351,11 +372,6 @@ export const BuddyScreen: React.FC = () => {
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
             onClearSearch={handleClearSearch}
-            onBackPress={() => {
-              if (navigation.canGoBack()) {
-                navigation.goBack();
-              }
-            }}
             onFilterPress={() => setFilterModalVisible(true)}
             activeFiltersCount={activeFiltersCount}
           />
@@ -367,29 +383,40 @@ export const BuddyScreen: React.FC = () => {
               accessibilityLabel={t('requests.bannerLabel', { count: pendingRequestsCount })}
               style={{ marginBottom: theme.spacing[4] }}
             >
-              <LinearGradient
-                colors={[theme.colors.primary[500], theme.colors.primary[600]]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
+              <View
                 style={{
-                  borderRadius: theme.radius.full,
+                  borderRadius: theme.radius.lg,
                   paddingVertical: theme.spacing[3],
                   paddingHorizontal: theme.spacing[4],
                   flexDirection: 'row',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  shadowColor: theme.colors.primary[500],
-                  shadowOpacity: 0.35,
-                  shadowRadius: 12,
-                  shadowOffset: { width: 0, height: 6 },
-                  elevation: 4,
+                  backgroundColor: theme.colors.primary[100],
+                  borderWidth: 1,
+                  borderColor: theme.colors.primary[200],
                 }}
               >
-                <Text variant="h6" color="inverse" style={{ fontWeight: '600' }}>
-                  {t('requests.bannerLabel', { count: pendingRequestsCount })}
-                </Text>
-                <ArrowRight color={theme.colors.surface} size={20} />
-              </LinearGradient>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: theme.spacing[2] }}>
+                  <View
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 14,
+                      backgroundColor: theme.colors.primary[500],
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text variant="bodySmall" color="inverse" style={{ fontWeight: '700' }}>
+                      {pendingRequestsCount}
+                    </Text>
+                  </View>
+                  <Text variant="body" color="primary" style={{ fontWeight: '600' }}>
+                    {t('requests.bannerLabel', { count: pendingRequestsCount })}
+                  </Text>
+                </View>
+                <ArrowRight color={theme.colors.primary[500]} size={20} />
+              </View>
             </Pressable>
           ) : null}
 
