@@ -29,7 +29,9 @@
     "loginRequired": "Please sign in to create a session.",
     "notBuddies": "You are not buddies with this user.",
     "createFailed": "Cannot create a session. Please try again.",
-    "createUnexpected": "An unexpected error occurred creating the session. Please try again."
+    "createUnexpected": "An unexpected error occurred creating the session. Please try again.",
+    "imagePick": "Failed to select images. Please try again.",
+    "documentPick": "Failed to select document. Please try again."
   },
   "statusLabel": "Description",
   "statusPlaceholder": "Add description and goals for the session",
@@ -88,6 +90,7 @@
     "date": "Date",
     "time": "Time",
     "duration": "Duration",
+    "mode": "Format",
     "remaining": "Remaining",
     "googleMeet": "Google Meet",
     "joinMeeting": "Join Meeting",
@@ -96,6 +99,9 @@
     "confirmed": "Confirmed ✓",
     "edit": "Edit",
     "cancel": "Cancel Session",
+    "attachments": "Attachments",
+    "accept": "Accept",
+    "decline": "Decline",
     "cancelConfirm": {
       "title": "Cancel Session",
       "message": "Are you sure you want to cancel this session?",
@@ -164,5 +170,16 @@
     "notCompleted": "Not completed / Had issues"
   },
   "reminderTitle": "Upcoming class reminder",
-  "reminderBody": "Class starts at {{time}}. Tap to view details."
+  "reminderBody": "Class starts at {{time}}. Tap to view details.",
+  "attachmentsTitle": "Attachments",
+  "addImages": "Add Images",
+  "addDocuments": "Add Documents (PDF)",
+  "addNote": "Add Note",
+  "addNoteTitle": "Add Note",
+  "notePlaceholder": "Write your note here...",
+  "uploadingAttachments": "Uploading attachments...",
+  "noAttachments": "No attachments",
+  "images": "Images",
+  "documents": "Documents",
+  "notes": "Notes"
 }

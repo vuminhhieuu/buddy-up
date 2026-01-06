@@ -29,7 +29,9 @@
     "loginRequired": "Vui lòng đăng nhập để tạo buổi học.",
     "notBuddies": "Bạn chưa là bạn bè với người này.",
     "createFailed": "Không thể tạo buổi học. Vui lòng thử lại.",
-    "createUnexpected": "Đã xảy ra lỗi khi tạo buổi học. Vui lòng thử lại."
+    "createUnexpected": "Đã xảy ra lỗi khi tạo buổi học. Vui lòng thử lại.",
+    "imagePick": "Không thể chọn hình ảnh. Vui lòng thử lại.",
+    "documentPick": "Không thể chọn tài liệu. Vui lòng thử lại."
   },
   "statusLabel": "Mô tả",
   "statusPlaceholder": "Thêm mô tả và mục tiêu buổi học",
@@ -88,6 +90,7 @@
     "date": "Ngày",
     "time": "Thời gian",
     "duration": "Thời lượng",
+    "mode": "Hình thức",
     "remaining": "Còn lại",
     "googleMeet": "Google Meet",
     "joinMeeting": "Tham gia cuộc họp",
@@ -96,6 +99,9 @@
     "confirmed": "Đã xác nhận ✓",
     "edit": "Chỉnh sửa",
     "cancel": "Hủy buổi học",
+    "attachments": "Tài liệu đính kèm",
+    "accept": "Chấp nhận",
+    "decline": "Từ chối",
     "cancelConfirm": {
       "title": "Hủy buổi học",
       "message": "Bạn có chắc chắn muốn hủy buổi học này?",
@@ -164,5 +170,16 @@
     "notCompleted": "Chưa hoàn thành / Có vấn đề"
   },
   "reminderTitle": "Nhắc học: Buổi học sắp bắt đầu",
-  "reminderBody": "Buổi học sẽ bắt đầu lúc {{time}}. Mở để xem chi tiết."
+  "reminderBody": "Buổi học sẽ bắt đầu lúc {{time}}. Mở để xem chi tiết.",
+  "attachmentsTitle": "Tài liệu đính kèm",
+  "addImages": "Thêm hình ảnh",
+  "addDocuments": "Thêm tài liệu (PDF)",
+  "addNote": "Thêm ghi chú",
+  "addNoteTitle": "Thêm ghi chú",
+  "notePlaceholder": "Viết ghi chú của bạn...",
+  "uploadingAttachments": "Đang tải tài liệu...",
+  "noAttachments": "Không có tài liệu đính kèm",
+  "images": "Hình ảnh",
+  "documents": "Tài liệu",
+  "notes": "Ghi chú"
 }

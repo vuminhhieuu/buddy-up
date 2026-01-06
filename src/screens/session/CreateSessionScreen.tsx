@@ -11,6 +11,8 @@ import {
   Keyboard,
   Alert,
   Modal,
+  Image as RNImage,
+  TextInput,
 } from 'react-native';
 import { ScreenContainer } from '../../components/ui/ScreenContainer/ScreenContainer';
 import { Input } from '../../components/ui/Input/Input';
@@ -18,7 +20,16 @@ import { Button } from '../../components/ui/Button/Button';
 import { Text } from '../../components/ui/Text/Text';
 import { Avatar } from '../../components/ui/Avatar/Avatar';
 import { useTheme } from '../../styles';
-import { ArrowLeft, Calendar, Clock } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Calendar,
+  Clock,
+  Image,
+  FileText,
+  StickyNote,
+  X,
+  Plus,
+} from 'lucide-react-native';
 import { BackButton } from '../../components/navigation/BackButton';
 import { useNavigation } from '@react-navigation/native';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -32,6 +43,14 @@ import { logger } from '../../utils/logger';
 import { formatDateTimeDDMMYYYYHHMM } from '../../utils/date';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AVAILABLE_SUBJECTS } from '../../constants/subjects';
+import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
+import {
+  uploadSessionImage,
+  uploadSessionDocument,
+  addSessionAttachment,
+  createSessionNote,
+} from '../../services/session/attachments';
 
 export const CreateSessionScreen: React.FC = () => {
   const { theme } = useTheme();
@@ -57,6 +76,14 @@ export const CreateSessionScreen: React.FC = () => {
   const [link, setLink] = useState('');
   const [selectedBuddyIds, setSelectedBuddyIds] = useState<string[]>([]);
   const [showBuddyModal, setShowBuddyModal] = useState(false);
+
+  // Attachment states
+  const [images, setImages] = useState<string[]>([]);
+  const [documents, setDocuments] = useState<{ uri: string; name: string }[]>([]);
+  const [notes, setNotes] = useState<string[]>([]);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [currentNote, setCurrentNote] = useState('');
+  const [isUploadingAttachments, setIsUploadingAttachments] = useState(false);
 
   const buddies = useAppSelector((s) => s.buddy.results ?? []);
   const userId = useAppSelector((s) => s.auth.userId);
@@ -188,6 +215,55 @@ export const CreateSessionScreen: React.FC = () => {
         return;
       }
 
+      // Upload attachments after session is created
+      if (images.length > 0 || documents.length > 0 || notes.length > 0) {
+        setIsUploadingAttachments(true);
+        try {
+          // Upload images
+          for (const imageUri of images) {
+            try {
+              const { url, size, name } = await uploadSessionImage(imageUri);
+              await addSessionAttachment(data.id, {
+                type: 'image',
+                name,
+                url,
+                size,
+                created_by: userId,
+              });
+            } catch (err) {
+              logger.error('CreateSessionScreen', 'Failed to upload image', err);
+            }
+          }
+
+          // Upload documents
+          for (const doc of documents) {
+            try {
+              const { url, size, name } = await uploadSessionDocument(doc.uri, doc.name);
+              await addSessionAttachment(data.id, {
+                type: 'document',
+                name,
+                url,
+                size,
+                created_by: userId,
+              });
+            } catch (err) {
+              logger.error('CreateSessionScreen', 'Failed to upload document', err);
+            }
+          }
+
+          // Save notes
+          for (const note of notes) {
+            try {
+              await createSessionNote(data.id, note, userId);
+            } catch (err) {
+              logger.error('CreateSessionScreen', 'Failed to save note', err);
+            }
+          }
+        } finally {
+          setIsUploadingAttachments(false);
+        }
+      }
+
       showSuccessToast(t('successTitle'));
 
       const sessionDateTime = formatDateTimeDDMMYYYYHHMM(startDate);
@@ -272,6 +348,64 @@ export const CreateSessionScreen: React.FC = () => {
     setSelectedBuddyIds((prev) =>
       prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
     );
+  };
+
+  // Attachment handlers
+  const handlePickImage = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.8,
+      });
+
+      if (!result.canceled) {
+        setImages([...images, ...result.assets.map((a) => a.uri)]);
+      }
+    } catch (error) {
+      logger.error('CreateSessionScreen', 'Failed to pick image', error);
+      showErrorToast(t('errors.imagePick'));
+    }
+  };
+
+  const handlePickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/pdf',
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const newDocs = result.assets.map((asset) => ({
+          uri: asset.uri,
+          name: asset.name,
+        }));
+        setDocuments([...documents, ...newDocs]);
+      }
+    } catch (error) {
+      logger.error('CreateSessionScreen', 'Failed to pick document', error);
+      showErrorToast(t('errors.documentPick'));
+    }
+  };
+
+  const handleAddNote = () => {
+    if (currentNote.trim()) {
+      setNotes([...notes, currentNote.trim()]);
+      setCurrentNote('');
+      setShowNoteModal(false);
+    }
+  };
+
+  const removeImage = (index: number) => {
+    setImages(images.filter((_, i) => i !== index));
+  };
+
+  const removeDocument = (index: number) => {
+    setDocuments(documents.filter((_, i) => i !== index));
+  };
+
+  const removeNote = (index: number) => {
+    setNotes(notes.filter((_, i) => i !== index));
   };
 
   return (
@@ -755,7 +889,15 @@ export const CreateSessionScreen: React.FC = () => {
               value={link}
               onChangeText={setLink}
             />
-          ) : null}
+          ) : (
+            <Input
+              label={t('locationTitle')}
+              labelBold
+              placeholder="Nhập địa điểm học trực tiếp"
+              value={link}
+              onChangeText={setLink}
+            />
+          )}
 
           <View>
             <Text
@@ -858,15 +1000,203 @@ export const CreateSessionScreen: React.FC = () => {
               </ScrollView>
             )}
           </View>
+
+          {/* Notes Section - Moved outside attachments */}
+          <View>
+            <Text
+              variant="h6"
+              style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+            >
+              {t('addNote')}
+            </Text>
+
+            <Pressable
+              onPress={() => setShowNoteModal(true)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: theme.colors.background,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: theme.radius.md,
+                paddingHorizontal: theme.spacing[4],
+                paddingVertical: theme.spacing[3],
+                gap: theme.spacing[3],
+                marginBottom: theme.spacing[3],
+              }}
+            >
+              <StickyNote size={20} color={theme.colors.primary[500]} />
+              <Text variant="body" color="primary">
+                {notes.length > 0 ? `${notes.length} ghi chú` : t('addNote')}
+              </Text>
+            </Pressable>
+
+            {notes.length > 0 && (
+              <View style={{ marginBottom: theme.spacing[3], gap: theme.spacing[2] }}>
+                {notes.map((note, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      backgroundColor: theme.colors.semantic.warning + '20',
+                      borderWidth: 1,
+                      borderColor: theme.colors.semantic.warning + '80',
+                      borderRadius: theme.radius.md,
+                      paddingHorizontal: theme.spacing[3],
+                      paddingVertical: theme.spacing[3],
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                      }}
+                    >
+                      <Text variant="caption" style={{ flex: 1, paddingRight: theme.spacing[2] }}>
+                        {note}
+                      </Text>
+                      <Pressable onPress={() => removeNote(idx)}>
+                        <X size={18} color={theme.colors.semantic.error} />
+                      </Pressable>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
+          {/* Attachments Section */}
+          <View>
+            <Text
+              variant="h6"
+              style={{ marginBottom: theme.spacing[3], fontWeight: '700' as const }}
+            >
+              {t('attachmentsTitle')}
+            </Text>
+
+            {/* Images */}
+            <Pressable
+              onPress={handlePickImage}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: theme.colors.background,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: theme.radius.md,
+                paddingHorizontal: theme.spacing[4],
+                paddingVertical: theme.spacing[3],
+                gap: theme.spacing[3],
+                marginBottom: theme.spacing[3],
+              }}
+            >
+              <Image size={20} color={theme.colors.primary[500]} />
+              <Text variant="body" color="primary">
+                {t('addImages')} ({images.length})
+              </Text>
+            </Pressable>
+
+            {images.length > 0 && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{ marginBottom: theme.spacing[3] }}
+              >
+                {images.map((uri, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      marginRight: theme.spacing[2],
+                      position: 'relative',
+                    }}
+                  >
+                    <RNImage
+                      source={{ uri }}
+                      style={{
+                        width: 100,
+                        height: 100,
+                        borderRadius: theme.radius.md,
+                      }}
+                    />
+                    <Pressable
+                      onPress={() => removeImage(idx)}
+                      style={{
+                        position: 'absolute',
+                        top: -8,
+                        right: -8,
+                        backgroundColor: theme.colors.semantic.error,
+                        borderRadius: 999,
+                        padding: 4,
+                      }}
+                    >
+                      <X size={16} color="#fff" />
+                    </Pressable>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+
+            {/* Documents */}
+            <Pressable
+              onPress={handlePickDocument}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                backgroundColor: theme.colors.background,
+                borderWidth: 1,
+                borderColor: theme.colors.border,
+                borderRadius: theme.radius.md,
+                paddingHorizontal: theme.spacing[4],
+                paddingVertical: theme.spacing[3],
+                gap: theme.spacing[3],
+                marginBottom: theme.spacing[3],
+              }}
+            >
+              <FileText size={20} color={theme.colors.primary[500]} />
+              <Text variant="body" color="primary">
+                {t('addDocuments')} ({documents.length})
+              </Text>
+            </Pressable>
+
+            {documents.length > 0 && (
+              <View style={{ marginBottom: theme.spacing[3], gap: theme.spacing[2] }}>
+                {documents.map((doc, idx) => (
+                  <View
+                    key={idx}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: theme.colors.background,
+                      borderWidth: 1,
+                      borderColor: theme.colors.border,
+                      borderRadius: theme.radius.md,
+                      paddingHorizontal: theme.spacing[3],
+                      paddingVertical: theme.spacing[2],
+                      gap: theme.spacing[2],
+                    }}
+                  >
+                    <FileText size={18} color={theme.colors.text.secondary} />
+                    <Text variant="caption" style={{ flex: 1 }} numberOfLines={1}>
+                      {doc.name}
+                    </Text>
+                    <Pressable onPress={() => removeDocument(idx)}>
+                      <X size={18} color={theme.colors.semantic.error} />
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+
           {/* Button inside the form at the very end for creating a shared session */}
           <View style={{ marginTop: theme.spacing[8] }}>
             <Button
-              label={t('createSharedButton')}
+              label={isUploadingAttachments ? t('uploadingAttachments') : t('createSharedButton')}
               onPress={handleCreateShared}
               variant="primary"
               size="lg"
               style={{ width: '100%' }}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploadingAttachments}
             />
           </View>
         </KeyboardAwareScrollView>
@@ -957,6 +1287,87 @@ export const CreateSessionScreen: React.FC = () => {
                     size="md"
                     style={{ marginTop: theme.spacing[4] }}
                   />
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
+        {/* Note Modal */}
+        <Modal
+          visible={showNoteModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowNoteModal(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setShowNoteModal(false)}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: theme.colors.border + '80',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
+                <View
+                  style={{
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: theme.radius.lg,
+                    padding: theme.spacing[5],
+                    width: '85%',
+                    maxWidth: 400,
+                  }}
+                >
+                  <Text
+                    variant="h5"
+                    style={{ marginBottom: theme.spacing[4], fontWeight: '700' as const }}
+                  >
+                    {t('addNoteTitle')}
+                  </Text>
+
+                  <TextInput
+                    placeholder={t('notePlaceholder')}
+                    value={currentNote}
+                    onChangeText={setCurrentNote}
+                    multiline
+                    numberOfLines={6}
+                    style={{
+                      backgroundColor: theme.colors.background,
+                      borderWidth: 1,
+                      borderColor: theme.colors.border,
+                      borderRadius: theme.radius.md,
+                      padding: theme.spacing[3],
+                      marginBottom: theme.spacing[4],
+                      minHeight: 120,
+                      textAlignVertical: 'top',
+                      fontSize: 15,
+                      fontFamily: theme.typography.families.body,
+                      color: theme.colors.text.primary,
+                    }}
+                    placeholderTextColor={theme.colors.text.tertiary}
+                  />
+
+                  <View style={{ flexDirection: 'row', gap: theme.spacing[3] }}>
+                    <Button
+                      label="Hủy"
+                      onPress={() => {
+                        setCurrentNote('');
+                        setShowNoteModal(false);
+                      }}
+                      variant="destructive"
+                      size="md"
+                      style={{ flex: 1 }}
+                    />
+                    <Button
+                      label="Thêm"
+                      onPress={handleAddNote}
+                      variant="primary"
+                      size="md"
+                      style={{ flex: 1 }}
+                      disabled={!currentNote.trim()}
+                    />
+                  </View>
                 </View>
               </TouchableWithoutFeedback>
             </View>
